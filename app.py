@@ -28,8 +28,7 @@ def _event_handler(event_type, slack_event):
     # TODO watch this space. Might need team_id later down the line to handle multiple workspaces
     team_id = slack_event["team_id"]
 
-    # ================ IM Events =============== #
-
+    # ================ IM Events ===============
     # When the user sends a message to the bot on a direct message channel
     if event_type == "message" and slack_event["event"]['channel_type'] == 'im':
         # console log for the event
