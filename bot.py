@@ -34,7 +34,7 @@ class Bot(object):
         # client with a valid OAuth token once we have one.
 
         # TODO it is hardcoded for now. Fix it later
-        self.client = SlackClient("xoxb-362487356881-688022100224-t1Tktzjdj7k5kIxVcBVtRJLB")
+        self.client = SlackClient("xoxb-362487356881-688022100224-hIJjMmg4yIrOgqTYzUVN40DW")
 
     def open_dm(self, user_id):
         """
