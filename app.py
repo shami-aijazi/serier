@@ -25,8 +25,9 @@ def _event_handler(event_type, slack_event):
     :return: obj
         Response object with 200 - OK or 500 - No Event Handler error
     """
-    # TODO watch this space. Might need team_id later down the line to handle multiple workspaces
+    # store team_id to connect to client
     team_id = slack_event["team_id"]
+    pyBot.client_connect(team_id)
 
     # ================ IM Events ===============
     # When the user sends a message to the bot on a direct message channel
@@ -41,7 +42,7 @@ def _event_handler(event_type, slack_event):
 
 
             # Send the greeting message
-            pyBot.greeting_message(team_id, user_id)
+            pyBot.greeting_message(user_id)
             return make_response("Hello DM Sent", 200,)
 
 

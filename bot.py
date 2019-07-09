@@ -65,7 +65,7 @@ class Bot(object):
           return False
 
 
-    def open_dm(self, team_id, user_id):
+    def open_dm(self, user_id):
         """
         Open a DM to send a greeting message to a new installing user
 
@@ -81,10 +81,6 @@ class Bot(object):
         dm_id : str
             id of the DM channel opened by this method
         """
-        # TODO this client_connect should be done in routing layer NOT in bot layer.
-        # Connect to the client
-        self.client_connect(team_id)
-
         new_dm = self.client.api_call("im.open",
                                       user=user_id)
 
@@ -95,7 +91,7 @@ class Bot(object):
         return dm_id
 
 
-    def greeting_message(self, team_id, user_id):
+    def greeting_message(self, user_id):
         """
         Create and send a welcome message to a new user upon installation.
         :param team_id: str
@@ -112,7 +108,7 @@ class Bot(object):
         # Then we'll set the message object's channel attribute to the IM
         # channel of the user we'll communicate with. We'll find this using
         # the open_dm function, which uses the im.open API call.
-        message_obj.channel = self.open_dm(team_id, user_id)
+        message_obj.channel = self.open_dm(user_id)
 
         post_message = self.client.api_call("chat.postMessage",
                                             channel=message_obj.channel,
