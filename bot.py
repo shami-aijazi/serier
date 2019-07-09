@@ -53,7 +53,7 @@ class Bot(object):
 
         """
         # Read the authed_teams from file
-        with open('authed_teams.txt') as authed_teams_file:  
+        with open('authed_teams.txt', 'r') as authed_teams_file:  
             authed_teams = json.load(authed_teams_file)
 
         if authed_teams.get(team_id, False):
@@ -149,16 +149,24 @@ class Bot(object):
 
         # Open the file, read it in, update it (if already exists) or add it (new team).
         # Write the file back in
-        with open('authed_teams.txt', 'w+') as authed_teams_file: 
-            try: 
-                authed_teams = json.load(authed_teams_file)
-            except ValueError: 
-                authed_teams = {}
+        with open('authed_teams.txt', 'r+') as authed_teams_file: 
+            # try: 
+            authed_teams = json.load(authed_teams_file)
+
+            # Console log for reinstallation process
+            print "\n===============\nauthed_teams=\n", authed_teams, "\n==============="
+            print "\n===============\nauthed_teams already exists, updating... =\n", "\n==============="
+            # except ValueError: 
+                # authed_teams = {}
+                # Console log for reinstallation process
+                # print "\n===============\nauthed_teams does not already exist, creating new... =\n", "\n==============="
 
             team_id = auth_response["team_id"]
             authed_teams[team_id] = {"bot_token":
                 auth_response["bot"]["bot_access_token"]}
             
+            # restart from beginning of file
+            authed_teams_file.seek(0)
             json.dump(authed_teams, authed_teams_file)
 
 

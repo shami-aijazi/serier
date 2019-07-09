@@ -25,7 +25,7 @@ def _event_handler(event_type, slack_event):
     :return: obj
         Response object with 200 - OK or 500 - No Event Handler error
     """
-    # store team_id to connect to client
+    # parse team_id to connect to client
     team_id = slack_event["team_id"]
     pyBot.client_connect(team_id)
 
