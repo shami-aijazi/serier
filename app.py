@@ -41,7 +41,7 @@ def _event_handler(event_type, slack_event):
 
 
             # Send the greeting message
-            pyBot.greeting_message(user_id)
+            pyBot.greeting_message(team_id, user_id)
             return make_response("Hello DM Sent", 200,)
 
 

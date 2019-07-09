@@ -3,6 +3,7 @@ Python Slack Bot class for use with series organizer app
 """
 import os
 import message
+import json
 
 from slackclient import SlackClient
 
@@ -12,11 +13,12 @@ from slackclient import SlackClient
 # save this in a more persistant memory store.
 authed_teams = {}
 
+
 class Bot(object):
     """ Instatiates a Bot object to handle Slack interactions"""
     def __init__(self):
         super(Bot, self).__init__()
-        self.name = "bronby"
+        self.name = "serier"
         # When we instantiate a new bot object, we can access the app
         # credentials we set earlier in our local development environment.
         self.oauth = {"client_id": os.environ.get("CLIENT_ID"),
@@ -32,54 +34,85 @@ class Bot(object):
         # an oauth token. We can connect to the client without authenticating
         # by passing an empty string as a token and then reinstantiating the
         # client with a valid OAuth token once we have one.
+        self.client = SlackClient("")
 
-        # TODO it is hardcoded for now. Fix it later
-        self.client = SlackClient("xoxb-362487356881-688022100224-hIJjMmg4yIrOgqTYzUVN40DW")
+    def client_connect(self, team_id):
+        """
+        Connect to the Slack web client corresponding to the team.
 
-    def open_dm(self, user_id):
+        Parameters
+        ----------
+        team_id : str
+            id of the Slack team associated with incoming event
+
+
+        Returns
+        ----------
+        connected : bool
+            True if connection successful, False otherwise.
+
+        """
+        # Read the authed_teams from file
+        with open('authed_teams.txt') as authed_teams_file:  
+            authed_teams = json.load(authed_teams_file)
+
+        if authed_teams.get(team_id, False):
+          self.client = SlackClient(authed_teams[team_id]["bot_token"])
+          return True
+
+        else: #team_id not found in authed_teams
+        # TODO helpful error message
+          return False
+
+
+    def open_dm(self, team_id, user_id):
         """
         Open a DM to send a greeting message to a new installing user
 
         Parameters
         ----------
+        team_id : str
+            id of the Slack team associated with event
         user_id : str
-            id of the Slack user associated with the installation
+            id of the Slack user to open DM with 
 
         Returns
         ----------
         dm_id : str
             id of the DM channel opened by this method
         """
+        # TODO this client_connect should be done in routing layer NOT in bot layer.
+        # Connect to the client
+        self.client_connect(team_id)
+
         new_dm = self.client.api_call("im.open",
                                       user=user_id)
 
         # console log for the new_dm im.open response object
-        print "\n===============\nnew_dm =\n", new_dm, "\n==============="
+        # print "\n===============\nnew_dm =\n", new_dm, "\n==============="
 
         dm_id = new_dm["channel"]["id"]
         return dm_id
 
 
-    def greeting_message(self, user_id, team_id=""):
+    def greeting_message(self, team_id, user_id):
         """
         Create and send a welcome message to a new user upon installation.
-        :param user_id: str
-            id of the Slack user associated with the incoming event
         :param team_id: str
             id of the Slack team associated with the incoming event
+        :param user_id: str
+            id of the Slack user associated with the incoming event
 
         """
 
         # create a Greeting message Message object
-        # set the appropiate channel_id to the Message object (use im.open?)
-        # connect to the right slack client token
-        # post the message
 
         message_obj = message.Greeting()
+
         # Then we'll set the message object's channel attribute to the IM
         # channel of the user we'll communicate with. We'll find this using
         # the open_dm function, which uses the im.open API call.
-        message_obj.channel = self.open_dm(user_id)
+        message_obj.channel = self.open_dm(team_id, user_id)
 
         post_message = self.client.api_call("chat.postMessage",
                                             channel=message_obj.channel,
@@ -108,18 +141,40 @@ class Bot(object):
                             client_secret=self.oauth["client_secret"],
                             code=code
                             )
+
+        # Console log of oauth.access
+        print "\n===============\nauth_response =\n", auth_response, "\n==============="
+
+
         # To keep track of authorized teams and their associated OAuth tokens,
         # we will save the team ID and bot tokens to the global authed_teams object
-        # TODO WRITE authed_teams object to database?
-        team_id = auth_response["team_id"]
-        authed_teams[team_id] = {"bot_token":
-                                 auth_response["bot"]["bot_access_token"]}
+
+        # TODO SERIALIZE THIS. Write it to file/db
+
+        # Open the file, read it in, update it (if already exists) or add it (new team).
+        # Write the file back in
+        with open('authed_teams.txt', 'w+') as authed_teams_file: 
+            try: 
+                authed_teams = json.load(authed_teams_file)
+            except ValueError: 
+                authed_teams = {}
+
+            team_id = auth_response["team_id"]
+            authed_teams[team_id] = {"bot_token":
+                auth_response["bot"]["bot_access_token"]}
+            
+            json.dump(authed_teams, authed_teams_file)
+
+
         # Then we'll reconnect to the Slack Client with the correct team's
         # bot token
-        # self.client = SlackClient(authed_teams[team_id]["bot_token"])
+        # IS THIS STEP EVEN NEEDED? We are connecting to the cliene
+        self.client = SlackClient(authed_teams[team_id]["bot_token"])
+
         # TODO we might have to do this before every api call to support multiple teams
         # TODO query from database to connect to the client?
+        # ^ I don't think so. You only query it once, then it stays in memory for runtime?
 
         # TODO send a greeting message to the installer
         # HOW CAN WE KNOW WHICH CHANNEL TO DM THE INSTALLER ON WITH BOT SCOPE?
-        # Try the im.open slack api call?
+        # ^^Try the im.open slack api call? But we don't know the user.
