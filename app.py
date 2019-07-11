@@ -7,6 +7,7 @@ Code inspired by pythOnboarding tutorial by Slack.
 import json
 import bot
 from flask import Flask, request, make_response, render_template
+from slackeventsapi import SlackEventAdapter
 
 pyBot = bot.Bot()
 
@@ -14,43 +15,32 @@ slack = pyBot.client  # Where is this ever used in this file?
 
 app = Flask(__name__)
 
-def _event_handler(event_type, slack_event):
+# Connect to Slack's Events API adapter to receive actions via the Events API
+# bind it to the existing Flask server (called "app") with the "/events" endpoint.
+slack_signing_secret = pyBot.signing_secret
+slack_events_adapter = SlackEventAdapter(slack_signing_secret, "/events", app)
+
+
+@slack_events_adapter.on("message")
+def handle_message(slack_event):
     """
-    A helper function that routes events from Slack to the Bot
-    by event type and subtype
-    :param event_type: str
-        type of event received from Slack
-    :param slack_event: dict
-        JSON response from a Slack event
-    :return: obj
-        Response object with 200 - OK or 500 - No Event Handler error
+    "message" Event listener. Parse message events and route them to bot for action.
     """
     # parse team_id to connect to client
     team_id = slack_event["team_id"]
     pyBot.client_connect(team_id)
 
-    # ================ IM Events ===============
-    # When the user sends a message to the bot on a direct message channel
-    if event_type == "message" and slack_event["event"]['channel_type'] == 'im':
+    # Check if it is a direct message
+    if slack_event["event"]['channel_type'] == 'im':
         # console log for the event
         # print "\n===============\nslack_event =\n", slack_event, "\n==============="
 
         # Check if the message is a user message (don't count the bot's own messages.)
         if "client_msg_id" in slack_event["event"]:
-            # user_id = slack_event["event"].get("user")
             user_id = slack_event["event"]["user"]
-
-
-            # Send the greeting message
+            # Send the greeting message to the user who sent it
             pyBot.greeting_message(user_id)
             return make_response("Hello DM Sent", 200,)
-
-
-    # ============= Event Type Not Found! ============= #
-    # If the event_type does not have a handler
-    message = "App not equipped to handle this %s event" % event_type
-    # Return a helpful error message
-    return make_response(message, 200, {"X-Slack-No-Retry": 1})
 
 @app.route("/install", methods=["GET"])
 def pre_install():
@@ -77,42 +67,6 @@ def thanks():
     pyBot.auth(code_arg)
     return render_template("thanks.html")
 
-@app.route("/listening", methods=["GET", "POST"])
-def hears():
-    """
-    This route listens for incoming events from Slack and uses the event
-    handler helper function to route events to the Bot
-    """
-    slack_event = json.loads(request.data)
-
-    # ============= Slack URL Verification ============ #
-    # In order to verify the url of our endpoint, Slack will send a challenge
-    # token in a request and check for this token in the response our endpoint
-    # sends back.
-    if "challenge" in slack_event:
-        return make_response(slack_event["challenge"], 200, {"content_type":
-                                                                 "application/json"
-                                                             })
-    # ============ Slack Token Verification =========== #
-    # Verify that the request is coming from Slack by checking that the
-    # verification token in the request matches our app's settings
-    if pyBot.verification != slack_event.get("token"):
-        message = "Invalid Slack verification token: %s \npyBot has: \
-                   %s\n\n" % (slack_event["token"], pyBot.verification)
-        # By adding "X-Slack-No-Retry" : 1 to our response headers, we turn off
-        # Slack's automatic retries during development.
-        make_response(message, 403, {"X-Slack-No-Retry": 1})
-
-
-    # ====== Process Incoming Events from Slack ======= #
-    # If the incoming request is an Event we've subscribed to
-    if "event" in slack_event:
-        event_type = slack_event["event"]["type"]
-        # Then handle the event by event_type and have the Bot respond
-        return _event_handler(event_type, slack_event)
-    # If our bot hears things that are not events we've subscribed to,
-    # send an error response
-    return make_response("[NO EVENT IN SLACK REQUEST]", 404, {"X-Slack-No-Retry": 1})
 
 if __name__ == '__main__':
     app.run(debug=True)

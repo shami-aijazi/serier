@@ -27,7 +27,7 @@ class Bot(object):
                       # can access. It's important to use the most restricted
                       # scope that your app will need.
                       "scope": "bot"}
-        self.verification = os.environ.get("VERIFICATION_TOKEN")
+        self.signing_secret = os.environ.get("SIGNING_SECRET")
         self.emoji = ":smile:"
 
         # NOTE: Python-slack requires a client connection to generate
