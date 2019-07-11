@@ -174,7 +174,7 @@ class Bot(object):
 
         # Then we'll reconnect to the Slack Client with the correct team's
         # bot token
-        # IS THIS STEP EVEN NEEDED? We are connecting to the cliene
+        # IS THIS STEP EVEN NEEDED? We are connecting to the client at every event anyway.
         self.client = SlackClient(authed_teams[team_id]["bot_token"])
 
         # TODO we might have to do this before every api call to support multiple teams
@@ -183,4 +183,4 @@ class Bot(object):
 
         # TODO send a greeting message to the installer
         # HOW CAN WE KNOW WHICH CHANNEL TO DM THE INSTALLER ON WITH BOT SCOPE?
-        # ^^Try the im.open slack api call? But we don't know the user.
+        # ^^Try the im.open slack api call? But we don't know the user...
