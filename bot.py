@@ -18,7 +18,7 @@ class Bot(object):
     """ Instatiates a Bot object to handle Slack interactions"""
     def __init__(self):
         super(Bot, self).__init__()
-        self.name = "serier"
+        self.name = "Serier"
         # When we instantiate a new bot object, we can access the app
         # credentials we set earlier in our local development environment.
         self.oauth = {"client_id": os.environ.get("CLIENT_ID"),
@@ -150,22 +150,24 @@ class Bot(object):
         # Open the file, read it in, update it (if already exists) or add it (new team).
         # Write the file back in
         with open('authed_teams.txt', 'r+') as authed_teams_file: 
-            # try: 
-            authed_teams = json.load(authed_teams_file)
+            try: 
+                authed_teams = json.load(authed_teams_file)
 
-            # Console log for reinstallation process
-            print "\n===============\nauthed_teams=\n", authed_teams, "\n==============="
-            print "\n===============\nauthed_teams already exists, updating... =\n", "\n==============="
-            # except ValueError: 
-                # authed_teams = {}
                 # Console log for reinstallation process
-                # print "\n===============\nauthed_teams does not already exist, creating new... =\n", "\n==============="
+                print "\n===============\nauthed_teams=\n", authed_teams, "\n==============="
+                print "\n===============\nauthed_teams already exists, updating... =\n", "\n==============="
+            
+            # ValueError is raised when the authed_teams file is empty
+            except ValueError: 
+                authed_teams = {}
+                # Console log for reinstallation process
+                print "\n===============\nauthed_teams does not already exist, creating new... =\n", "\n==============="
 
             team_id = auth_response["team_id"]
             authed_teams[team_id] = {"bot_token":
                 auth_response["bot"]["bot_access_token"]}
             
-            # restart from beginning of file
+            # rewrite the file.
             authed_teams_file.seek(0)
             json.dump(authed_teams, authed_teams_file)
 

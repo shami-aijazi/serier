@@ -35,7 +35,7 @@ def _event_handler(event_type, slack_event):
         # console log for the event
         # print "\n===============\nslack_event =\n", slack_event, "\n==============="
 
-        # If the message is a user message. Don't count the bot's own message.
+        # Check if the message is a user message (don't count the bot's own messages.)
         if "client_msg_id" in slack_event["event"]:
             # user_id = slack_event["event"].get("user")
             user_id = slack_event["event"]["user"]
