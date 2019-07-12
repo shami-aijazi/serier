@@ -67,7 +67,7 @@ class Bot(object):
 
     def open_dm(self, user_id):
         """
-        Open a DM to send a greeting message to a new installing user
+        Open a DM channel with a user.
 
         Parameters
         ----------
@@ -90,8 +90,7 @@ class Bot(object):
         dm_id = new_dm["channel"]["id"]
         return dm_id
 
-
-    def greeting_message(self, user_id):
+    def onboarding_message(self, user_id):
         """
         Create and send a welcome message to a new user upon installation.
         :param team_id: str
@@ -103,12 +102,67 @@ class Bot(object):
 
         # create a Greeting message Message object
 
-        message_obj = message.Greeting()
+        message_obj = message.Onboarding()
 
         # Then we'll set the message object's channel attribute to the IM
         # channel of the user we'll communicate with. We'll find this using
         # the open_dm function, which uses the im.open API call.
         message_obj.channel = self.open_dm(user_id)
+
+        post_message = self.client.api_call("chat.postMessage",
+                                            channel=message_obj.channel,
+                                            username=self.name,
+                                            icon_emoji=self.emoji,
+                                            text=message_obj.text,
+                                            attachments=message_obj.attachments
+                                            )
+    
+
+    def dm_response_message(self, channel_id):
+        """
+        Create and send a default response message to a user who DM's the bot.
+        This is the default message that is sent when the bot doesn't understand
+        what the user said.
+        :param team_id: str
+            id of the Slack team associated with the incoming event
+        :param channel_id: str
+            id of the Slack channel associated with the incoming event
+
+        """
+
+        # create a Greeting message Message object
+
+        message_obj = message.DMResponse()
+
+        # Then we'll set the message object's channel attribute to the IM
+        # channel of the user we'll communicate with. We'll find this using
+        # the open_dm function, which uses the im.open API call.
+        message_obj.channel = channel_id
+
+        post_message = self.client.api_call("chat.postMessage",
+                                            channel=message_obj.channel,
+                                            username=self.name,
+                                            icon_emoji=self.emoji,
+                                            text=message_obj.text,
+                                            # attachments=message_obj.attachments
+                                            )
+                                            
+    def help_message(self, channel_id):
+        """
+        Create and send a response message to a user who DM's the bot.
+        :param team_id: str
+            id of the Slack team associated with the incoming event
+        :param user_id: str
+            id of the Slack user associated with the incoming event
+
+        """
+
+        # create a Greeting message Message object
+
+        message_obj = message.Help()
+
+        # Then we'll set the message object's channel
+        message_obj.channel = channel_id
 
         post_message = self.client.api_call("chat.postMessage",
                                             channel=message_obj.channel,
@@ -168,7 +222,7 @@ class Bot(object):
             authed_teams[team_id] = {"bot_token":
                 auth_response["bot"]["bot_access_token"]}
             
-            # rewrite the file with newly added bot token
+            # rewrite the file with newly added bot tokengit b
             authed_teams_file.seek(0)
             json.dump(authed_teams, authed_teams_file)
 
@@ -176,7 +230,5 @@ class Bot(object):
         # Then we'll reconnect to the Slack Client with the correct team's bot token.
         # Then, send the installing user the onboarding (greeting) message.
         self.client_connect(team_id)
-
-        # TODO send a greeting message to the installer
-        # the oauth.acess api call response object contains a "user_id" key. We can use the
-        # im.open (open_dm) api call to onboard the new installing user.
+        user_id = auth_response["user_id"]
+        self.onboarding_message(user_id)

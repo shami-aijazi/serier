@@ -26,21 +26,32 @@ def handle_message(slack_event):
     """
     "message" Event listener. Parse message events and route them to bot for action.
     """
-    # parse team_id to connect to client
+    # console log for the event
+    print "\n===============\nslack_event =\n", slack_event, "\n==============="
+
+    # parse team_id and connect to client
     team_id = slack_event["team_id"]
     pyBot.client_connect(team_id)
 
+    # Parse channel_id and incoming message text
+    message_text = slack_event["event"]["text"]
+    channel_id = slack_event["event"]["channel"]
+
     # Check if it is a direct message
     if slack_event["event"]['channel_type'] == 'im':
-        # console log for the event
-        # print "\n===============\nslack_event =\n", slack_event, "\n==============="
 
         # Check if the message is a user message (don't count the bot's own messages.)
         if "client_msg_id" in slack_event["event"]:
-            user_id = slack_event["event"]["user"]
-            # Send the greeting message to the user who sent it
-            pyBot.greeting_message(user_id)
-            return make_response("Hello DM Sent", 200,)
+            # === User asked for help ===
+            if message_text[:4]=="help":
+                pyBot.help_message(channel_id)
+                return make_response("Help DM Sent", 200,)
+
+
+            # === Bot didn't understand ===
+            # Reply with the default response message
+            pyBot.dm_response_message(channel_id)
+            return make_response("Default Response DM Sent", 200,)
 
 @app.route("/install", methods=["GET"])
 def pre_install():

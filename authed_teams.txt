@@ -1,1 +1,1 @@
-{"TANEBAGRX": {"bot_token": "xoxb-362487356881-688022100224-EE0VDqrMHW76qjIGFwOzu9QW"}, "test-team-name": {"bot_token": "test-bot-token"}}
+{"TANEBAGRX": {"bot_token": "xoxb-362487356881-688022100224-P3B7fOovRz0Kpsu3qWwKwpcr"}, "test-team-name": {"bot_token": "test-bot-token"}}
