@@ -1,6 +1,5 @@
 """
 A routing layer for the series organizer bot.
-Code inspired by pythOnboarding tutorial by Slack.
 
 """
 
@@ -17,7 +16,6 @@ app = Flask(__name__)
 # bind it to the existing Flask server (called "app") with the "/events" endpoint.
 slack_signing_secret = pyBot.signing_secret
 slack_events_adapter = SlackEventAdapter(slack_signing_secret, "/events", app)
-
 
 @slack_events_adapter.on("message")
 def handle_message(slack_event):

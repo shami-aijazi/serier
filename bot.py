@@ -1,5 +1,5 @@
 """
-Python Slack Bot class for use with series organizer app
+Slack Bot class for use with series organizer app
 """
 import os
 import message

@@ -1,5 +1,5 @@
 """
-Python Slack Message class for use with the bot
+Slack Message class for use with the series organizer bot
 """
 
 class DMResponse(object):
