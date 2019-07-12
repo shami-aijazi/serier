@@ -145,7 +145,8 @@ class Bot(object):
         # To keep track of authorized teams and their associated OAuth tokens,
         # we will save the team ID and bot tokens to the global authed_teams object
 
-        # TODO SERIALIZE THIS. Write it to file/db
+        # TODO The following deserialization of the bot token works, but is it most efficient?
+        # It reads in the whole list, and then rewrites it.
 
         # Open the file, read it in, update it (if already exists) or add it (new team).
         # Write the file back in
@@ -167,20 +168,15 @@ class Bot(object):
             authed_teams[team_id] = {"bot_token":
                 auth_response["bot"]["bot_access_token"]}
             
-            # rewrite the file.
+            # rewrite the file with newly added bot token
             authed_teams_file.seek(0)
             json.dump(authed_teams, authed_teams_file)
 
 
-        # Then we'll reconnect to the Slack Client with the correct team's
-        # bot token
-        # IS THIS STEP EVEN NEEDED? We are connecting to the client at every event anyway.
-        self.client = SlackClient(authed_teams[team_id]["bot_token"])
-
-        # TODO we might have to do this before every api call to support multiple teams
-        # TODO query from database to connect to the client?
-        # ^ I don't think so. You only query it once, then it stays in memory for runtime?
+        # Then we'll reconnect to the Slack Client with the correct team's bot token.
+        # Then, send the installing user the onboarding (greeting) message.
+        self.client_connect(team_id)
 
         # TODO send a greeting message to the installer
-        # HOW CAN WE KNOW WHICH CHANNEL TO DM THE INSTALLER ON WITH BOT SCOPE?
-        # ^^Try the im.open slack api call? But we don't know the user...
+        # the oauth.acess api call response object contains a "user_id" key. We can use the
+        # im.open (open_dm) api call to onboard the new installing user.
