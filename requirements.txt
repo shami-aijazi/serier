@@ -7,7 +7,7 @@ pyaml==16.9.0
 pyyaml>=4.2b1
 requests>=2.20.0
 six==1.10.0
-slackclient==1.0.5
+slackclient>=2.0.0
 slackeventsapi==2.1.0
 websocket-client==0.37.0
 Werkzeug==0.15

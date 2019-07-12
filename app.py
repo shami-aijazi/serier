@@ -11,8 +11,6 @@ from slackeventsapi import SlackEventAdapter
 
 pyBot = bot.Bot()
 
-slack = pyBot.client  # Where is this ever used in this file?
-
 app = Flask(__name__)
 
 # Connect to Slack's Events API adapter to receive actions via the Events API
@@ -27,7 +25,7 @@ def handle_message(slack_event):
     "message" Event listener. Parse message events and route them to bot for action.
     """
     # console log for the event
-    print "\n===============\nslack_event =\n", slack_event, "\n==============="
+    print("\n===============\nslack_event =\n", slack_event, "\n===============")
 
     # parse team_id and connect to client
     team_id = slack_event["team_id"]

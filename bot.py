@@ -5,7 +5,7 @@ import os
 import message
 import json
 
-from slackclient import SlackClient
+from slack import WebClient
 
 # To remember which teams have authorized your app and what tokens are
 # associated with each team, we can store this information in memory on
@@ -34,7 +34,7 @@ class Bot(object):
         # an oauth token. We can connect to the client without authenticating
         # by passing an empty string as a token and then reinstantiating the
         # client with a valid OAuth token once we have one.
-        self.client = SlackClient("")
+        self.client = WebClient("")
 
     def client_connect(self, team_id):
         """
@@ -57,7 +57,7 @@ class Bot(object):
             authed_teams = json.load(authed_teams_file)
 
         if authed_teams.get(team_id, False):
-          self.client = SlackClient(authed_teams[team_id]["bot_token"])
+          self.client = WebClient(authed_teams[team_id]["bot_token"])
           return True
 
         else: #team_id not found in authed_teams
@@ -85,7 +85,7 @@ class Bot(object):
                                       user=user_id)
 
         # console log for the new_dm im.open response object
-        # print "\n===============\nnew_dm =\n", new_dm, "\n==============="
+        # print("\n===============\nnew_dm =\n", new_dm, "\n===============")
 
         dm_id = new_dm["channel"]["id"]
         return dm_id
@@ -193,7 +193,7 @@ class Bot(object):
                             )
 
         # Console log of oauth.access
-        print "\n===============\nauth_response =\n", auth_response, "\n==============="
+        print("\n===============\nauth_response =\n", auth_response, "\n===============")
 
 
         # To keep track of authorized teams and their associated OAuth tokens,
@@ -209,14 +209,14 @@ class Bot(object):
                 authed_teams = json.load(authed_teams_file)
 
                 # Console log for reinstallation process
-                print "\n===============\nauthed_teams=\n", authed_teams, "\n==============="
-                print "\n===============\nauthed_teams already exists, updating... =\n", "\n==============="
+                print("\n===============\nauthed_teams=\n", authed_teams, "\n===============")
+                print("\n===============\nauthed_teams already exists, updating... =\n", "\n===============")
             
             # ValueError is raised when the authed_teams file is empty
             except ValueError: 
                 authed_teams = {}
                 # Console log for reinstallation process
-                print "\n===============\nauthed_teams does not already exist, creating new... =\n", "\n==============="
+                print ("\n===============\nauthed_teams does not already exist, creating new... =\n", "\n===============")
 
             team_id = auth_response["team_id"]
             authed_teams[team_id] = {"bot_token":
