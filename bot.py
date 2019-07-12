@@ -81,8 +81,9 @@ class Bot(object):
         dm_id : str
             id of the DM channel opened by this method
         """
-        new_dm = self.client.api_call("im.open",
-                                      user=user_id)
+        new_dm = self.client.im_open(
+                                    user=user_id
+                                    )
 
         # console log for the new_dm im.open response object
         # print("\n===============\nnew_dm =\n", new_dm, "\n===============")
@@ -109,7 +110,7 @@ class Bot(object):
         # the open_dm function, which uses the im.open API call.
         message_obj.channel = self.open_dm(user_id)
 
-        post_message = self.client.api_call("chat.postMessage",
+        post_message = self.client.chat_postMessage(
                                             channel=message_obj.channel,
                                             username=self.name,
                                             icon_emoji=self.emoji,
@@ -139,7 +140,7 @@ class Bot(object):
         # the open_dm function, which uses the im.open API call.
         message_obj.channel = channel_id
 
-        post_message = self.client.api_call("chat.postMessage",
+        post_message = self.client.chat_postMessage(
                                             channel=message_obj.channel,
                                             username=self.name,
                                             icon_emoji=self.emoji,
@@ -164,7 +165,7 @@ class Bot(object):
         # Then we'll set the message object's channel
         message_obj.channel = channel_id
 
-        post_message = self.client.api_call("chat.postMessage",
+        post_message = self.client.chat_postMessage(
                                             channel=message_obj.channel,
                                             username=self.name,
                                             icon_emoji=self.emoji,
@@ -185,8 +186,7 @@ class Bot(object):
         # After the user has authorized this app for use in their Slack team,
         # Slack returns a temporary authorization code that we'll exchange for
         # an OAuth token using the oauth.access endpoint
-        auth_response = self.client.api_call(
-                            "oauth.access",
+        auth_response = self.client.oauth_access(
                             client_id=self.oauth["client_id"],
                             client_secret=self.oauth["client_secret"],
                             code=code
