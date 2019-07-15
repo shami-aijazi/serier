@@ -74,12 +74,12 @@ def verify_signature(timestamp, signature, request_body):
         true if it matches the signing secret
         false otherwise.
     """
-    if abs(time() - timestamp) > 60 * 5:
+    if abs(time() - int(timestamp)) > 60 * 5:
     # The request timestamp is more than five minutes from local time.
     # It could be a replay attack
         return False
     
-    sig_basestring = 'v0:' + timestamp + ':' + request_body
+    sig_basestring = str.encode('v0:' + str(timestamp) + ':') + request.get_data()
 
     request_hash = 'v0=' + hmac.new(
                 str.encode(pyBot.signing_secret),
