@@ -27,7 +27,7 @@ def handle_message(slack_event):
     "message" Event listener. Parse message events and route them to bot for action.
     """
     # console log for the event
-    # print("\n===============\nslack_event =\n", slack_event, "\n===============")
+    # print("\n" + 70*"="  + "\nslack_event=\n", slack_event, "\n" + 70*"=")
 
     # parse team_id and connect to client
     team_id = slack_event["team_id"]
@@ -141,6 +141,9 @@ def thanks():
     # Grab the temporary authorization code Slack's sent us from
     # the request's parameters.
     code_arg = request.args.get("code")
+    # console log for the payload
+    print("\n" + 70*"="  + "\nOAuth temporary code =\n", code_arg, "\n" + 70*"=")
+
     # The Bot's auth method handles exchanging the code for an OAuth token
     pyBot.auth(code_arg)
     return render_template("thanks.html")

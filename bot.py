@@ -86,7 +86,7 @@ class Bot(object):
                                     )
 
         # console log for the new_dm im.open response object
-        # print("\n===============\nnew_dm =\n", new_dm, "\n===============")
+        # print("\n" + 70*"="  + "\nnew_dm=\n", new_dm, "\n" + 70*"=")
 
         dm_id = new_dm["channel"]["id"]
         return dm_id
@@ -193,7 +193,7 @@ class Bot(object):
                             )
 
         # Console log of oauth.access
-        print("\n===============\nauth_response =\n", auth_response, "\n===============")
+        print("\n" + 70*"="  + "\nauth_response=\n", auth_response, "\n" + 70*"=")
 
 
         # To keep track of authorized teams and their associated OAuth tokens,
@@ -209,14 +209,14 @@ class Bot(object):
                 authed_teams = json.load(authed_teams_file)
 
                 # Console log for reinstallation process
-                print("\n===============\nauthed_teams=\n", authed_teams, "\n===============")
-                print("\n===============\nauthed_teams already exists, updating... =\n", "\n===============")
+                print("\n" + 70*"="  + "\nauthed_teams =\n", authed_teams, "\n" + 70*"=")
+                print("\n" + 70*"="  + "\nauthed_teams already exists, updating... =\n", "\n" + 70*"=")
             
-            # ValueError is raised when the authed_teams file is empty
+            # ValueError is raised when the authed_teams file is empty. This should only trigger for first installer
             except ValueError: 
                 authed_teams = {}
-                # Console log for reinstallation process
-                print ("\n===============\nauthed_teams does not already exist, creating new... =\n", "\n===============")
+                # Console log for installation process
+                print ("\n" + 70*"="  + "\nauthed_teams does not already exist, creating new... =\n" + 70*"=")
 
             team_id = auth_response["team_id"]
             authed_teams[team_id] = {"bot_token":
