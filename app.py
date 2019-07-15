@@ -8,6 +8,10 @@ import bot
 from flask import Flask, request, make_response, render_template
 from slackeventsapi import SlackEventAdapter
 
+from time import time
+import hmac
+import hashlib
+
 pyBot = bot.Bot()
 
 app = Flask(__name__)
@@ -23,21 +27,22 @@ def handle_message(slack_event):
     "message" Event listener. Parse message events and route them to bot for action.
     """
     # console log for the event
-    print("\n===============\nslack_event =\n", slack_event, "\n===============")
+    # print("\n===============\nslack_event =\n", slack_event, "\n===============")
 
     # parse team_id and connect to client
     team_id = slack_event["team_id"]
     pyBot.client_connect(team_id)
 
-    # Parse channel_id and incoming message text
-    message_text = slack_event["event"]["text"]
-    channel_id = slack_event["event"]["channel"]
 
     # Check if it is a direct message
     if slack_event["event"]['channel_type'] == 'im':
 
         # Check if the message is a user message (don't count the bot's own messages.)
         if "client_msg_id" in slack_event["event"]:
+             # Parse channel_id and incoming message text
+            message_text = slack_event["event"]["text"]
+            channel_id = slack_event["event"]["channel"]
+
             # === User asked for help ===
             if message_text[:4]=="help":
                 pyBot.help_message(channel_id)
@@ -48,6 +53,65 @@ def handle_message(slack_event):
             # Reply with the default response message
             pyBot.dm_response_message(channel_id)
             return make_response("Default Response DM Sent", 200,)
+
+def verify_signature(timestamp, signature, request_body):
+
+    """
+    Verify the request signature of a request sent from slack.
+
+    Parameters
+    ----------
+    timestamp : str
+        timestamp of incoming slack request
+    signature : str
+        signing signature of incoming slack request
+    req: str
+        The raw request body from incoming slack request
+
+    Returns
+    ----------
+    isValid : bool
+        true if it matches the signing secret
+        false otherwise.
+    """
+    if abs(time() - timestamp) > 60 * 5:
+    # The request timestamp is more than five minutes from local time.
+    # It could be a replay attack
+        return False
+    
+    sig_basestring = 'v0:' + timestamp + ':' + request_body
+
+    request_hash = 'v0=' + hmac.new(
+                str.encode(pyBot.signing_secret),
+                sig_basestring, hashlib.sha256
+            ).hexdigest()
+    
+    # Compare the generated hash and incoming request signature
+    return hmac.compare_digest(request_hash, signature)
+
+
+@app.route("/interactive", methods=["POST"])
+def action():
+    """
+    This is the endpoint Slack will send interactive events to
+    """
+    # First, verify that the request is coming from Slack by checking the Signing Secret
+    timestamp= request.headers['X-Slack-Request-Timestamp']
+    signature= request.headers['X-Slack-Signature']
+    request_body = request.get_data()
+
+    # If it doesn't pass verification, stop it right there
+    if not verify_signature(timestamp, signature, request_body):
+        return make_response("Unverified Request", 403)
+
+
+    payload = json.loads(request.form["payload"])
+    # console log for the payload
+    print("\n" + 70*"="  + "\ninteractive event payload=\n", payload, "\n" + 70*"=")
+
+    # Send an HTTP 200 response with empty body so Slack knows we're done here
+    return make_response("Interaction received", 200)
+
 
 @app.route("/install", methods=["GET"])
 def pre_install():

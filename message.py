@@ -14,6 +14,7 @@ class DMResponse(object):
         self.timestamp = ""
         self.text = "Sorry, I didn't get that. Just say `help` to find out what I can do!"
 
+
 class Help(object):
     """
     A help message object
@@ -25,7 +26,21 @@ class Help(object):
         self.text = "Hi! I'm Serier :wave: \n" +\
             "Unfortunately, I can't do much right now. I am working on it... :wrench: \n" +\
             "Watch this space!"
-
+        self.attachments = [
+            {
+            "fallback": "You are unable to start a series",
+            "callback_id": "series_organize_button",
+            "color": "#778e83",
+            "actions": [
+                {
+                    "name": "series_organize_button",
+                    "text": "Organize a series",
+                    "type": "button",
+                    "value": "organize_series"
+                }
+            ]
+            }
+            ]
 
 class Onboarding(object):
     """

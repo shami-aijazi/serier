@@ -170,7 +170,7 @@ class Bot(object):
                                             username=self.name,
                                             icon_emoji=self.emoji,
                                             text=message_obj.text,
-                                            # attachments=message_obj.attachments
+                                            attachments=message_obj.attachments
                                             )
 
     def auth(self, code):
@@ -222,7 +222,7 @@ class Bot(object):
             authed_teams[team_id] = {"bot_token":
                 auth_response["bot"]["bot_access_token"]}
             
-            # rewrite the file with newly added bot tokengit b
+            # rewrite the file with newly added bot token
             authed_teams_file.seek(0)
             json.dump(authed_teams, authed_teams_file)
 
