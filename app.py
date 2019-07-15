@@ -76,7 +76,7 @@ def verify_signature(timestamp, signature, request_body):
     """
     if abs(time() - int(timestamp)) > 60 * 5:
     # The request timestamp is more than five minutes from local time.
-    # It could be a replay attack
+    # It could be a replay attack.
         return False
     
     sig_basestring = str.encode('v0:' + str(timestamp) + ':') + request.get_data()
@@ -90,27 +90,34 @@ def verify_signature(timestamp, signature, request_body):
     return hmac.compare_digest(request_hash, signature)
 
 
-@app.route("/interactive", methods=["POST"])
+@app.route("/actions", methods=["POST"])
 def action():
     """
     This is the endpoint Slack will send interactive events to
     """
     # First, verify that the request is coming from Slack by checking the Signing Secret
-    timestamp= request.headers['X-Slack-Request-Timestamp']
-    signature= request.headers['X-Slack-Signature']
+    # To verify the signature, extract the relevant information from the request
+    timestamp = request.headers['X-Slack-Request-Timestamp']
+    signature = request.headers['X-Slack-Signature']
     request_body = request.get_data()
 
     # If it doesn't pass verification, stop it right there
     if not verify_signature(timestamp, signature, request_body):
-        return make_response("Unverified Request", 403)
+        return make_response("Invalid Signing Signature on Request", 403)
 
-
+    # Now that the request is verified, extract the payload.
     payload = json.loads(request.form["payload"])
     # console log for the payload
     print("\n" + 70*"="  + "\ninteractive event payload=\n", payload, "\n" + 70*"=")
 
-    # Send an HTTP 200 response with empty body so Slack knows we're done here
-    return make_response("Interaction received", 200)
+    # Parse the payload for the team_id to connect to the client
+    team_id = payload["team"]["id"]
+    pyBot.client_connect(team_id)
+
+
+
+    # Send an HTTP 200 response
+    return make_response("Interaction Received", 200)
 
 
 @app.route("/install", methods=["GET"])
