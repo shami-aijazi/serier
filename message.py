@@ -13,7 +13,15 @@ class DMResponse(object):
         self.channel = ""
         self.timestamp = ""
         self.text = "Sorry, I didn't get that. Just say `help` to find out what I can do!"
-
+        self.blocks = [
+    {
+        "type": "section",
+        "text": {
+            "type": "mrkdwn",
+            "text": "Sorry, I didn't get that. Just say `help` to find out what I can do!"
+        }
+    }
+]
 
 class Help(object):
     """
@@ -23,6 +31,7 @@ class Help(object):
         super(Help, self).__init__()
         self.channel = ""
         self.timestamp = ""
+        self.text= "Help message"
         self.blocks = [
 	{
 		"type": "section",
@@ -90,21 +99,28 @@ class Onboarding(object):
         super(Onboarding, self).__init__()
         self.channel = ""
         self.timestamp = ""
-        self.text = "Hi! Welcome to this app :wave: " +\
-                    "\nI can't do much right now. But in the future I will be able to " +\
-                        "help you organize and run your bookclub or brownbag series :books:"
-        self.attachments = [
-           {
-            "fallback": "You are unable to start a series",
-            "callback_id": "series_organize_button",
-            "color": "#778e83",
-            "actions": [
-                {
-                    "name": "series_organize_button",
-                    "text": "Organize a series",
-                    "type": "button",
-                    "value": "organize_series"
-                }
-            ]
-           }
-          ]
+        self.text = "Hi! Welcome to this app"
+        self.blocks = [
+	{
+		"type": "section",
+		"text": {
+			"type": "mrkdwn",
+			"text": "Hi! Welcome to this app :wave: \nI can't do much right now. But in the future I will be able to help you organize and run your bookclub or brownbag series :books:"
+		}
+	},
+	{
+		"type": "actions",
+		"elements": [
+			{
+				"type": "button",
+				"action_id": "123",
+				"text": {
+					"type": "plain_text",
+					"emoji": true,
+					"text": "Organize a series"
+				},
+				"value": "organize_series"
+			}
+		]
+	}
+]

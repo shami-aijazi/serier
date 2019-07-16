@@ -115,7 +115,7 @@ class Bot(object):
                                             username=self.name,
                                             icon_emoji=self.emoji,
                                             text=message_obj.text,
-                                            attachments=message_obj.attachments
+                                            blocks=message_obj.blocks
                                             )
     
 
@@ -145,7 +145,7 @@ class Bot(object):
                                             username=self.name,
                                             icon_emoji=self.emoji,
                                             text=message_obj.text,
-                                            # attachments=message_obj.attachments
+                                            blocks=message_obj.blocks
                                             )
                                             
     def help_message(self, channel_id):
@@ -169,6 +169,7 @@ class Bot(object):
                                             channel=message_obj.channel,
                                             username=self.name,
                                             icon_emoji=self.emoji,
+                                            text=message_obj.text,
                                             blocks=message_obj.blocks
                                             )
 
