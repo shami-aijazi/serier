@@ -116,7 +116,7 @@ class Onboarding(object):
 				"action_id": "123",
 				"text": {
 					"type": "plain_text",
-					"emoji": true,
+					"emoji": True,
 					"text": "Organize a series"
 				},
 				"value": "organize_series"
