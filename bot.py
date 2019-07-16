@@ -169,8 +169,7 @@ class Bot(object):
                                             channel=message_obj.channel,
                                             username=self.name,
                                             icon_emoji=self.emoji,
-                                            text=message_obj.text,
-                                            attachments=message_obj.attachments
+                                            blocks=message_obj.blocks
                                             )
 
     def auth(self, code):

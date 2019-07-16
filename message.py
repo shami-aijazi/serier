@@ -23,24 +23,62 @@ class Help(object):
         super(Help, self).__init__()
         self.channel = ""
         self.timestamp = ""
-        self.text = "Hi! I'm Serier :wave: \n" +\
-            "Unfortunately, I can't do much right now. I am working on it... :wrench: \n" +\
-            "Watch this space!"
-        self.attachments = [
-            {
-            "fallback": "You are unable to start a series",
-            "callback_id": "series_organize_button",
-            "color": "#778e83",
-            "actions": [
-                {
-                    "name": "series_organize_button",
-                    "text": "Organize a series",
-                    "type": "button",
-                    "value": "organize_series"
-                }
-            ]
-            }
-            ]
+        self.blocks = [
+	{
+		"type": "section",
+		"text": {
+			"type": "mrkdwn",
+			"text": "Hi! I'm Serier :wave: \nUnfortunately, I can't do much right now. I am working on it... :wrench: \nWatch this space!"
+		}
+	},
+	{
+		"type": "actions",
+		"elements": [
+			{
+				"type": "button",
+				"action_id": "123",
+				"text": {
+					"type": "plain_text",
+					"emoji": True,
+					"text": "Organize a series"
+				},
+				"value": "organize_series"
+			}
+		]
+	},
+	{
+		"type": "section",
+		"text": {
+			"type": "mrkdwn",
+			"text": "Pick a date for the start of the series."
+		},
+		"accessory": {
+			"type": "datepicker",
+			"initial_date": "2019-07-28",
+			"placeholder": {
+				"type": "plain_text",
+				"text": "Select a date",
+				"emoji": True
+			}
+		}
+	},
+    	{
+		"type": "actions",
+		"elements": [
+			{
+				"type": "button",
+				"action_id": "123",
+				"text": {
+					"type": "plain_text",
+					"emoji": True,
+					"text": "Submit"
+				},
+				"value": "submit_series_date",
+                "style": "primary"
+			}
+		]
+	}
+]
 
 class Onboarding(object):
     """
