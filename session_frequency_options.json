@@ -1,0 +1,42 @@
+[
+	{
+		"text":{
+			"type":"plain_text",
+			"text":"Every Day",
+			"emoji":true
+		},
+		"value":"every-day"
+	},
+	{
+		"text":{
+			"type":"plain_text",
+			"text":"Every Weekday",
+			"emoji":true
+		},
+		"value":"every-weekday"
+	},
+	{
+		"text":{
+			"type":"plain_text",
+			"text":"Every 2 Weeks",
+			"emoji":true
+		},
+		"value":"every-2-weeks"
+	},
+	{
+		"text":{
+			"type":"plain_text",
+			"text":"Every 3 Weeks",
+			"emoji":true
+		},
+		"value":"every-3-weeks"
+    },
+	{
+		"text":{
+			"type":"plain_text",
+			"text":"Every Month",
+			"emoji":true
+		},
+		"value":"every-month"
+	}
+]

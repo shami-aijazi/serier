@@ -1,6 +1,8 @@
 """
 Slack Message class for use with the series organizer bot
 """
+import json
+from new_series_menu_blocks import new_series_menu_blocks
 
 class DMResponse(object):
     """
@@ -54,41 +56,26 @@ class Help(object):
 				"value": "organize_series"
 			}
 		]
-	},
-	# {
-	# 	"type": "section",
-	# 	"text": {
-	# 		"type": "mrkdwn",
-	# 		"text": "Pick a date for the start of the series."
-	# 	},
-	# 	"accessory": {
-	# 		"type": "datepicker",
-    #       "action_id": "pick_series_date",
-	# 		"initial_date": "2019-07-28", #TODO Make this today's date
-	# 		"placeholder": {
-	# 			"type": "plain_text",
-	# 			"text": "Select a date",
-	# 			"emoji": True
-	# 		}
-	# 	}
-	# },
-    # 	{
-	# 	"type": "actions",
-	# 	"elements": [
-	# 		{
-	# 			"type": "button",
-	# 			"action_id": "123",
-	# 			"text": {
-	# 				"type": "plain_text",
-	# 				"emoji": True,
-	# 				"text": "Submit"
-	# 			},
-	# 			"value": "submit_series_date",
-    #             "style": "primary"
-	# 		}
-	# 	]
-	# }
+	}
 ]
+
+class NewSeries(object):
+    """
+    New Series creation menu message object
+    """
+    def __init__(self):
+        super(NewSeries, self).__init__()
+        self.channel = ""
+        self.timestamp = ""
+        self.text= "Create new series"
+        self.blocks = json.loads(json.dumps(new_series_menu_blocks))
+
+    # def create_blocks (self):
+    #     """
+    #     Open JSON blocks file and populate the message object blocks field.
+    #     """
+    #     with open('new_series_menu_blocks.json') as json_file:
+    #         self.blocks = json.loads(json_file)
 
 class Onboarding(object):
     """

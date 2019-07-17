@@ -13,6 +13,17 @@ from slack import WebClient
 # save this in a more persistant memory store.
 authed_teams = {}
 
+# Storing the state associated with a new series being created. This will be continuously
+# updated as user inputs information about new series. It will start off with default values.
+series_state = {
+    "title": "My Team's Weekly Brownbag",
+    "presenter": "Not Selected",
+    "topic_selection": "Not Selected",
+    "first_session": "Not Selected",
+    "time": "Not Selected",
+    "frequency": "Not Selected",
+    "last_session": "N/A"
+}
 
 class Bot(object):
     """ Instatiates a Bot object to handle Slack interactions"""
@@ -158,7 +169,7 @@ class Bot(object):
 
         """
 
-        # create a Greeting message Message object
+        # create a Help message Message object
 
         message_obj = message.Help()
 
@@ -170,6 +181,29 @@ class Bot(object):
                                             username=self.name,
                                             icon_emoji=self.emoji,
                                             text=message_obj.text,
+                                            blocks=message_obj.blocks
+                                            )
+
+    def new_series_menu(self, channel_id, ts):
+        """
+        Create new series. Update message with parameter ts to show the new series creation
+        menu.
+        """
+        # Create a new series menu Message object
+        message_obj = message.NewSeries()
+
+        # Set the message object's channel and timestamp from parameters
+        message_obj.channel = channel_id
+        message_obj.timestamp = ts
+
+
+
+        update_message = self.client.chat_update(
+                                            channel=message_obj.channel,
+                                            username=self.name,
+                                            icon_emoji=self.emoji,
+                                            text=message_obj.text,
+                                            ts=message_obj.timestamp,
                                             blocks=message_obj.blocks
                                             )
 
