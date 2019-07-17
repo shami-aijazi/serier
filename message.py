@@ -4,6 +4,8 @@ Slack Message class for use with the series organizer bot
 import json
 from new_series_menu_blocks import new_series_menu_blocks
 
+
+# ============================= BASIC BOT MESSAGES =============================
 class DMResponse(object):
     """
     A Message object to create and manage
@@ -59,24 +61,6 @@ class Help(object):
 	}
 ]
 
-class NewSeries(object):
-    """
-    New Series creation menu message object
-    """
-    def __init__(self):
-        super(NewSeries, self).__init__()
-        self.channel = ""
-        self.timestamp = ""
-        self.text= "Create new series"
-        self.blocks = json.loads(json.dumps(new_series_menu_blocks))
-
-    # def create_blocks (self):
-    #     """
-    #     Open JSON blocks file and populate the message object blocks field.
-    #     """
-    #     with open('new_series_menu_blocks.json') as json_file:
-    #         self.blocks = json.loads(json_file)
-
 class Onboarding(object):
     """
     A Message object to create and manage
@@ -110,5 +94,49 @@ class Onboarding(object):
 				"value": "organize_series"
 			}
 		]
+	}
+]
+
+
+
+
+
+
+# ============================= SERIES BOT MESSAGES =============================
+
+class NewSeries(object):
+    """
+    New Series creation menu message object
+    """
+    def __init__(self):
+        super(NewSeries, self).__init__()
+        self.channel = ""
+        self.timestamp = ""
+        self.text= "Create new series"
+        self.blocks = new_series_menu_blocks
+
+    # def create_blocks (self):
+    #     """
+    #     Open JSON blocks file and populate the message object blocks field.
+    #     """
+    #     with open('new_series_menu_blocks.json') as json_file:
+    #         self.blocks = json.loads(json_file)
+
+class CancelNewSeries(object):
+    """
+    Cancel new series creation message object. New series cancellation confirmation
+    """
+    def __init__(self):
+        super(CancelNewSeries, self).__init__()
+        self.channel = ""
+        self.timestamp = ""
+        self.text= "Your series has been successfully cancelled."
+        self.blocks = [
+	{
+		"type": "section",
+		"text": {
+			"type": "mrkdwn",
+			"text": "Your series has been succesfully cancelled."
+		}
 	}
 ]

@@ -108,10 +108,7 @@ def _action_handler (payload, action_type, action_id):
     # ==================== BUTTON ACTIONS ====================
     if action_type == "button":
         # If the user is creating a new series
-        if action_id == "create_new_series":             
-            # Console log for this path
-            print("\n" + 70*"="  + "\nThe user clicked the button to create a new series=\n", "\n" + 70*"=")
-            
+        if action_id == "create_new_series":     
             pyBot.new_series_menu(channel_id, message_ts)
         
     #     # If the user is editing the title of a series
@@ -123,8 +120,8 @@ def _action_handler (payload, action_type, action_id):
     #         pyBot.confirm_new_series()
         
     #     # If the user cancels the creation of the new series
-    #     elif action_id == "cancel_series":
-    #         pyBot.cancel_new_series()
+        elif action_id == "cancel_series":
+            pyBot.cancel_new_series(channel_id, message_ts)
 
     # # ==================== USER_SELECT ACTIONS ====================
     # # If the user picked an option from a user_select menu

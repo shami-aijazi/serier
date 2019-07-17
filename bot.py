@@ -76,6 +76,7 @@ class Bot(object):
           return False
 
 
+# ============================= BASIC BOT STUFF =============================
     def open_dm(self, user_id):
         """
         Open a DM channel with a user.
@@ -184,10 +185,21 @@ class Bot(object):
                                             blocks=message_obj.blocks
                                             )
 
+
+
+
+
+
+
+
+
+
+                                        
+# ============================= SERIES BOT LOGIC =============================
     def new_series_menu(self, channel_id, ts):
         """
-        Create new series. Update message with parameter ts to show the new series creation
-        menu.
+        Create new series. Update message with parameter ts to show the new series
+        creation menu.
         """
         # Create a new series menu Message object
         message_obj = message.NewSeries()
@@ -207,6 +219,35 @@ class Bot(object):
                                             blocks=message_obj.blocks
                                             )
 
+    def cancel_new_series(self, channel_id, ts):
+        """
+        Cancel a new series. Update message with parameter ts to show the series
+        canellation confirmation. Revert series state to default
+        """
+        # Create a new cancel series menu Message object
+        message_obj = message.CancelNewSeries()
+
+        # Set the message object's channel and timestamp from parameters
+        message_obj.channel = channel_id
+        message_obj.timestamp = ts
+
+
+
+        update_message = self.client.chat_update(
+                                            channel=message_obj.channel,
+                                            username=self.name,
+                                            icon_emoji=self.emoji,
+                                            text=message_obj.text,
+                                            ts=message_obj.timestamp,
+                                            blocks=message_obj.blocks
+                                            )
+
+
+
+
+
+
+# ============================= AUTHORIZATION =============================
     def auth(self, code):
         """
         Authenticate with OAuth and assign correct scopes.
