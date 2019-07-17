@@ -89,6 +89,75 @@ def verify_signature(timestamp, signature, request_body):
     # Compare the generated hash and incoming request signature
     return hmac.compare_digest(request_hash, signature)
 
+def _action_handler (payload, action_type, action_id):
+    """
+    A helper function that routes user interactive actions to our Bot
+    by action type and and action id.
+    """
+    # TODO fill in the blanks
+    # TODO actually write the pyBot functions that are assumed to be there
+
+    # ==================== BUTTON ACTIONS ====================
+    if action_type == "button":
+        # If the user is creating a new series
+        if action_id == "create_new_series":
+            pyBot.new_series_menu()
+        
+        # If the user is editing the title of a series
+        elif action_id == "edit_series_title":
+            pyBot.edit_series_title_dialog()
+        
+        # If the user is confirming the creation of a series
+        elif action_id == "start_series":
+            pyBot.confirm_new_series()
+        
+        # If the user cancels the creation of the new series
+        elif action_id == "cancel_series":
+            pyBot.cancel_new_series()
+
+    # ==================== USER_SELECT ACTIONS ====================
+    # If the user picked an option from a user_select menu
+    elif action_type == "user_select":
+        if action_id == "select_series_presenter":
+            # TODO do something with the payload["actions"]["selected_user"]
+            pyBot.update_series_presenter()
+
+
+    # ==================== STATIC_SELECT MENU ACTIONS ====================
+    # If the user picked an option from a static select menu
+    elif action_type == "static_select":
+        if action_id == "select_topic_selection":
+            # TODO do something with the payload["actions"]["selected_option"]["value"]. 
+            # It is either "pre-determined" OR "presenter_choice"
+            pyBot.update_topic_selection()
+
+        # If the user picked a series time
+        elif action_id == "select_series_time":
+            # TODO do something with the payload["actions"]["selected_option"]["value"]
+            # this will be in "time-tttt" format. Example "time-0215" for 2:15 PM
+            pyBot.update_series_time
+
+        # If the user selected a frequency for the series
+        elif action_id = "select_series_frequency":
+            # TODO do something with the payload["actions"]["selected_option"]["value"]
+            pyBot.update_series_frequency
+
+        # If the user selected the number of sessions in the series
+        elif action_id = "select_series_numsessions"
+            # TODO do something with the payload["actions"]["selected_option"]["value"]
+            pyBot.update_series_numsessions
+
+
+    # ==================== DATEPICKER ACTIONS ====================
+    # If the user picked a date
+    elif action_type == "datepicker":
+        if action_id == "pick_series_date":
+            pyBot.update_series_menu_date()
+
+
+
+    return True
+
 
 @app.route("/actions", methods=["POST"])
 def action():
@@ -107,14 +176,20 @@ def action():
 
     # Now that the request is verified, extract the payload.
     payload = json.loads(request.form["payload"])
+
     # console log for the payload
-    print("\n" + 70*"="  + "\ninteractive event payload=\n", payload, "\n" + 70*"=")
+    # print("\n" + 70*"="  + "\ninteractive event payload=\n", json.dumps(payload), "\n" + 70*"=")
 
     # Parse the payload for the team_id to connect to the client
     team_id = payload["team"]["id"]
     pyBot.client_connect(team_id)
 
+    # Parse the payload for the action type and the action id
+    action_type = payload["actions"][0]["type"]
+    action_id = action_type = payload["actions"][0]["action_id"]
 
+    # Pass on the action event to the action handler routing function
+    _action_handler(payload, action_type, action_id)
 
     # Send an HTTP 200 response
     return make_response("Interaction Received", 200)

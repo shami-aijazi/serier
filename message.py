@@ -37,7 +37,7 @@ class Help(object):
 		"type": "section",
 		"text": {
 			"type": "mrkdwn",
-			"text": "Hi! I'm Serier :wave: \nUnfortunately, I can't do much right now. I am working on it... :wrench: \nWatch this space!"
+			"text": "Hi! I'm Serier :wave: \nI am still a work in progress :wrench: \nFor now, try hitting this button:"
 		}
 	},
 	{
@@ -45,7 +45,7 @@ class Help(object):
 		"elements": [
 			{
 				"type": "button",
-				"action_id": "123",
+				"action_id": "create_new_series",
 				"text": {
 					"type": "plain_text",
 					"emoji": True,
@@ -55,38 +55,39 @@ class Help(object):
 			}
 		]
 	},
-	{
-		"type": "section",
-		"text": {
-			"type": "mrkdwn",
-			"text": "Pick a date for the start of the series."
-		},
-		"accessory": {
-			"type": "datepicker",
-			"initial_date": "2019-07-28",
-			"placeholder": {
-				"type": "plain_text",
-				"text": "Select a date",
-				"emoji": True
-			}
-		}
-	},
-    	{
-		"type": "actions",
-		"elements": [
-			{
-				"type": "button",
-				"action_id": "123",
-				"text": {
-					"type": "plain_text",
-					"emoji": True,
-					"text": "Submit"
-				},
-				"value": "submit_series_date",
-                "style": "primary"
-			}
-		]
-	}
+	# {
+	# 	"type": "section",
+	# 	"text": {
+	# 		"type": "mrkdwn",
+	# 		"text": "Pick a date for the start of the series."
+	# 	},
+	# 	"accessory": {
+	# 		"type": "datepicker",
+    #       "action_id": "pick_series_date",
+	# 		"initial_date": "2019-07-28", #TODO Make this today's date
+	# 		"placeholder": {
+	# 			"type": "plain_text",
+	# 			"text": "Select a date",
+	# 			"emoji": True
+	# 		}
+	# 	}
+	# },
+    # 	{
+	# 	"type": "actions",
+	# 	"elements": [
+	# 		{
+	# 			"type": "button",
+	# 			"action_id": "123",
+	# 			"text": {
+	# 				"type": "plain_text",
+	# 				"emoji": True,
+	# 				"text": "Submit"
+	# 			},
+	# 			"value": "submit_series_date",
+    #             "style": "primary"
+	# 		}
+	# 	]
+	# }
 ]
 
 class Onboarding(object):
