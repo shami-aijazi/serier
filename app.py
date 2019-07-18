@@ -94,40 +94,66 @@ def _action_handler (payload, action_type, action_id):
 #     A helper function that routes user interactive actions to our Bot
 #     by action type and and action id.
 #     """
-#     # TODO actually write the pyBot functions that are assumed to be there
+    # TODO actually write the pyBot functions that are assumed to be there
 
-    # Extract the original message timestamp and channel_id
-    # in order to update the message as the state of the series changes
-    message_ts = payload["container"]["message_ts"]
-    channel_id = payload["container"]["channel_id"]
+    # Extract the original message channel_id
+    # in order to update the message as the state of the series changes.
+
+    if action_type == "dialog_submission":
+        channel_id = payload["channel"]["id"]
+    else:
+        channel_id = payload["container"]["channel_id"]
 
 
     # ==================== BUTTON ACTIONS ====================
     if action_type == "button":
         # If the user is creating a new series
-        if action_id == "create_new_series":     
+        if action_id == "create_new_series":   
+            message_ts = payload["container"]["message_ts"]  
             pyBot.new_series_menu(channel_id, message_ts)
+
+            return make_response("New Series Created", 200)
         
-    #     # If the user is editing the title of a series
-    #     elif action_id == "edit_series_title":
-    #         pyBot.edit_series_title_dialog()
+        # If the user is editing the title of a series
+        elif action_id == "edit_series_title":
+            # Parse the trigger id needed to open a dialog
+            trigger_id = payload["trigger_id"]
+            pyBot.edit_series_title_dialog(trigger_id)
+
+            return make_response("New Series Title edited", 200)
         
     #     # If the user is confirming the creation of a series
     #     elif action_id == "start_series":
     #         pyBot.confirm_new_series()
+    #         return make_response("New Series Confirmed", 200)
         
     #     # If the user cancels the creation of the new series
         elif action_id == "cancel_series":
-            pyBot.cancel_new_series(channel_id, message_ts)
+            pyBot.cancel_new_series(channel_id)
+            return make_response("New Series Cancelled", 200)
 
-    # # ==================== USER_SELECT ACTIONS ====================
-    # # If the user picked an option from a user_select menu
+    # ==================== DIALOG SUBMISSION ACTIONS ====================
+    # If the user submitted a dialog
+
+    elif action_type == "dialog_submission":
+        if action_id == "update_series_title":
+
+            # Update the series state to reflect the new title
+            series_title = payload["submission"]["series_title"]
+            pyBot.update_series_title(channel_id, series_title)
+
+            # A-OK
+            return make_response("", 200)
+
+    # ==================== USER_SELECT ACTIONS ====================
+    # If the user picked an option from a user_select menu
     elif action_type == "users_select":
         if action_id == "select_series_presenter":
         # TODO do something with the payload["actions"]["selected_user"]
             series_presenter = payload["actions"][0]["selected_user"]
 
-            pyBot.update_series_presenter(channel_id, message_ts, series_presenter)
+            pyBot.update_series_presenter(channel_id, series_presenter)
+            return make_response("New Series Presenter edited", 200)
 
 
     # # ==================== STATIC_SELECT MENU ACTIONS ====================
@@ -137,12 +163,14 @@ def _action_handler (payload, action_type, action_id):
     #         # TODO do something with the payload["actions"]["selected_option"]["value"]. 
     #         # It is either "pre-determined" OR "presenter_choice"
     #         pyBot.update_topic_selection()
+    #         return make_response("New Series Topic Selection updated", 200)
 
     #     # If the user picked a series time
     #     elif action_id == "select_series_time":
     #         # TODO do something with the payload["actions"]["selected_option"]["value"]
     #         # this will be in "time-tttt" format. Example "time-0215" for 2:15 PM
     #         pyBot.update_series_time
+    #         return make_response("New Series Time updated", 200)
 
     #     # If the user selected a frequency for the series
     #     elif action_id == "select_series_frequency":
@@ -150,12 +178,14 @@ def _action_handler (payload, action_type, action_id):
     #         # Format: it will be the string option except delimited by "-" and lowercase.
     #         # Examples: "every-day", "every-2-weeks"
     #         pyBot.update_series_frequency
+    #         return make_response("New Series Frequency Updated", 200)
 
     #     # If the user selected the number of sessions in the series
     #     elif action_id == "select_series_numsessions":
     #         # TODO do something with the payload["actions"]["selected_option"]["value"]
     #         # It will be in format "numsessions-num". Example: "numsessions-8".
     #         pyBot.update_series_numsessions
+    #         return make_response("New Series Numsessions Updated", 200)
 
 
     # # ==================== DATEPICKER ACTIONS ====================
@@ -163,10 +193,13 @@ def _action_handler (payload, action_type, action_id):
     # elif action_type == "datepicker":
     #     if action_id == "pick_series_date":
     #         pyBot.update_series_menu_date()
+    #         return make_response("New Series Date updated", 200)
 
 
+    # If there is an actionevent that the app can not handle
+    # Return a helpful error message
+    return make_response("App not equipped this event", 200, {"X-Slack-No-Retry": 1})
 
-    return True
 
 
 @app.route("/actions", methods=["POST"])
@@ -191,21 +224,28 @@ def action():
     # print("\n" + 70*"="  + "\ninteractive event payload=\n", json.dumps(payload), "\n" + 70*"=")
 
     # Parse the payload for the team_id to connect to the client
+    # TODO Are we connecting to the client on EVERY action?? Isn't that a lot? Slow?
     team_id = payload["team"]["id"]
     pyBot.client_connect(team_id)
 
-    # Parse the payload for the action type and the action id
-    action_type = payload["actions"][0]["type"]
-    action_id = payload["actions"][0]["action_id"]
+
+    action_type, action_id = "", ""
+    # If the action is a dialog submission
+    if payload["type"] == "dialog_submission":
+        # Parse the payload for the action type and the action id
+        action_type = "dialog_submission"
+        action_id = payload["callback_id"]
+
+    # Otherwise it is a block action
+    else: 
+        action_type = payload["actions"][0]["type"]
+        action_id = payload["actions"][0]["action_id"]
 
     # console log for the data collected from payload
-    print("\n" + 70*"="  + "\nNEW ACTION RECEIVED\n(action_type, action_id)=\n", (action_type, action_id), "\n" + 70*"=")
+    # print("\n" + 70*"="  + "\nNEW ACTION RECEIVED\n(action_type, action_id)=\n", (action_type, action_id), "\n" + 70*"=")
 
     # Pass on the action event to the action handler routing function
-    _action_handler(payload, action_type, action_id)
-
-    # Send an HTTP 200 response
-    return make_response("Interaction Received", 200)
+    return _action_handler(payload, action_type, action_id)
 
 
 @app.route("/install", methods=["GET"])

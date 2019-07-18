@@ -194,7 +194,7 @@ class Bot(object):
         creation menu.
         """
         # Populate the series object with default values
-        currentSeries.newSeries()
+        currentSeries.newSeries(ts)
 
 
 
@@ -212,11 +212,11 @@ class Bot(object):
                                             username=self.name,
                                             icon_emoji=self.emoji,
                                             text="Create new series",
-                                            ts=ts,
+                                            ts=currentSeries.menu_ts,
                                             blocks=currentSeries.getBlocks()
                                             )
 
-    def cancel_new_series(self, channel_id, ts):
+    def cancel_new_series(self, channel_id):
         """
         Cancel a new series. Update message with parameter ts to show the series
         canellation confirmation. Revert series state to default
@@ -239,7 +239,7 @@ class Bot(object):
                                             username=self.name,
                                             icon_emoji=self.emoji,
                                             text="Your series has been successfully cancelled",
-                                            ts=ts,
+                                            ts=currentSeries.menu_ts,
                                             blocks=[{"type": "section",
                                                     "text": {
                                                     "type": "mrkdwn",
@@ -249,22 +249,70 @@ class Bot(object):
                                                 ]
                                             )
         
-    def update_series_presenter(self, channel_id, ts, user_id):
+    def edit_series_title_dialog(self, trigger_id):
+        """
+        Open the edit series title dialog
+
+        Parameters
+        ----------
+        trigger_id : str
+            trigger_id of the edit series action to open a dialog
+
+        """
+
+        dialog_data = {
+                "callback_id": "update_series_title",
+                "title": "Edit Title",
+                "elements": [
+                    {
+                        "type": "text",
+                        "value": currentSeries.state["title"],
+                        "label": "Edit Title",
+                        "name": "series_title"
+                    }
+                ]
+            }
+
+        open_dialog =  self.client.dialog_open(
+                                            dialog=dialog_data,
+                                            trigger_id=trigger_id
+                                            )
+
+    def update_series_title(self, channel_id, series_title):
+        """
+        Update the series title. Make the series_title parameter the title of the series
+        """
+        # Update the series presenter
+        currentSeries.updateSeries("title", series_title)
+
+        # Console log of updated series title
+        # print("\n" + 70*"="  + "\nUpdating Series Title...\ncurrentSeries.state=\n", currentSeries.state, "\n" + 70*"=")
+
+        update_message = self.client.chat_update(
+                                            channel=channel_id,
+                                            username=self.name,
+                                            icon_emoji=self.emoji,
+                                            text="Your series title has been updated",
+                                            ts=currentSeries.menu_ts,
+                                            blocks=currentSeries.getBlocks()
+                                            )
+
+    def update_series_presenter(self, channel_id, user_id):
         """
         Update the series presenter. Make user_id parameter the presenter for the series
         """
         # Update the series presenter
         currentSeries.updateSeries("presenter", user_id)
 
-        # Console log of oauth.access
-        print("\n" + 70*"="  + "\nUpdating Series Presenter...\ncurrentSeries.state=\n", currentSeries.state, "\n" + 70*"=")
+        # Console log of updated series presenter
+        # print("\n" + 70*"="  + "\nUpdating Series Presenter...\ncurrentSeries.state=\n", currentSeries.state, "\n" + 70*"=")
 
         update_message = self.client.chat_update(
                                             channel=channel_id,
                                             username=self.name,
                                             icon_emoji=self.emoji,
-                                            text="Your series has been successfully cancelled",
-                                            ts=ts,
+                                            text="Your series presenter has been updated",
+                                            ts=currentSeries.menu_ts,
                                             blocks=currentSeries.getBlocks()
                                             )
 

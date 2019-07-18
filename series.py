@@ -11,13 +11,17 @@ class Series(object):
         # Storing the state associated with a new series being created. This will be continuously
         # updated as user inputs information about new series. It will start off with default values.
         self.state = {}
+        # Store the timestamp of the original series creation menu message. This will allow us
+        # to alter the message as the state changes.
+        self.menu_ts ={}
 
-    def newSeries(self):
+    def newSeries(self, ts):
         """
         # TODO Should this modify the series itself or return a new series with the changes??
 
 
-        Set the state to be the default values that the series creation menu will show
+        Set the state to be the default values that the series creation menu will show.
+        Also, save the timestamp of the original message menu on the object.
         """
         self.state = {"title": "My Team's Weekly Brownbag",
                       "presenter": "Not Selected",
@@ -27,6 +31,7 @@ class Series(object):
                       "frequency": "Not Selected",
                       "last_session": "N/A"
                     }
+        self.menu_ts = ts
 
     def updateSeries(self, field, newValue):
         """
@@ -64,15 +69,19 @@ class Series(object):
         # before the submit and cancel buttons)
 
         # ==================== Update Title ====================
+        # 1- === Update title section ===
+        new_series_menu_blocks[3]["text"]["text"] = "*" + self.state["title"] + "*"
+
+        # 2- === Update summary context ===
         new_series_menu_blocks[-2]["elements"][0]["text"] = "*Title*: " + self.state["title"] 
 
         # ==================== Update Presenter ====================
-        # === Update users select menu ===
+        # 1- === Update users select menu ===
         # If presenter still has not been selected
         if self.state["presenter"] != "Not Selected":
             new_series_menu_blocks[6]["accessory"]["initial_user"] = self.state["presenter"]
 
-        # === Update summary context ===
+        # 2- === Update summary context ===
         # If it the presenter still has not been selected
         if self.state["presenter"] == "Not Selected":
             new_series_menu_blocks[-2]["elements"][1]["text"] = "*Presenter*: " +  self.state["presenter"]
