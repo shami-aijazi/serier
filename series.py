@@ -77,12 +77,12 @@ class Series(object):
 
         # ==================== Update Presenter ====================
         # 1- === Update users select menu ===
-        # If presenter still has not been selected
+        # If presenter still has already been selected
         if self.state["presenter"] != "Not Selected":
             new_series_menu_blocks[6]["accessory"]["initial_user"] = self.state["presenter"]
 
         # 2- === Update summary context ===
-        # If it the presenter still has not been selected
+        # If the presenter still has not been selected
         if self.state["presenter"] == "Not Selected":
             new_series_menu_blocks[-2]["elements"][1]["text"] = "*Presenter*: " +  self.state["presenter"]
         else:
@@ -90,7 +90,33 @@ class Series(object):
 
         
         # ==================== Update Topic Selection ====================
-        new_series_menu_blocks[-2]["elements"][2]["text"] = "*Topic Selection*: " + self.state["topic_selection"]
+        # 1- === Update users select menu ===
+        if self.state["topic_selection"] != "Not Selected":
+
+            if self.state["topic_selection"] == "pre-determined":
+                new_series_menu_blocks[7]["accessory"]["initial_option"] = {
+                    "text":
+                        {"type":"plain_text",
+                        "text":"Pre-determined",
+                        "emoji":True},
+                        "value":"pre-determined"
+                    }
+                # 2- === Update summary context ===
+                new_series_menu_blocks[-2]["elements"][2]["text"] = "*Topic Selection*: Pre-determined"
+            
+
+            elif self.state["topic_selection"] == "presenter_choice":
+                new_series_menu_blocks[7]["accessory"]["initial_option"] = {
+                    "text":
+                        {"type":"plain_text",
+                        "text":"Presenter's choice",
+                        "emoji":True},
+                        "value":"presenter_choice"
+                    }
+
+                # 2- === Update summary context ===
+                new_series_menu_blocks[-2]["elements"][2]["text"] = "*Topic Selection*: Presenter's choice"
+
 
         # ==================== Update First Session Date ====================
         new_series_menu_blocks[-2]["elements"][3]["text"] = "*First Session*: " + self.state["first_session"]

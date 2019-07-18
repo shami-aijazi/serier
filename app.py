@@ -153,17 +153,19 @@ def _action_handler (payload, action_type, action_id):
             series_presenter = payload["actions"][0]["selected_user"]
 
             pyBot.update_series_presenter(channel_id, series_presenter)
-            return make_response("New Series Presenter edited", 200)
+            return make_response("New Series Presenter Selected", 200)
 
 
-    # # ==================== STATIC_SELECT MENU ACTIONS ====================
-    # # If the user picked an option from a static select menu
-    # elif action_type == "static_select":
-    #     if action_id == "select_topic_selection":
-    #         # TODO do something with the payload["actions"]["selected_option"]["value"]. 
-    #         # It is either "pre-determined" OR "presenter_choice"
-    #         pyBot.update_topic_selection()
-    #         return make_response("New Series Topic Selection updated", 200)
+    # ==================== STATIC_SELECT MENU ACTIONS ====================
+    # If the user picked an option from a static select menu
+    elif action_type == "static_select":
+        if action_id == "select_topic_selection":
+            # TODO do something with the payload["actions"]["selected_option"]["value"]. 
+            # It is either "pre-determined" OR "presenter_choice"
+            topic_selection = payload["actions"][0]["selected_option"]["value"]
+
+            pyBot.update_topic_selection(channel_id, topic_selection)
+            return make_response("New Series Topic Selection updated", 200)
 
     #     # If the user picked a series time
     #     elif action_id == "select_series_time":

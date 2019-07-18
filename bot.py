@@ -316,8 +316,25 @@ class Bot(object):
                                             blocks=currentSeries.getBlocks()
                                             )
 
+    def update_topic_selection(self, channel_id, topic_selection):
+        """
+        Update the series topic selection method. The topic_selection is either
+        "pre-determined" or "presenter_choice"
+        """
+        # Update the series presenter
+        currentSeries.updateSeries("topic_selection", topic_selection)
 
+        # Console log of updated series topic_selection
+        # print("\n" + 70*"="  + "\nUpdating Series Topic Selection...\ncurrentSeries.state=\n", currentSeries.state, "\n" + 70*"=")
 
+        update_message = self.client.chat_update(
+                                            channel=channel_id,
+                                            username=self.name,
+                                            icon_emoji=self.emoji,
+                                            text="Your series topic selection has been updated",
+                                            ts=currentSeries.menu_ts,
+                                            blocks=currentSeries.getBlocks()
+                                            )
 
 
 
