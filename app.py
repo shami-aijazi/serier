@@ -94,10 +94,7 @@ def _action_handler (payload, action_type, action_id):
 #     A helper function that routes user interactive actions to our Bot
 #     by action type and and action id.
 #     """
-#     # TODO fill in the blanks
 #     # TODO actually write the pyBot functions that are assumed to be there
-#       NOTE: The message timestamp (needed to update the message) is stored in
-#             payload["container"]["message_ts"]
 
     # Extract the original message timestamp and channel_id
     # in order to update the message as the state of the series changes
@@ -125,10 +122,12 @@ def _action_handler (payload, action_type, action_id):
 
     # # ==================== USER_SELECT ACTIONS ====================
     # # If the user picked an option from a user_select menu
-    # elif action_type == "user_select":
-    #     if action_id == "select_series_presenter":
-    #         # TODO do something with the payload["actions"]["selected_user"]
-    #         pyBot.update_series_presenter()
+    elif action_type == "users_select":
+        if action_id == "select_series_presenter":
+        # TODO do something with the payload["actions"]["selected_user"]
+            series_presenter = payload["actions"][0]["selected_user"]
+
+            pyBot.update_series_presenter(channel_id, message_ts, series_presenter)
 
 
     # # ==================== STATIC_SELECT MENU ACTIONS ====================

@@ -1,12 +1,21 @@
 
-import os
 import json
+from new_series_menu_blocks import new_series_menu_blocks
 
-# Log all the oauth env variables
 
-print("CLIENT_ID = ", os.environ['CLIENT_ID'])
-print("CLIENT_SECRET = ", os.environ['CLIENT_SECRET'])
-print("SIGNING_SECRET = ", os.environ['SIGNING_SECRET'])
+summary_title = new_series_menu_blocks[-2]["elements"][0]["text"]
+
+print (summary_title)
+
+
+
+
+
+
+
+
+
+
 
 
 # A messy loop to make a list of times.
@@ -61,10 +70,10 @@ print("SIGNING_SECRET = ", os.environ['SIGNING_SECRET'])
 # {"text":{"type":"plain_text","text":"Choice 1","emoji":true},"value":"value-0"}
 
 
-options = []
+# options = []
 
-for i in range(1, 51):
-    options.append({"text":{"type":"plain_text","text":str(i),"emoji":True},"value":"numsessions-"+ str(i)})
+# for i in range(1, 51):
+#     options.append({"text":{"type":"plain_text","text":str(i),"emoji":True},"value":"numsessions-"+ str(i)})
 
-jsonresult = json.dumps(options)
+# jsonresult = json.dumps(options)
 # print(jsonresult)

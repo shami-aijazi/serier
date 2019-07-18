@@ -7,23 +7,15 @@ import json
 
 from slack import WebClient
 
+# import the series class and construct an empty Series object
+import series
+currentSeries = series.Series()
+
 # To remember which teams have authorized your app and what tokens are
 # associated with each team, we can store this information in memory on
 # as a global object. When your bot is out of development, it's best to
 # save this in a more persistant memory store.
 authed_teams = {}
-
-# Storing the state associated with a new series being created. This will be continuously
-# updated as user inputs information about new series. It will start off with default values.
-series_state = {
-    "title": "My Team's Weekly Brownbag",
-    "presenter": "Not Selected",
-    "topic_selection": "Not Selected",
-    "first_session": "Not Selected",
-    "time": "Not Selected",
-    "frequency": "Not Selected",
-    "last_session": "N/A"
-}
 
 class Bot(object):
     """ Instatiates a Bot object to handle Slack interactions"""
@@ -201,22 +193,27 @@ class Bot(object):
         Create new series. Update message with parameter ts to show the new series
         creation menu.
         """
-        # Create a new series menu Message object
-        message_obj = message.NewSeries()
+        # Populate the series object with default values
+        currentSeries.newSeries()
 
-        # Set the message object's channel and timestamp from parameters
-        message_obj.channel = channel_id
-        message_obj.timestamp = ts
+
+
+        # # Create a new series menu Message object
+        # message_obj = message.NewSeries()
+
+        # # Set the message object's channel and timestamp from parameters
+        # message_obj.channel = channel_id
+        # message_obj.timestamp = ts
 
 
 
         update_message = self.client.chat_update(
-                                            channel=message_obj.channel,
+                                            channel=channel_id,
                                             username=self.name,
                                             icon_emoji=self.emoji,
-                                            text=message_obj.text,
-                                            ts=message_obj.timestamp,
-                                            blocks=message_obj.blocks
+                                            text="Create new series",
+                                            ts=ts,
+                                            blocks=currentSeries.getBlocks()
                                             )
 
     def cancel_new_series(self, channel_id, ts):
@@ -224,22 +221,51 @@ class Bot(object):
         Cancel a new series. Update message with parameter ts to show the series
         canellation confirmation. Revert series state to default
         """
-        # Create a new cancel series menu Message object
-        message_obj = message.CancelNewSeries()
 
-        # Set the message object's channel and timestamp from parameters
-        message_obj.channel = channel_id
-        message_obj.timestamp = ts
+        # Reset the series state
+        currentSeries.resetSeries()
 
+
+        # # Create a new cancel series menu Message object
+        # message_obj = message.CancelNewSeries()
+
+        # # Set the message object's channel and timestamp from parameters
+        # message_obj.channel = channel_id
+        # message_obj.timestamp = ts
 
 
         update_message = self.client.chat_update(
-                                            channel=message_obj.channel,
+                                            channel=channel_id,
                                             username=self.name,
                                             icon_emoji=self.emoji,
-                                            text=message_obj.text,
-                                            ts=message_obj.timestamp,
-                                            blocks=message_obj.blocks
+                                            text="Your series has been successfully cancelled",
+                                            ts=ts,
+                                            blocks=[{"type": "section",
+                                                    "text": {
+                                                    "type": "mrkdwn",
+                                                    "text": "Your series has been succesfully cancelled."
+                                                        }
+                                                    }
+                                                ]
+                                            )
+        
+    def update_series_presenter(self, channel_id, ts, user_id):
+        """
+        Update the series presenter. Make user_id parameter the presenter for the series
+        """
+        # Update the series presenter
+        currentSeries.updateSeries("presenter", user_id)
+
+        # Console log of oauth.access
+        print("\n" + 70*"="  + "\nUpdating Series Presenter...\ncurrentSeries.state=\n", currentSeries.state, "\n" + 70*"=")
+
+        update_message = self.client.chat_update(
+                                            channel=channel_id,
+                                            username=self.name,
+                                            icon_emoji=self.emoji,
+                                            text="Your series has been successfully cancelled",
+                                            ts=ts,
+                                            blocks=currentSeries.getBlocks()
                                             )
 
 
