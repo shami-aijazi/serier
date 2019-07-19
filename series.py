@@ -21,7 +21,7 @@ class Series(object):
 
 
         Set the state to be the default values that the series creation menu will show.
-        Also, save the timestamp of the original message menu on the object.
+        Also, save the timestamp of the original message menu on the object (needed to update it)
         """
         self.state = {"title": "My Team's Weekly Brownbag",
                       "presenter": "Not Selected",
@@ -121,7 +121,15 @@ class Series(object):
 
 
         # ==================== Update First Session Date ====================
-        new_series_menu_blocks[-2]["elements"][3]["text"] = "*First Session*: " + self.state["first_session"]
+        # 1- === Update datepicker ===
+        if self.state["first_session"] != "Not Selected":
+            new_series_menu_blocks[10]["elements"][0]["initial_date"] = self.state["first_session"]
+
+        
+        # 2- === Update summary context ===
+        # Format it correctly
+        if self.state["first_session"] != "Not Selected":
+            new_series_menu_blocks[-2]["elements"][3]["text"] = "*First Session*: " + datetime.strptime(self.state["first_session"], "%Y-%m-%d").strftime("%m/%d/%Y")
 
         # ==================== Update Time ====================
         

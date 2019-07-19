@@ -389,10 +389,30 @@ class Bot(object):
         #                                     channel=channel_id,
         #                                     username=self.name,
         #                                     icon_emoji=self.emoji,
-        #                                     text="Your series frequency has been updated",
+        #                                     text="Your series numsessions has been updated",
         #                                     ts=currentSeries.menu_ts,
         #                                     blocks=currentSeries.getBlocks()
         #                                     )
+
+    def update_series_menu_date(self, channel_id, series_date):
+        """
+        Update the series first session date.
+        series_date is in the format "%Y-%m-%d"
+        """
+        currentSeries.updateSeries("first_session", series_date)
+        # Console log of updated series num_sessions
+        # print("\n" + 70*"="  + "\nUpdating Series First sesh date...\ncurrentSeries.state=\n", currentSeries.state, "\n" + 70*"=")
+
+        # Update the menu message to reflect the change
+        update_message = self.client.chat_update(
+                                            channel=channel_id,
+                                            username=self.name,
+                                            icon_emoji=self.emoji,
+                                            text="Your series first session date has been updated",
+                                            ts=currentSeries.menu_ts,
+                                            blocks=currentSeries.getBlocks()
+                                            )
+
 
 # ============================= AUTHORIZATION =============================
     def auth(self, code):

@@ -1,8 +1,15 @@
 
 import json
+from datetime import datetime
+
+# "%Y-%m-%d"
+aDate = "1998-09-30"
+newDate = datetime.strptime(aDate, "%Y-%m-%d").strftime("%m/%d/%Y")
+
+print(newDate)
 
 
-print("numsessions-8"[12:])
+# print("numsessions-8"[12:])
 
 # A messy loop to make a list of times.
 

@@ -124,6 +124,7 @@ def _action_handler (payload, action_type, action_id):
         
     #     # If the user is confirming the creation of a series
     #     elif action_id == "start_series":
+    #  Make sure the time isn't set to the past. Send error message if it is.
     #         pyBot.confirm_new_series()
     #         return make_response("New Series Confirmed", 200)
         
@@ -194,17 +195,24 @@ def _action_handler (payload, action_type, action_id):
             return make_response("New Series Numsessions Updated", 200)
 
 
-    # # ==================== DATEPICKER ACTIONS ====================
-    # # If the user picked a date
-    # elif action_type == "datepicker":
-    #     if action_id == "pick_series_date":
-    #         pyBot.update_series_menu_date()
-    #         return make_response("New Series Date updated", 200)
+    # ==================== DATEPICKER ACTIONS ====================
+    # If the user picked a date
+    elif action_type == "datepicker":
+        if action_id == "pick_series_date":
+            # Date format: "%Y-%m-%d"
+            # Example: 2019-07-27"
+            # 
+            series_date = payload["actions"][0]["selected_date"]
 
 
-    # If there is an actionevent that the app can not handle
-    # Return a helpful error message
-    return make_response("App not equipped this event", 200, {"X-Slack-No-Retry": 1})
+
+            pyBot.update_series_menu_date(channel_id, series_date)
+            return make_response("New Series Date updated", 200)
+
+
+    # If there is an action event that the app can not handle
+    # Return an error message
+    return make_response("App not equipped for this event", 200, {"X-Slack-No-Retry": 1})
 
 
 
