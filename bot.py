@@ -343,8 +343,8 @@ class Bot(object):
         # Update the series state time
         currentSeries.updateSeries("time", series_time)
 
-        # Console log of updated series topic_selection
-        # print("\n" + 70*"="  + "\nUpdating Series Topic Selection...\ncurrentSeries.state=\n", currentSeries.state, "\n" + 70*"=")
+        # Console log of updated series time
+        # print("\n" + 70*"="  + "\nUpdating Series Time...\ncurrentSeries.state=\n", currentSeries.state, "\n" + 70*"=")
 
         update_message = self.client.chat_update(
                                             channel=channel_id,
@@ -355,7 +355,24 @@ class Bot(object):
                                             blocks=currentSeries.getBlocks()
                                             )
         
+    def update_series_frequency(self, channel_id, series_frequency):
+        """
+        Update the series frequency.
+        """
+        # Update the series state frequency
+        currentSeries.updateSeries("frequency", series_frequency)
 
+        # Console log of updated series topic_selection
+        # print("\n" + 70*"="  + "\nUpdating Series Frequency...\ncurrentSeries.state=\n", currentSeries.state, "\n" + 70*"=")
+
+        update_message = self.client.chat_update(
+                                            channel=channel_id,
+                                            username=self.name,
+                                            icon_emoji=self.emoji,
+                                            text="Your series frequency has been updated",
+                                            ts=currentSeries.menu_ts,
+                                            blocks=currentSeries.getBlocks()
+                                            )
 # ============================= AUTHORIZATION =============================
     def auth(self, code):
         """

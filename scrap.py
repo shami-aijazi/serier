@@ -2,16 +2,10 @@
 import json
 
 
-from datetime import datetime
+def format(s):
+    return s.replace("-", " ").title()
 
-
-def solution(time):
-    return datetime.strptime(time, '%I:%M %p').strftime('%H%M')
-
-
-
-print(type(solution("1:00 PM")))
-
+print(format("every-day"))
 
 # A messy loop to make a list of times.
 

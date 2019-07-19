@@ -129,18 +129,30 @@ class Series(object):
         if self.state["time"] != "Not Selected":
             new_series_menu_blocks[10]["elements"][1]["initial_option"] = {
                 "text":
-                    {"type":"plain_text",
-                    "text":self.state["time"],
-                    "emoji":True},
+                    {"type": "plain_text",
+                    "text": self.state["time"],
+                    "emoji": True},
                     # Format the time for the "value" parameter
-                    "value":"time-" + datetime.strptime(self.state["time"], '%I:%M %p').strftime('%H%M')
+                    "value": "time-" + datetime.strptime(self.state["time"], '%I:%M %p').strftime('%H%M')
                 }
         
         # 2- === Update summary context ===
         new_series_menu_blocks[-2]["elements"][4]["text"] = "*Time*: " + self.state["time"]
 
         # ==================== Update Frequency ====================
-        new_series_menu_blocks[-2]["elements"][5]["text"] = "*Frequency*: " + self.state["frequency"]
+        # 1- === Update select menu ===
+        if self.state["frequency"] != "Not Selected":
+            new_series_menu_blocks[11]["elements"][0]["initial_option"] = {
+                    "text":
+                        {"type": "plain_text",
+                        "text": self.state["frequency"].replace("-", " ").title(),
+                        "emoji": True},
+                        # Format the time for the "value" parameter
+                        "value": self.state["frequency"]
+                    }
+                    
+        # 2- === Update summary context ===
+        new_series_menu_blocks[-2]["elements"][5]["text"] = "*Frequency*: " + self.state["frequency"].replace("-", " ").title()
 
         # ==================== Update Last Session Date ====================
         new_series_menu_blocks[-2]["elements"][6]["text"] = "*Last Session*: " + self.state["last_session"]

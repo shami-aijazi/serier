@@ -176,13 +176,15 @@ def _action_handler (payload, action_type, action_id):
             pyBot.update_series_time(channel_id, series_time)
             return make_response("New Series Time updated", 200)
 
-    #     # If the user selected a frequency for the series
-    #     elif action_id == "select_series_frequency":
-    #         # TODO do something with the payload["actions"]["selected_option"]["value"]
-    #         # Format: it will be the string option except delimited by "-" and lowercase.
-    #         # Examples: "every-day", "every-2-weeks"
-    #         pyBot.update_series_frequency
-    #         return make_response("New Series Frequency Updated", 200)
+        # If the user selected a frequency for the series
+        elif action_id == "select_series_frequency":
+            # TODO do something with the payload["actions"]["selected_option"]["value"]
+            # Format: it will be the string option except delimited by "-" and lowercase.
+            # Examples: "every-day", "every-2-weeks"
+            series_frequency = payload["actions"][0]["selected_option"]["value"]
+            
+            pyBot.update_series_frequency(channel_id, series_frequency)
+            return make_response("New Series Frequency Updated", 200)
 
     #     # If the user selected the number of sessions in the series
     #     elif action_id == "select_series_numsessions":
