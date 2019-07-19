@@ -8,6 +8,11 @@ newDate = datetime.strptime(aDate, "%Y-%m-%d").strftime("%m/%d/%Y")
 
 print(newDate)
 
+#  = datetime.today().date().strftime("%m-%d-%Y")
+
+# todayf = str(datetime.strptime(today, "%Y-%m-%d").strftime("%m-%d-%Y"))
+
+print("Today:", type(datetime.today().date().strftime("%Y-%m-%d")))
 
 # print("numsessions-8"[12:])
 

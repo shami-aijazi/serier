@@ -1,3 +1,4 @@
+from datetime import datetime
 new_series_menu_blocks = [
   {
     "type":"section",
@@ -108,7 +109,8 @@ new_series_menu_blocks = [
     "elements":[
       {
         "type":"datepicker",
-        "initial_date":"2019-07-28",
+        # Get today's date
+        "initial_date":datetime.today().date().strftime("%Y-%m-%d"),
         "action_id":"pick_series_date",
         "placeholder":{
           "type":"plain_text",
