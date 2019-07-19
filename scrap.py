@@ -2,10 +2,7 @@
 import json
 
 
-def format(s):
-    return s.replace("-", " ").title()
-
-print(format("every-day"))
+print("numsessions-8"[12:])
 
 # A messy loop to make a list of times.
 

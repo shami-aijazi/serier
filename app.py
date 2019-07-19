@@ -169,7 +169,7 @@ def _action_handler (payload, action_type, action_id):
 
         # If the user picked a series time
         elif action_id == "select_series_time":
-            # TODO Format for the time '%I:%M %p'
+            # Format for the time: '%I:%M %p'
             # Might want to convert this to python time format later in backend
             series_time = payload["actions"][0]["selected_option"]["text"]["text"]
 
@@ -182,16 +182,16 @@ def _action_handler (payload, action_type, action_id):
             # Format: it will be the string option except delimited by "-" and lowercase.
             # Examples: "every-day", "every-2-weeks"
             series_frequency = payload["actions"][0]["selected_option"]["value"]
-            
+
             pyBot.update_series_frequency(channel_id, series_frequency)
             return make_response("New Series Frequency Updated", 200)
 
-    #     # If the user selected the number of sessions in the series
-    #     elif action_id == "select_series_numsessions":
-    #         # TODO do something with the payload["actions"]["selected_option"]["value"]
-    #         # It will be in format "numsessions-num". Example: "numsessions-8".
-    #         pyBot.update_series_numsessions
-    #         return make_response("New Series Numsessions Updated", 200)
+        # If the user selected the number of sessions in the series
+        elif action_id == "select_series_numsessions":
+            # It will be in format "numsessions-num". Example: "numsessions-8".
+            series_numsesions = int(payload["actions"][0]["selected_option"]["value"][12:])
+            pyBot.update_series_numsessions(channel_id, series_numsesions)
+            return make_response("New Series Numsessions Updated", 200)
 
 
     # # ==================== DATEPICKER ACTIONS ====================

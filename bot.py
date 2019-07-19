@@ -373,6 +373,27 @@ class Bot(object):
                                             ts=currentSeries.menu_ts,
                                             blocks=currentSeries.getBlocks()
                                             )
+
+    def update_series_numsessions(self, channel_id, series_numsesions):
+        """
+        Update the series number of sessions. series_numsessions parameter is an int.
+        """
+                # Update the series state frequency
+        currentSeries.updateSeries("frequency", series_numsesions)
+
+        # Console log of updated series num_sessions
+        # print("\n" + 70*"="  + "\nUpdating Series Numsessions...\ncurrentSeries.state=\n", currentSeries.state, "\n" + 70*"=")
+
+        # For now, decided not to show this to frontend
+        # update_message = self.client.chat_update(
+        #                                     channel=channel_id,
+        #                                     username=self.name,
+        #                                     icon_emoji=self.emoji,
+        #                                     text="Your series frequency has been updated",
+        #                                     ts=currentSeries.menu_ts,
+        #                                     blocks=currentSeries.getBlocks()
+        #                                     )
+
 # ============================= AUTHORIZATION =============================
     def auth(self, code):
         """
