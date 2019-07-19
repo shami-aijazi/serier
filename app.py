@@ -167,12 +167,14 @@ def _action_handler (payload, action_type, action_id):
             pyBot.update_topic_selection(channel_id, topic_selection)
             return make_response("New Series Topic Selection updated", 200)
 
-    #     # If the user picked a series time
-    #     elif action_id == "select_series_time":
-    #         # TODO do something with the payload["actions"]["selected_option"]["value"]
-    #         # this will be in "time-tttt" format. Example "time-0215" for 2:15 PM
-    #         pyBot.update_series_time
-    #         return make_response("New Series Time updated", 200)
+        # If the user picked a series time
+        elif action_id == "select_series_time":
+            # TODO Format for the time '%I:%M %p'
+            # Might want to convert this to python time format later in backend
+            series_time = payload["actions"][0]["selected_option"]["text"]["text"]
+
+            pyBot.update_series_time(channel_id, series_time)
+            return make_response("New Series Time updated", 200)
 
     #     # If the user selected a frequency for the series
     #     elif action_id == "select_series_frequency":

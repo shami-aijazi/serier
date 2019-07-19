@@ -1,21 +1,16 @@
 
 import json
-from new_series_menu_blocks import new_series_menu_blocks
 
 
-summary_title = new_series_menu_blocks[-2]["elements"][0]["text"]
-
-print (summary_title)
+from datetime import datetime
 
 
-
-
+def solution(time):
+    return datetime.strptime(time, '%I:%M %p').strftime('%H%M')
 
 
 
-
-
-
+print(type(solution("1:00 PM")))
 
 
 # A messy loop to make a list of times.

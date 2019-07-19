@@ -1,6 +1,6 @@
 import json
 from new_series_menu_blocks import new_series_menu_blocks
-
+from datetime import datetime
 """
 Slack Series class to represent series for the series organizer app.
 """
@@ -90,9 +90,10 @@ class Series(object):
 
         
         # ==================== Update Topic Selection ====================
-        # 1- === Update users select menu ===
+        
         if self.state["topic_selection"] != "Not Selected":
-
+            
+            # 1- === Update select menu ===
             if self.state["topic_selection"] == "pre-determined":
                 new_series_menu_blocks[7]["accessory"]["initial_option"] = {
                     "text":
@@ -101,10 +102,11 @@ class Series(object):
                         "emoji":True},
                         "value":"pre-determined"
                     }
+
                 # 2- === Update summary context ===
                 new_series_menu_blocks[-2]["elements"][2]["text"] = "*Topic Selection*: Pre-determined"
             
-
+            # 1- === Update select menu ===
             elif self.state["topic_selection"] == "presenter_choice":
                 new_series_menu_blocks[7]["accessory"]["initial_option"] = {
                     "text":
@@ -122,6 +124,19 @@ class Series(object):
         new_series_menu_blocks[-2]["elements"][3]["text"] = "*First Session*: " + self.state["first_session"]
 
         # ==================== Update Time ====================
+        
+        # 1- === Update select menu ===
+        if self.state["time"] != "Not Selected":
+            new_series_menu_blocks[10]["elements"][1]["initial_option"] = {
+                "text":
+                    {"type":"plain_text",
+                    "text":self.state["time"],
+                    "emoji":True},
+                    # Format the time for the "value" parameter
+                    "value":"time-" + datetime.strptime(self.state["time"], '%I:%M %p').strftime('%H%M')
+                }
+        
+        # 2- === Update summary context ===
         new_series_menu_blocks[-2]["elements"][4]["text"] = "*Time*: " + self.state["time"]
 
         # ==================== Update Frequency ====================

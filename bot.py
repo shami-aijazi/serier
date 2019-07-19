@@ -336,7 +336,25 @@ class Bot(object):
                                             blocks=currentSeries.getBlocks()
                                             )
 
+    def update_series_time(self, channel_id, series_time):
+        """
+        Update the series time. series_time str format: '%I:%M %p'
+        """
+        # Update the series state time
+        currentSeries.updateSeries("time", series_time)
 
+        # Console log of updated series topic_selection
+        # print("\n" + 70*"="  + "\nUpdating Series Topic Selection...\ncurrentSeries.state=\n", currentSeries.state, "\n" + 70*"=")
+
+        update_message = self.client.chat_update(
+                                            channel=channel_id,
+                                            username=self.name,
+                                            icon_emoji=self.emoji,
+                                            text="Your series time has been updated",
+                                            ts=currentSeries.menu_ts,
+                                            blocks=currentSeries.getBlocks()
+                                            )
+        
 
 # ============================= AUTHORIZATION =============================
     def auth(self, code):
