@@ -1,18 +1,62 @@
 
 import json
 from datetime import datetime
+from datetime import timedelta
 
-# "%Y-%m-%d"
-aDate = "1998-09-30"
-newDate = datetime.strptime(aDate, "%Y-%m-%d").strftime("%m/%d/%Y")
+def date_after_adding_weekdays(current_date, num_weekdays):
+    """
+    Increment the current_date by a specified number of weekdays.
 
-print(newDate)
+    Parameters
+    current_date: datetime object
+        date to start counting from
+    num_weekdays: int
+        number of weekdays to add to the date
 
-#  = datetime.today().date().strftime("%m-%d-%Y")
+    Return the date n weekdays later.
+    """
 
-# todayf = str(datetime.strptime(today, "%Y-%m-%d").strftime("%m-%d-%Y"))
+    while num_weekdays > 0:
+        current_date += timedelta(days=1)
+        weekday = current_date.weekday()
+        if weekday >= 5: # sunday = 6
+            continue
+        num_weekdays -= 1
+    return current_date
 
-print("Today:", type(datetime.today().date().strftime("%Y-%m-%d")))
+def date_after_adding_days(current_date, num_days):
+    """
+    Increment the current_date by a specified number of days.
+
+    Parameters
+    current_date: datetime object
+        date to start counting from
+    num_weekdays: int
+        number of days to add to the date
+
+    Return the date n days later.
+    """
+
+    return current_date + timedelta(days=num_days)
+
+def date_after_adding_weeks(current_date, num_weeks):
+    """
+    Increment the current_date by a specified number of weeks.
+
+    Parameters
+    current_date: datetime object
+        date to start counting from
+    num_weeks: int
+        number of weeks to add to the date
+
+    Return the date n weeks later.
+    """
+
+    return current_date + timedelta(days=7*num_weeks)
+
+
+print("8 days from today: ", date_after_adding_days(datetime.today(), 8))
+print ('10 business days from today:', date_after_adding_weekdays(datetime.today(), 10))
 
 # print("numsessions-8"[12:])
 

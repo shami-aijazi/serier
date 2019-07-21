@@ -8,8 +8,8 @@ import json
 from slack import WebClient
 
 # import the series class and construct an empty Series object
-import series
-currentSeries = series.Series()
+from series import Series
+currentSeries = Series()
 
 # To remember which teams have authorized your app and what tokens are
 # associated with each team, we can store this information in memory on
@@ -233,7 +233,6 @@ class Bot(object):
         # message_obj.channel = channel_id
         # message_obj.timestamp = ts
 
-
         update_message = self.client.chat_update(
                                             channel=channel_id,
                                             username=self.name,
@@ -374,25 +373,25 @@ class Bot(object):
                                             blocks=currentSeries.getBlocks()
                                             )
 
-    def update_series_numsessions(self, channel_id, series_numsesions):
+    def update_series_numsessions(self, channel_id, series_numsessions):
         """
         Update the series number of sessions. series_numsessions parameter is an int.
         """
                 # Update the series state frequency
-        currentSeries.updateSeries("frequency", series_numsesions)
+        currentSeries.updateSeries("num_sessions", series_numsessions)
 
         # Console log of updated series num_sessions
         # print("\n" + 70*"="  + "\nUpdating Series Numsessions...\ncurrentSeries.state=\n", currentSeries.state, "\n" + 70*"=")
 
         # For now, decided not to show this to frontend
-        # update_message = self.client.chat_update(
-        #                                     channel=channel_id,
-        #                                     username=self.name,
-        #                                     icon_emoji=self.emoji,
-        #                                     text="Your series numsessions has been updated",
-        #                                     ts=currentSeries.menu_ts,
-        #                                     blocks=currentSeries.getBlocks()
-        #                                     )
+        update_message = self.client.chat_update(
+                                            channel=channel_id,
+                                            username=self.name,
+                                            icon_emoji=self.emoji,
+                                            text="Your series numsessions has been updated",
+                                            ts=currentSeries.menu_ts,
+                                            blocks=currentSeries.getBlocks()
+                                            )
 
     def update_series_menu_date(self, channel_id, series_date):
         """
@@ -400,7 +399,7 @@ class Bot(object):
         series_date is in the format "%Y-%m-%d"
         """
         currentSeries.updateSeries("first_session", series_date)
-        # Console log of updated series num_sessions
+        # Console log of updated series first_sessions
         # print("\n" + 70*"="  + "\nUpdating Series First sesh date...\ncurrentSeries.state=\n", currentSeries.state, "\n" + 70*"=")
 
         # Update the menu message to reflect the change
@@ -435,7 +434,7 @@ class Bot(object):
                             )
 
         # Console log of oauth.access
-        print("\n" + 70*"="  + "\nauth_response=\n", auth_response, "\n" + 70*"=")
+        # print("\n" + 70*"="  + "\nauth_response=\n", auth_response, "\n" + 70*"=")
 
 
         # To keep track of authorized teams and their associated OAuth tokens,
@@ -451,14 +450,14 @@ class Bot(object):
                 authed_teams = json.load(authed_teams_file)
 
                 # Console log for reinstallation process
-                print("\n" + 70*"="  + "\nauthed_teams =\n", authed_teams, "\n" + 70*"=")
-                print("\n" + 70*"="  + "\nauthed_teams already exists, updating... =\n", "\n" + 70*"=")
+                # print("\n" + 70*"="  + "\nauthed_teams =\n", authed_teams, "\n" + 70*"=")
+                # print("\n" + 70*"="  + "\nauthed_teams already exists, updating... =\n", "\n" + 70*"=")
             
             # ValueError is raised when the authed_teams file is empty. This should only trigger for first installer
             except ValueError: 
                 authed_teams = {}
                 # Console log for installation process
-                print ("\n" + 70*"="  + "\nauthed_teams does not already exist, creating new... =\n" + 70*"=")
+                # print ("\n" + 70*"="  + "\nauthed_teams does not already exist, creating new... =\n" + 70*"=")
 
             team_id = auth_response["team_id"]
             authed_teams[team_id] = {"bot_token":

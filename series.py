@@ -1,6 +1,15 @@
 import json
 from new_series_menu_blocks import new_series_menu_blocks
+import copy
+
+# Make a copy of the blocks so they can be reset to the new blocks if series is cancelled
+current_series_menu_blocks = copy.deepcopy(new_series_menu_blocks)
+# Console log for copy
+# print("\n" + 70*"="  + "\nCopying new blocks to current blocks... \n" + 70*"=")
+
+
 from datetime import datetime
+from datetime import timedelta
 """
 Slack Series class to represent series for the series organizer app.
 """
@@ -26,9 +35,10 @@ class Series(object):
         self.state = {"title": "My Team's Weekly Brownbag",
                       "presenter": "Not Selected",
                       "topic_selection": "Not Selected",
-                      "first_session": "Not Selected",
+                      "first_session": datetime.today().date().strftime("%Y-%m-%d"),
                       "time": "Not Selected",
                       "frequency": "Not Selected",
+                      "num_sessions": 0,
                       "last_session": "N/A"
                     }
         self.menu_ts = ts
@@ -51,7 +61,62 @@ class Series(object):
         """
         Empty series state.
         """
+        global current_series_menu_blocks
+
+        # Console log for comparing current series menu to a new one
+        # print("\n" + 70*"="  + "\nInside resetSeries...\ncurrent and new menu blocks are identical? \n", current_series_menu_blocks == new_series_menu_blocks, "\n" + 70*"=")
+        
+        # reset the current series menu blocks
+        current_series_menu_blocks = copy.deepcopy(new_series_menu_blocks)
+
         self.state = {}
+
+    def getLastSession(self):
+        """
+        Calculate and update last session date based on first session date,
+        number of sessions, and frequency.
+
+        Return last session date
+        """
+
+        # Start at the start_date, formatted to be a datetime object
+        last_session = datetime.strptime(self.state["first_session"], "%Y-%m-%d")
+        
+        # Extract frequency and num_sessions
+        frequency = self.state["frequency"]
+        num_sessions = int(self.state["num_sessions"])
+
+
+        if frequency == "every-day":
+            # format this correctly
+            last_session += timedelta(days=num_sessions)
+
+        elif frequency == "every-weekday":
+            # every weekday sequence
+            while num_sessions > 0:
+                last_session = last_session + timedelta(days=1)
+                weekday = last_session.weekday()
+                if weekday >= 5: # sunday = 6
+                    continue
+                num_sessions -= 1
+
+        elif frequency == "every-2-weeks":
+            # every 2 weeks sequence
+            last_session = last_session + timedelta(days=14*num_sessions)
+
+        elif frequency == "every-3-weeks":
+            # every 3 weeks sequence
+            last_session = last_session + timedelta(days=21*num_sessions)
+
+        elif frequency == "every-month":
+            # every month sequency
+            last_session = last_session + timedelta(days=28*num_sessions)
+        
+        # Format the datetime object
+        last_session = last_session.strftime("%m/%d/%Y")
+
+        # Store the result in state
+        self.state["last_session"] = last_session
 
     def getBlocks(self):
         """
@@ -70,23 +135,23 @@ class Series(object):
 
         # ==================== Update Title ====================
         # 1- === Update title section ===
-        new_series_menu_blocks[3]["text"]["text"] = "*" + self.state["title"] + "*"
+        current_series_menu_blocks[3]["text"]["text"] = "*" + self.state["title"] + "*"
 
         # 2- === Update summary context ===
-        new_series_menu_blocks[-2]["elements"][0]["text"] = "*Title*: " + self.state["title"] 
+        current_series_menu_blocks[-2]["elements"][0]["text"] = "*Title*: " + self.state["title"] 
 
         # ==================== Update Presenter ====================
         # 1- === Update users select menu ===
         # If presenter still has already been selected
         if self.state["presenter"] != "Not Selected":
-            new_series_menu_blocks[6]["accessory"]["initial_user"] = self.state["presenter"]
+            current_series_menu_blocks[6]["accessory"]["initial_user"] = self.state["presenter"]
 
         # 2- === Update summary context ===
         # If the presenter still has not been selected
         if self.state["presenter"] == "Not Selected":
-            new_series_menu_blocks[-2]["elements"][1]["text"] = "*Presenter*: " +  self.state["presenter"]
+            current_series_menu_blocks[-2]["elements"][1]["text"] = "*Presenter*: " +  self.state["presenter"]
         else:
-            new_series_menu_blocks[-2]["elements"][1]["text"] = "*Presenter*: " +  "<@" + self.state["presenter"] + ">"
+            current_series_menu_blocks[-2]["elements"][1]["text"] = "*Presenter*: " +  "<@" + self.state["presenter"] + ">"
 
         
         # ==================== Update Topic Selection ====================
@@ -95,7 +160,7 @@ class Series(object):
             
             # 1- === Update select menu ===
             if self.state["topic_selection"] == "pre-determined":
-                new_series_menu_blocks[7]["accessory"]["initial_option"] = {
+                current_series_menu_blocks[7]["accessory"]["initial_option"] = {
                     "text":
                         {"type":"plain_text",
                         "text":"Pre-determined",
@@ -104,11 +169,11 @@ class Series(object):
                     }
 
                 # 2- === Update summary context ===
-                new_series_menu_blocks[-2]["elements"][2]["text"] = "*Topic Selection*: Pre-determined"
+                current_series_menu_blocks[-2]["elements"][2]["text"] = "*Topic Selection*: Pre-determined"
             
             # 1- === Update select menu ===
             elif self.state["topic_selection"] == "presenter_choice":
-                new_series_menu_blocks[7]["accessory"]["initial_option"] = {
+                current_series_menu_blocks[7]["accessory"]["initial_option"] = {
                     "text":
                         {"type":"plain_text",
                         "text":"Presenter's choice",
@@ -117,25 +182,25 @@ class Series(object):
                     }
 
                 # 2- === Update summary context ===
-                new_series_menu_blocks[-2]["elements"][2]["text"] = "*Topic Selection*: Presenter's choice"
+                current_series_menu_blocks[-2]["elements"][2]["text"] = "*Topic Selection*: Presenter's choice"
 
 
         # ==================== Update First Session Date ====================
         # 1- === Update datepicker ===
         if self.state["first_session"] != "Not Selected":
-            new_series_menu_blocks[10]["elements"][0]["initial_date"] = self.state["first_session"]
+            current_series_menu_blocks[10]["elements"][0]["initial_date"] = self.state["first_session"]
 
         
         # 2- === Update summary context ===
         # Format it correctly
         if self.state["first_session"] != "Not Selected":
-            new_series_menu_blocks[-2]["elements"][3]["text"] = "*First Session*: " + datetime.strptime(self.state["first_session"], "%Y-%m-%d").strftime("%m/%d/%Y")
+            current_series_menu_blocks[-2]["elements"][3]["text"] = "*First Session*: " + datetime.strptime(self.state["first_session"], "%Y-%m-%d").strftime("%m/%d/%Y")
 
         # ==================== Update Time ====================
         
         # 1- === Update select menu ===
         if self.state["time"] != "Not Selected":
-            new_series_menu_blocks[10]["elements"][1]["initial_option"] = {
+            current_series_menu_blocks[10]["elements"][1]["initial_option"] = {
                 "text":
                     {"type": "plain_text",
                     "text": self.state["time"],
@@ -145,12 +210,12 @@ class Series(object):
                 }
         
         # 2- === Update summary context ===
-        new_series_menu_blocks[-2]["elements"][4]["text"] = "*Time*: " + self.state["time"]
+        current_series_menu_blocks[-2]["elements"][4]["text"] = "*Time*: " + self.state["time"]
 
         # ==================== Update Frequency ====================
         # 1- === Update select menu ===
         if self.state["frequency"] != "Not Selected":
-            new_series_menu_blocks[11]["elements"][0]["initial_option"] = {
+            current_series_menu_blocks[11]["elements"][0]["initial_option"] = {
                     "text":
                         {"type": "plain_text",
                         "text": self.state["frequency"].replace("-", " ").title(),
@@ -160,12 +225,30 @@ class Series(object):
                     }
                     
         # 2- === Update summary context ===
-        new_series_menu_blocks[-2]["elements"][5]["text"] = "*Frequency*: " + self.state["frequency"].replace("-", " ").title()
+        current_series_menu_blocks[-2]["elements"][5]["text"] = "*Frequency*: " + self.state["frequency"].replace("-", " ").title()
 
+        # ==================== Update Num_sessions ====================
+        # 1- === Update select menu ===
+        if self.state["num_sessions"] != 0:
+            current_series_menu_blocks[11]["elements"][1]["initial_option"] = {
+                    "text":
+                        {"type": "plain_text",
+                        "text": str(self.state["num_sessions"]),
+                        "emoji": True},
+                        # Format the string for the value parameter
+                        "value": "numsessions-" + str(self.state["num_sessions"])
+                    }
+                    
         # ==================== Update Last Session Date ====================
-        new_series_menu_blocks[-2]["elements"][6]["text"] = "*Last Session*: " + self.state["last_session"]
+        # If the frequency and the num_sessions has not been selected
+        print("frequency = ", self.state["frequency"])
+        print("num_sessions = ", self.state["num_sessions"])
+
+        if self.state["frequency"] != "Not Selected" and self.state["num_sessions"] != 0:
+            self.getLastSession()
+        current_series_menu_blocks[-2]["elements"][6]["text"] = "*Last Session*: " + self.state["last_session"]
 
 
         # Return it after modifications
-        return new_series_menu_blocks
+        return current_series_menu_blocks
 

@@ -284,7 +284,7 @@ def thanks():
     # the request's parameters.
     code_arg = request.args.get("code")
     # console log for the payload
-    print("\n" + 70*"="  + "\nOAuth temporary code =\n", code_arg, "\n" + 70*"=")
+    # print("\n" + 70*"="  + "\nOAuth temporary code =\n", code_arg, "\n" + 70*"=")
 
     # The Bot's auth method handles exchanging the code for an OAuth token
     pyBot.auth(code_arg)
