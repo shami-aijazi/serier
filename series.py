@@ -22,26 +22,65 @@ class Series(object):
         self.state = {}
         # Store the timestamp of the original series creation menu message. This will allow us
         # to alter the message as the state changes.
-        self.menu_ts ={}
+        self.menu_ts = ""
+        # Store the timezone that the datetime of the series was created in.
+        # Stored as a timezone string (example: America/Los_Angeles)
+        # This is so it can be stored in the backend as UTC or POSIX.
+        self.timezone = ""
 
-    def newSeries(self, ts):
+    def newSeries(self, ts, first_session, series_time, menu_tz):
         """
         # TODO Should this modify the series itself or return a new series with the changes??
 
-
         Set the state to be the default values that the series creation menu will show.
-        Also, save the timestamp of the original message menu on the object (needed to update it)
+
+        Parameters
+        ----------
+        ts: str
+            timestamp of the series creation menu message. This is needed to update the message.
+
+        first_session: str
+            the default date of the first session in the series.
+
+        series_time: str
+            the default time of the sessions in the series
+        
+        menu_tz: str
+            the timezone associated with the date and time of the series.
+
         """
         self.state = {"title": "My Team's Weekly Brownbag",
                       "presenter": "Not Selected",
                       "topic_selection": "Not Selected",
-                      "first_session": datetime.today().date().strftime("%Y-%m-%d"),
-                      "time": "Not Selected",
+                      "first_session": first_session,
+                      "time": series_time,
                       "frequency": "Not Selected",
                       "num_sessions": 0,
                       "last_session": "N/A"
                     }
         self.menu_ts = ts
+        self.timezone = menu_tz
+
+
+    def isComplete(self):
+        """
+        Check if Series state is complete. If all required fields have been filled,
+        return true, else return false.
+        """
+        # Console log for series menu elements
+        # print("\n" + 70*"="  + "\nSeries menu completeness check... \n")
+        # print("Presenter Selected:", self.state["presenter"] != "Not Selected")
+        # print("Topic Selection Selected:", self.state["topic_selection"] != "Not Selected")
+        # print("Time Selected:", self.state["time"] != "Not Selected")
+        # print("Frequency Selected:", self.state["frequency"] != "Not Selected")
+        # print("Num_Sessions Selected:", self.state["num_sessions"] != 0)
+        # print(70*"=")
+
+
+        return (self.state["presenter"] != "Not Selected" and self.state["topic_selection"]!= "Not Selected"
+        and self.state["time"] != "Not Selected" and self.state["frequency"] != "Not Selected" and
+        self.state["num_sessions"] != 0)
+
 
     def updateSeries(self, field, newValue):
         """
@@ -125,13 +164,10 @@ class Series(object):
 
         Returns the blocks JSON dict object
         """
-        # TODO You probably want to change the fields themselves. Not just the sumamry context.
-        # You want the team name field to change, you want the datpicker selected date to reflect
-        # state, and so on.
 
-        # NOTE As state changes, the thing that changes is the summary of the series
-        # creation menu message. This is a context section (which is the second last section
-        # before the submit and cancel buttons)
+
+        # Update the series creation menu as state changes
+
 
         # ==================== Update Title ====================
         # 1- === Update title section ===
@@ -187,8 +223,7 @@ class Series(object):
 
         # ==================== Update First Session Date ====================
         # 1- === Update datepicker ===
-        if self.state["first_session"] != "Not Selected":
-            current_series_menu_blocks[10]["elements"][0]["initial_date"] = self.state["first_session"]
+        current_series_menu_blocks[10]["elements"][0]["initial_date"] = self.state["first_session"]
 
         
         # 2- === Update summary context ===
@@ -199,15 +234,15 @@ class Series(object):
         # ==================== Update Time ====================
         
         # 1- === Update select menu ===
-        if self.state["time"] != "Not Selected":
-            current_series_menu_blocks[10]["elements"][1]["initial_option"] = {
-                "text":
-                    {"type": "plain_text",
-                    "text": self.state["time"],
-                    "emoji": True},
-                    # Format the time for the "value" parameter
-                    "value": "time-" + datetime.strptime(self.state["time"], '%I:%M %p').strftime('%H%M')
-                }
+        print("state[time]:", self.state["time"] )
+        current_series_menu_blocks[10]["elements"][1]["initial_option"] = {
+            "text":
+                {"type": "plain_text",
+                "text": self.state["time"],
+                "emoji": True},
+                # Format the time for the "value" parameter
+                "value": "time-" + datetime.strptime(self.state["time"], '%I:%M %p').strftime('%H%M')
+            }
         
         # 2- === Update summary context ===
         current_series_menu_blocks[-2]["elements"][4]["text"] = "*Time*: " + self.state["time"]
@@ -241,13 +276,37 @@ class Series(object):
                     
         # ==================== Update Last Session Date ====================
         # If the frequency and the num_sessions has not been selected
-        print("frequency = ", self.state["frequency"])
-        print("num_sessions = ", self.state["num_sessions"])
-
         if self.state["frequency"] != "Not Selected" and self.state["num_sessions"] != 0:
             self.getLastSession()
         current_series_menu_blocks[-2]["elements"][6]["text"] = "*Last Session*: " + self.state["last_session"]
 
+
+        # ==================== Add Start Button When Series Complete ====================
+        # If series menu is complete
+        if self.isComplete():
+            # Console log series menu completeness
+            # print("\n" + 70*"="  + "\nSeries menu is complete... \n" + 70*"=")
+
+
+            # show "start series" button
+            start_series_button = {
+				"type": "button",
+				"action_id": "start_series",
+				"text": {
+					"type": "plain_text",
+					"text": "Start",
+					"emoji": True
+				},
+				"style": "primary",
+				"value": "start"
+			}
+
+            # Add the start button to the menu (if it doesn't already exist)
+            if len(current_series_menu_blocks[-1]["elements"]) == 1 :
+                current_series_menu_blocks[-1]["elements"].insert(0, start_series_button)
+        # else:
+        #     # Console log series menu completeness
+        #     print("\n" + 70*"="  + "\nSeries menu is NOT complete... \n" + 70*"=")
 
         # Return it after modifications
         return current_series_menu_blocks

@@ -103,6 +103,7 @@ def _action_handler (payload, action_type, action_id):
         channel_id = payload["channel"]["id"]
     else:
         channel_id = payload["container"]["channel_id"]
+        user_id = payload["user"]["id"]
 
 
     # ==================== BUTTON ACTIONS ====================
@@ -110,7 +111,7 @@ def _action_handler (payload, action_type, action_id):
         # If the user is creating a new series
         if action_id == "create_new_series":   
             message_ts = payload["container"]["message_ts"]  
-            pyBot.new_series_menu(channel_id, message_ts)
+            pyBot.new_series_menu(channel_id, message_ts, user_id)
 
             return make_response("New Series Created", 200)
         
@@ -122,13 +123,13 @@ def _action_handler (payload, action_type, action_id):
 
             return make_response("New Series Title edited", 200)
         
-    #     # If the user is confirming the creation of a series
-    #     elif action_id == "start_series":
-    #  Make sure the time isn't set to the past. Send error message if it is.
-    #         pyBot.confirm_new_series()
-    #         return make_response("New Series Confirmed", 200)
+        # If the user is confirming the creation of a series
+        elif action_id == "start_series":
+        # Make sure the time isn't set to the past. Send error message if it is.
+            pyBot.confirm_new_series(channel_id)
+            return make_response("New Series Confirmed", 200)
         
-    #     # If the user cancels the creation of the new series
+        # If the user cancels the creation of the new series
         elif action_id == "cancel_series":
             pyBot.cancel_new_series(channel_id)
             return make_response("New Series Cancelled", 200)

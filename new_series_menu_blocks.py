@@ -109,8 +109,6 @@ new_series_menu_blocks = [
     "elements":[
       {
         "type":"datepicker",
-        # Get today's date
-        "initial_date":datetime.today().date().strftime("%Y-%m-%d"),
         "action_id":"pick_series_date",
         "placeholder":{
           "type":"plain_text",
@@ -162,7 +160,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"1:00 AM",
+              "text":"001:00 AM",
               "emoji":True
             },
             "value":"time-0100"
@@ -170,7 +168,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"1:15 AM",
+              "text":"01:15 AM",
               "emoji":True
             },
             "value":"time-0115"
@@ -178,7 +176,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"1:30 AM",
+              "text":"01:30 AM",
               "emoji":True
             },
             "value":"time-0130"
@@ -186,7 +184,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"1:45 AM",
+              "text":"01:45 AM",
               "emoji":True
             },
             "value":"time-0145"
@@ -194,7 +192,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"2:00 AM",
+              "text":"02:00 AM",
               "emoji":True
             },
             "value":"time-0200"
@@ -202,7 +200,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"2:15 AM",
+              "text":"02:15 AM",
               "emoji":True
             },
             "value":"time-0215"
@@ -210,7 +208,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"2:30 AM",
+              "text":"02:30 AM",
               "emoji":True
             },
             "value":"time-0230"
@@ -218,7 +216,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"2:45 AM",
+              "text":"02:45 AM",
               "emoji":True
             },
             "value":"time-0245"
@@ -226,7 +224,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"3:00 AM",
+              "text":"03:00 AM",
               "emoji":True
             },
             "value":"time-0300"
@@ -234,7 +232,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"3:15 AM",
+              "text":"03:15 AM",
               "emoji":True
             },
             "value":"time-0315"
@@ -242,7 +240,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"3:30 AM",
+              "text":"03:30 AM",
               "emoji":True
             },
             "value":"time-0330"
@@ -250,7 +248,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"3:45 AM",
+              "text":"03:45 AM",
               "emoji":True
             },
             "value":"time-0345"
@@ -258,7 +256,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"4:00 AM",
+              "text":"04:00 AM",
               "emoji":True
             },
             "value":"time-0400"
@@ -266,7 +264,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"4:15 AM",
+              "text":"04:15 AM",
               "emoji":True
             },
             "value":"time-0415"
@@ -274,7 +272,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"4:30 AM",
+              "text":"04:30 AM",
               "emoji":True
             },
             "value":"time-0430"
@@ -282,7 +280,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"4:45 AM",
+              "text":"04:45 AM",
               "emoji":True
             },
             "value":"time-0445"
@@ -290,7 +288,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"5:00 AM",
+              "text":"05:00 AM",
               "emoji":True
             },
             "value":"time-0500"
@@ -298,7 +296,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"5:15 AM",
+              "text":"05:15 AM",
               "emoji":True
             },
             "value":"time-0515"
@@ -306,7 +304,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"5:30 AM",
+              "text":"05:30 AM",
               "emoji":True
             },
             "value":"time-0530"
@@ -314,7 +312,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"5:45 AM",
+              "text":"05:45 AM",
               "emoji":True
             },
             "value":"time-0545"
@@ -322,7 +320,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"6:00 AM",
+              "text":"06:00 AM",
               "emoji":True
             },
             "value":"time-0600"
@@ -330,7 +328,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"6:15 AM",
+              "text":"06:15 AM",
               "emoji":True
             },
             "value":"time-0615"
@@ -338,7 +336,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"6:30 AM",
+              "text":"06:30 AM",
               "emoji":True
             },
             "value":"time-0630"
@@ -346,7 +344,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"6:45 AM",
+              "text":"06:45 AM",
               "emoji":True
             },
             "value":"time-0645"
@@ -354,7 +352,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"7:00 AM",
+              "text":"07:00 AM",
               "emoji":True
             },
             "value":"time-0700"
@@ -362,7 +360,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"7:15 AM",
+              "text":"07:15 AM",
               "emoji":True
             },
             "value":"time-0715"
@@ -370,7 +368,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"7:30 AM",
+              "text":"07:30 AM",
               "emoji":True
             },
             "value":"time-0730"
@@ -378,7 +376,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"7:45 AM",
+              "text":"07:45 AM",
               "emoji":True
             },
             "value":"time-0745"
@@ -386,7 +384,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"8:00 AM",
+              "text":"08:00 AM",
               "emoji":True
             },
             "value":"time-0800"
@@ -394,7 +392,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"8:15 AM",
+              "text":"08:15 AM",
               "emoji":True
             },
             "value":"time-0815"
@@ -402,7 +400,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"8:30 AM",
+              "text":"08:30 AM",
               "emoji":True
             },
             "value":"time-0830"
@@ -410,7 +408,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"8:45 AM",
+              "text":"08:45 AM",
               "emoji":True
             },
             "value":"time-0845"
@@ -418,7 +416,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"9:00 AM",
+              "text":"09:00 AM",
               "emoji":True
             },
             "value":"time-0900"
@@ -426,7 +424,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"9:15 AM",
+              "text":"09:15 AM",
               "emoji":True
             },
             "value":"time-0915"
@@ -434,7 +432,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"9:30 AM",
+              "text":"09:30 AM",
               "emoji":True
             },
             "value":"time-0930"
@@ -442,7 +440,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"9:45 AM",
+              "text":"09:45 AM",
               "emoji":True
             },
             "value":"time-0945"
@@ -490,7 +488,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"11:15 AM",
+              "text":"1:15 AM",
               "emoji":True
             },
             "value":"time-1115"
@@ -498,7 +496,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"11:30 AM",
+              "text":"1:30 AM",
               "emoji":True
             },
             "value":"time-1130"
@@ -506,7 +504,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"11:45 AM",
+              "text":"1:45 AM",
               "emoji":True
             },
             "value":"time-1145"
@@ -546,7 +544,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"1:00 PM",
+              "text":"001:00 PM",
               "emoji":True
             },
             "value":"time-1300"
@@ -554,7 +552,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"1:15 PM",
+              "text":"01:15 PM",
               "emoji":True
             },
             "value":"time-1315"
@@ -562,7 +560,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"1:30 PM",
+              "text":"01:30 PM",
               "emoji":True
             },
             "value":"time-1330"
@@ -570,7 +568,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"1:45 PM",
+              "text":"01:45 PM",
               "emoji":True
             },
             "value":"time-1345"
@@ -578,7 +576,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"2:00 PM",
+              "text":"02:00 PM",
               "emoji":True
             },
             "value":"time-1400"
@@ -586,7 +584,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"2:15 PM",
+              "text":"02:15 PM",
               "emoji":True
             },
             "value":"time-1415"
@@ -594,7 +592,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"2:30 PM",
+              "text":"02:30 PM",
               "emoji":True
             },
             "value":"time-1430"
@@ -602,7 +600,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"2:45 PM",
+              "text":"02:45 PM",
               "emoji":True
             },
             "value":"time-1445"
@@ -610,7 +608,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"3:00 PM",
+              "text":"03:00 PM",
               "emoji":True
             },
             "value":"time-1500"
@@ -618,7 +616,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"3:15 PM",
+              "text":"03:15 PM",
               "emoji":True
             },
             "value":"time-1515"
@@ -626,7 +624,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"3:30 PM",
+              "text":"03:30 PM",
               "emoji":True
             },
             "value":"time-1530"
@@ -634,7 +632,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"3:45 PM",
+              "text":"03:45 PM",
               "emoji":True
             },
             "value":"time-1545"
@@ -642,7 +640,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"4:00 PM",
+              "text":"04:00 PM",
               "emoji":True
             },
             "value":"time-1600"
@@ -650,7 +648,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"4:15 PM",
+              "text":"04:15 PM",
               "emoji":True
             },
             "value":"time-1615"
@@ -658,7 +656,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"4:30 PM",
+              "text":"04:30 PM",
               "emoji":True
             },
             "value":"time-1630"
@@ -666,7 +664,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"4:45 PM",
+              "text":"04:45 PM",
               "emoji":True
             },
             "value":"time-1645"
@@ -674,7 +672,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"5:00 PM",
+              "text":"05:00 PM",
               "emoji":True
             },
             "value":"time-1700"
@@ -682,7 +680,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"5:15 PM",
+              "text":"05:15 PM",
               "emoji":True
             },
             "value":"time-1715"
@@ -690,7 +688,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"5:30 PM",
+              "text":"05:30 PM",
               "emoji":True
             },
             "value":"time-1730"
@@ -698,7 +696,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"5:45 PM",
+              "text":"05:45 PM",
               "emoji":True
             },
             "value":"time-1745"
@@ -706,7 +704,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"6:00 PM",
+              "text":"06:00 PM",
               "emoji":True
             },
             "value":"time-1800"
@@ -714,7 +712,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"6:15 PM",
+              "text":"06:15 PM",
               "emoji":True
             },
             "value":"time-1815"
@@ -722,7 +720,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"6:30 PM",
+              "text":"06:30 PM",
               "emoji":True
             },
             "value":"time-1830"
@@ -730,7 +728,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"6:45 PM",
+              "text":"06:45 PM",
               "emoji":True
             },
             "value":"time-1845"
@@ -738,7 +736,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"7:00 PM",
+              "text":"07:00 PM",
               "emoji":True
             },
             "value":"time-1900"
@@ -746,7 +744,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"7:15 PM",
+              "text":"07:15 PM",
               "emoji":True
             },
             "value":"time-1915"
@@ -754,7 +752,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"7:30 PM",
+              "text":"07:30 PM",
               "emoji":True
             },
             "value":"time-1930"
@@ -762,7 +760,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"7:45 PM",
+              "text":"07:45 PM",
               "emoji":True
             },
             "value":"time-1945"
@@ -770,7 +768,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"8:00 PM",
+              "text":"08:00 PM",
               "emoji":True
             },
             "value":"time-2000"
@@ -778,7 +776,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"8:15 PM",
+              "text":"08:15 PM",
               "emoji":True
             },
             "value":"time-2015"
@@ -786,7 +784,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"8:30 PM",
+              "text":"08:30 PM",
               "emoji":True
             },
             "value":"time-2030"
@@ -794,7 +792,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"8:45 PM",
+              "text":"08:45 PM",
               "emoji":True
             },
             "value":"time-2045"
@@ -802,7 +800,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"9:00 PM",
+              "text":"09:00 PM",
               "emoji":True
             },
             "value":"time-2100"
@@ -810,7 +808,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"9:15 PM",
+              "text":"09:15 PM",
               "emoji":True
             },
             "value":"time-2115"
@@ -818,7 +816,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"9:30 PM",
+              "text":"09:30 PM",
               "emoji":True
             },
             "value":"time-2130"
@@ -826,7 +824,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"9:45 PM",
+              "text":"09:45 PM",
               "emoji":True
             },
             "value":"time-2145"
@@ -866,7 +864,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"11:00 PM",
+              "text":"10:00 PM",
               "emoji":True
             },
             "value":"time-2300"
@@ -1420,7 +1418,25 @@ new_series_menu_blocks = [
           "text":"Cancel",
           "emoji":True
         },
-        "value":"cancel"
+        "value":"cancel",
+        "confirm":{
+          "title":{
+            "type":"plain_text",
+            "text":"Are you sure?"
+          },
+          "text":{
+            "type":"mrkdwn",
+            "text":"This series will be cancelled."
+          },
+          "confirm":{
+            "type":"plain_text",
+            "text":"Yes"
+          },
+          "deny":{
+            "type":"plain_text",
+            "text":"No"
+          }
+        }
       }
     ]
   }

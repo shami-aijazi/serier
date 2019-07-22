@@ -6,6 +6,9 @@ import message
 import json
 
 from slack import WebClient
+from datetime import datetime
+from datetime import timedelta
+import pytz
 
 # import the series class and construct an empty Series object
 from series import Series
@@ -31,7 +34,7 @@ class Bot(object):
                       # scope that your app will need.
                       "scope": "bot"}
         self.signing_secret = os.environ.get("SIGNING_SECRET")
-        self.emoji = ":smile:"
+        self.emoji = ":space_invader:"
 
         # NOTE: Python-slack requires a client connection to generate
         # an oauth token. We can connect to the client without authenticating
@@ -188,22 +191,60 @@ class Bot(object):
 
                                         
 # ============================= SERIES BOT LOGIC =============================
-    def new_series_menu(self, channel_id, ts):
+    def new_series_menu(self, channel_id, ts, user_id):
         """
         Create new series. Update message with parameter ts to show the new series
-        creation menu.
+        creation menu. Use the user_id to get the timezone of the user and update the
+        series state's datetime accordingly.
         """
+
+        """
+        Psuedocode:
+
+        Get user_tz, save this for later.
+        # This will get stored on the Series object
+
+        Get now_user_tz = now(user_tz).
+
+        delta = 15- now_user_tz.minutes % 15
+        
+        now_user_tz = now_user_tz + timedelta(minutes=delta)
+
+        series_start_date = now_user_tz.strftime(DATEFORMAT)
+        series_time = now_user_tz.strftime('%I:%M %p')
+
+
+        newSeries(ts, series_start_date, series_time, user_tz)
+        """
+
+        # Get the user's info to extract the timezone
+        user_info = self.client.users_info(
+                                            user=user_id
+                                            )
+        # Console log for user info
+        print("\n" + 70*"="  + "\nuser_info=\n", user_info, "\n" + 70*"=")
+
+        # The PyTZ timezone string
+        user_tz = user_info["user"]["tz"]
+        # Console log for user timezone
+        print("\n" + 70*"="  + "\nuser_tz=\n", user_tz, "\n" + 70*"=")
+
+
+        now_user_tz = datetime.now(pytz.timezone(user_tz))
+
+        # Find difference from nearest futre 15 minute mark
+        delta = 15 - now_user_tz.minute % 15
+
+        # Add that amount of minutes so the time is to the nearest 15 mins
+        now_user_tz = now_user_tz + timedelta(minutes=delta)
+
+        # Set the series start date and series_time
+        series_start_date = now_user_tz.strftime("%Y-%m-%d")
+        series_time = now_user_tz.strftime('%I:%M %p')
+
         # Populate the series object with default values
-        currentSeries.newSeries(ts)
-
-
-
-        # # Create a new series menu Message object
-        # message_obj = message.NewSeries()
-
-        # # Set the message object's channel and timestamp from parameters
-        # message_obj.channel = channel_id
-        # message_obj.timestamp = ts
+        # Save the timestamp of the menu message on the series object
+        currentSeries.newSeries(ts, series_start_date, series_time, user_tz)
 
 
 
@@ -216,6 +257,13 @@ class Bot(object):
                                             blocks=currentSeries.getBlocks()
                                             )
 
+    def confirm_new_series(self, channel_id):
+        """
+        Confirm the creation of the new series. Check if the time and date set is not in the
+        past. Commit the series to db and send an acknowledgement message.
+        """
+
+
     def cancel_new_series(self, channel_id):
         """
         Cancel a new series. Update message with parameter ts to show the series
@@ -224,14 +272,6 @@ class Bot(object):
 
         # Reset the series state
         currentSeries.resetSeries()
-
-
-        # # Create a new cancel series menu Message object
-        # message_obj = message.CancelNewSeries()
-
-        # # Set the message object's channel and timestamp from parameters
-        # message_obj.channel = channel_id
-        # message_obj.timestamp = ts
 
         update_message = self.client.chat_update(
                                             channel=channel_id,
