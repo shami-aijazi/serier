@@ -96,3 +96,43 @@ class Onboarding(object):
 		]
 	}
 ]
+
+
+
+# ============================= SERIER BOT MESSAGES =============================
+
+class InThePastWarning(object):
+    """
+    A Message object to create and manage
+    messages for warning messages when a user
+	schedules a series in the past
+    """
+
+    def __init__(self):
+        super(InThePastWarning, self).__init__()
+        self.channel = ""
+        self.timestamp = ""
+        self.blocks = [  
+  {  
+    "type":"section",
+    "text":{  
+      "type":"mrkdwn",
+      "text":":warning: Your series is scheduled to start in the past. Please pick a time in the future."
+    }
+  },
+  {  
+    "type":"actions",
+    "elements":[  
+      {  
+        "type":"button",
+        "action_id":"past_schedule_ok",
+        "text":{  
+          "type":"plain_text",
+          "text":"OK",
+          "emoji":True
+        },
+        "value":"past_schedule_ok"
+      }
+    ]
+  }
+]

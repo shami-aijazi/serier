@@ -44,7 +44,7 @@ def handle_message(slack_event):
             channel_id = slack_event["event"]["channel"]
 
             # === User asked for help ===
-            if message_text[:4]=="help":
+            if message_text[:4].lower()=="help":
                 pyBot.help_message(channel_id)
                 return make_response("Help DM Sent", 200,)
 
@@ -125,14 +125,25 @@ def _action_handler (payload, action_type, action_id):
         
         # If the user is confirming the creation of a series
         elif action_id == "start_series":
-        # Make sure the time isn't set to the past. Send error message if it is.
-            pyBot.confirm_new_series(channel_id)
+            message_ts = payload["container"]["message_ts"]  
+            pyBot.confirm_new_series(channel_id, user_id, message_ts)
             return make_response("New Series Confirmed", 200)
         
         # If the user cancels the creation of the new series
         elif action_id == "cancel_series":
             pyBot.cancel_new_series(channel_id)
             return make_response("New Series Cancelled", 200)
+        
+        # If the user acknowledges warning about schedule being in the past
+        elif action_id == "past_schedule_ok":
+            message_ts = payload["container"]["message_ts"] 
+            pyBot.acknowledge_past_schedule_warning(channel_id, message_ts)
+
+        # If the user acknowledges message about successful series creation
+        elif action_id == "series_creationH_ok":
+            message_ts = payload["container"]["message_ts"] 
+            pyBot.acknowledge_successful_series_creation(channel_id, message_ts)
+
 
     # ==================== DIALOG SUBMISSION ACTIONS ====================
     # If the user submitted a dialog
@@ -202,10 +213,7 @@ def _action_handler (payload, action_type, action_id):
         if action_id == "pick_series_date":
             # Date format: "%Y-%m-%d"
             # Example: 2019-07-27"
-            # 
             series_date = payload["actions"][0]["selected_date"]
-
-
 
             pyBot.update_series_menu_date(channel_id, series_date)
             return make_response("New Series Date updated", 200)

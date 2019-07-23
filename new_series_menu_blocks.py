@@ -160,7 +160,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"001:00 AM",
+              "text":"01:00 AM",
               "emoji":True
             },
             "value":"time-0100"
@@ -488,7 +488,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"1:15 AM",
+              "text":"11:15 AM",
               "emoji":True
             },
             "value":"time-1115"
@@ -496,7 +496,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"1:30 AM",
+              "text":"11:30 AM",
               "emoji":True
             },
             "value":"time-1130"
@@ -504,7 +504,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"1:45 AM",
+              "text":"11:45 AM",
               "emoji":True
             },
             "value":"time-1145"
@@ -544,7 +544,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"001:00 PM",
+              "text":"01:00 PM",
               "emoji":True
             },
             "value":"time-1300"
@@ -864,7 +864,7 @@ new_series_menu_blocks = [
           {
             "text":{
               "type":"plain_text",
-              "text":"10:00 PM",
+              "text":"11:00 PM",
               "emoji":True
             },
             "value":"time-2300"
@@ -924,6 +924,14 @@ new_series_menu_blocks = [
               "emoji":True
             },
             "value":"every-weekday"
+          },
+          {
+            "text":{
+              "type":"plain_text",
+              "text":"Every Week",
+              "emoji":True
+            },
+            "value":"every-week"
           },
           {
             "text":{

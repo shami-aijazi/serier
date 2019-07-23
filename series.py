@@ -126,30 +126,37 @@ class Series(object):
         num_sessions = int(self.state["num_sessions"])
 
 
+        # Subtract numsessions by 1 to avoid overcounting
+        num_sessions -= 1
+
         if frequency == "every-day":
             # format this correctly
             last_session += timedelta(days=num_sessions)
 
         elif frequency == "every-weekday":
             # every weekday sequence
-            while num_sessions > 0:
+            while num_sessions-1 > 0:
                 last_session = last_session + timedelta(days=1)
                 weekday = last_session.weekday()
                 if weekday >= 5: # sunday = 6
                     continue
                 num_sessions -= 1
 
+        elif frequency == "every-week":
+            # every week sequence
+            last_session += timedelta(days=7*num_sessions)
+
         elif frequency == "every-2-weeks":
             # every 2 weeks sequence
-            last_session = last_session + timedelta(days=14*num_sessions)
+            last_session += timedelta(days=14*num_sessions)
 
         elif frequency == "every-3-weeks":
             # every 3 weeks sequence
-            last_session = last_session + timedelta(days=21*num_sessions)
+            last_session += timedelta(days=21*num_sessions)
 
         elif frequency == "every-month":
             # every month sequency
-            last_session = last_session + timedelta(days=28*num_sessions)
+            last_session += timedelta(days=28*num_sessions)
         
         # Format the datetime object
         last_session = last_session.strftime("%m/%d/%Y")

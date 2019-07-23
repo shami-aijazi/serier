@@ -5,21 +5,31 @@ import pytz
 from datetime import timedelta
 
 
+tz = pytz.timezone('America/Los_Angeles')
+
+selected_time = datetime.strptime("04:20 PM", '%I:%M %p')
+selected_date = datetime.strptime("2019-12-30", "%Y-%m-%d")
+selected_dt = selected_date.replace(hour=selected_time.hour, minute=selected_time.minute)
+
+
+print ("Just the time:", selected_dt.time())
+local_dt = tz.localize(selected_dt)
+print("local timestamp:", local_dt.timestamp())
+
+utc_dt = local_dt.astimezone(pytz.utc)
+print("utc from local timestamp:", utc_dt.timestamp())
 # print("Timestamp now:", datetime.now().timestamp())
-
-
 # print("Timestamp UTC now:", datetime.now(pytz.utc).timestamp())
 
 
 # get time in tz
-tz = pytz.timezone('America/Los_Angeles')
 # dt = datetime.fromtimestamp(datetime.now().timestamp(), tz)
-dt = datetime.now(tz)
+# dt = datetime.now(tz)
 # print it
-print("Minutes from nearest future 15:", 15 - dt.minute % 15)
-print("TIME in LA NOW:", dt.strftime('%Y-%m-%d %H:%M:%S %Z%z'))
+# print("Minutes from nearest future 15:", 15 - dt.minute % 15)
+# print("TIME in LA NOW:", dt.strftime('%Y-%m-%d %H:%M:%S %Z%z'))
 
-print("tz:", type(tz))
+# print("tz:", type(tz))
 
 # def date_after_adding_weekdays(current_date, num_weekdays):
 #     """

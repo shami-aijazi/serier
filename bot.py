@@ -222,21 +222,21 @@ class Bot(object):
                                             user=user_id
                                             )
         # Console log for user info
-        print("\n" + 70*"="  + "\nuser_info=\n", user_info, "\n" + 70*"=")
+        # print("\n" + 70*"="  + "\nuser_info=\n", user_info, "\n" + 70*"=")
 
         # The PyTZ timezone string
         user_tz = user_info["user"]["tz"]
         # Console log for user timezone
-        print("\n" + 70*"="  + "\nuser_tz=\n", user_tz, "\n" + 70*"=")
+        # print("\n" + 70*"="  + "\nuser_tz=\n", user_tz, "\n" + 70*"=")
 
 
         now_user_tz = datetime.now(pytz.timezone(user_tz))
 
-        # Find difference from nearest futre 15 minute mark
+        # Find difference from nearest future 15 minute mark
         delta = 15 - now_user_tz.minute % 15
 
         # Add that amount of minutes so the time is to the nearest 15 mins
-        now_user_tz = now_user_tz + timedelta(minutes=delta)
+        now_user_tz += timedelta(minutes=delta)
 
         # Set the series start date and series_time
         series_start_date = now_user_tz.strftime("%Y-%m-%d")
@@ -257,11 +257,136 @@ class Bot(object):
                                             blocks=currentSeries.getBlocks()
                                             )
 
-    def confirm_new_series(self, channel_id):
+    def confirm_new_series(self, channel_id, organizer_id, message_ts):
         """
         Confirm the creation of the new series. Check if the time and date set is not in the
         past. Commit the series to db and send an acknowledgement message.
+
         """
+        # Get the timezone of the creating user at the time of series creation
+        user_tz = pytz.timezone(currentSeries.timezone)
+
+        # Create a datetime object from the series data
+        selected_time = datetime.strptime(currentSeries.state["time"], '%I:%M %p')
+        selected_date = datetime.strptime(currentSeries.state["first_session"], "%Y-%m-%d")
+        selected_dt = selected_date.replace(hour=selected_time.hour, minute=selected_time.minute)
+        
+        # Use the timezone and the series data to convert the time to UTC
+        user_local_dt = user_tz.localize(selected_dt)
+        utc_dt = user_local_dt.astimezone(pytz.utc)
+
+
+        # Compare the scheduled time to the time now
+        utc_now = datetime.now(pytz.utc)
+        # console log for datetimes
+        print("\n" + 70*"="  + "\nSchedulued Datetime=\n", utc_dt, "\nNow Datetime=\n", utc_now, "\n" + 70*"=")
+        
+
+        if utc_dt < utc_now:
+            # If the series is scheduled for the past
+            # Send a warning message
+            post_message = self.client.chat_postMessage(
+                                            channel=channel_id,
+                                            username=self.name,
+                                            icon_emoji=self.emoji,
+                                            text="Series schedule for the past",
+                                            blocks=[  
+                                            {  
+                                                "type":"section",
+                                                "text":{  
+                                                "type":"mrkdwn",
+                                                "text":":warning:Your series is scheduled to start in the past. Please pick a time in the future."
+                                                }
+                                            },
+                                            {  
+                                                "type":"actions",
+                                                "elements":[  
+                                                {  
+                                                    "type":"button",
+                                                    "action_id":"past_schedule_ok",
+                                                    "text":{  
+                                                    "type":"plain_text",
+                                                    "text":"OK",
+                                                    "emoji":True
+                                                    },
+                                                    "value":"past_schedule_ok"
+                                                }
+                                                ]
+                                            }
+                                            ]
+                                        )
+
+        # If there is no problem with the series state
+        # Give the go ahead
+        else:
+
+            # TODO commit the series to db
+            # Console log when series is ready to be serialized
+            print("\n" + 70*"="  + "\nSeries Ready to be committed...\n" +\
+                "currentSeries.state=\n", currentSeries.state, "\n\n" +\
+                "currentSeries UTC time first_session=\n", utc_dt, "\n" + 70*"=")
+            
+            # TODO edit the series state to be what we want to serialize
+            currentSeries.state["time"] = utc_dt.time().strftime("%I:%M %p")
+            series_dict = {organizer_id: [currentSeries.state]}
+        
+
+
+            # TODO Serialize this to a file locally
+            # Open the file, read it in, update it (organizer already has a series)
+            # or add it (new organizer).
+            # Write the file back in
+            with open('series.txt', 'r+') as series_file: 
+                try: 
+                    series_dict = json.load(series_file)
+
+                
+                # ValueError is raised when the series file is empty. This should only trigger for first series
+                except ValueError: 
+                    # Each organizer user has a list of series associated with them
+                    # Each series is a dictionary representing its state
+                    series_dict = {organizer_id: []}
+                   
+                
+                series_dict[organizer_id].append({"series_state":currentSeries.state})
+                
+                # rewrite the file with newly added series
+                series_file.seek(0)
+                json.dump(series_dict, series_file)
+
+            
+            # Send a confirmation message to the user that their series has been created
+            post_message = self.client.chat_update(
+                                            channel=channel_id,
+                                            username=self.name,
+                                            icon_emoji=self.emoji,
+                                            ts=message_ts,
+                                            text="Your Series *" + currentSeries.state["title"] + "* has been created",
+                                            blocks=[
+                                                {
+                                                    "type": "section",
+                                                    "text": {
+                                                        "type": "mrkdwn",
+                                                        "text": "Your series *" + currentSeries.state["title"] + "* has been succesfully created!\n"
+                                                    }
+                                                },
+                                                {
+                                                    "type": "actions",
+                                                    "elements": [
+                                                        {
+                                                            "type": "button",
+                                                            "action_id": "series_creation_ok",
+                                                            "text": {
+                                                                "type": "plain_text",
+                                                                "text": "OK",
+                                                                "emoji": True
+                                                            },
+                                                            "value": "series_creation_ok"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        )
 
 
     def cancel_new_series(self, channel_id):
@@ -452,6 +577,24 @@ class Bot(object):
                                             blocks=currentSeries.getBlocks()
                                             )
 
+    def acknowledge_past_schedule_warning(self, channel_id, message_ts):
+        """
+        Delete the warning message.
+
+        """
+        delete_message = self.client.chat_delete(
+                                            channel=channel_id,
+                                            ts=message_ts,
+                                            )
+    
+    def acknowledge_successful_series_creation(self, channel_id, message_ts):
+        """
+        Delete the notification of success message.
+        """
+        delete_message = self.client.chat_delete(
+                                        channel=channel_id,
+                                        ts=message_ts,
+                                    )
 
 # ============================= AUTHORIZATION =============================
     def auth(self, code):
