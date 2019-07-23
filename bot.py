@@ -267,19 +267,19 @@ class Bot(object):
         user_tz = pytz.timezone(currentSeries.timezone)
 
         # Create a datetime object from the series data
-        selected_time = datetime.strptime(currentSeries.state["time"], '%I:%M %p')
-        selected_date = datetime.strptime(currentSeries.state["first_session"], "%Y-%m-%d")
-        selected_dt = selected_date.replace(hour=selected_time.hour, minute=selected_time.minute)
+        series_time = datetime.strptime(currentSeries.state["time"], '%I:%M %p')
+        first_session_date = datetime.strptime(currentSeries.state["first_session"], "%Y-%m-%d")
+        first_session_dt = first_session_date.replace(hour=series_time.hour, minute=series_time.minute)
         
         # Use the timezone and the series data to convert the time to UTC
-        user_local_dt = user_tz.localize(selected_dt)
+        user_local_dt = user_tz.localize(first_session_dt)
         utc_dt = user_local_dt.astimezone(pytz.utc)
 
 
         # Compare the scheduled time to the time now
         utc_now = datetime.now(pytz.utc)
         # console log for datetimes
-        print("\n" + 70*"="  + "\nSchedulued Datetime=\n", utc_dt, "\nNow Datetime=\n", utc_now, "\n" + 70*"=")
+        # print("\n" + 70*"="  + "\nSchedulued Datetime=\n", utc_dt, "\nNow Datetime=\n", utc_now, "\n" + 70*"=")
         
 
         if utc_dt < utc_now:
@@ -321,13 +321,19 @@ class Bot(object):
         else:
 
             # TODO commit the series to db
-            # Console log when series is ready to be serialized
-            print("\n" + 70*"="  + "\nSeries Ready to be committed...\n" +\
-                "currentSeries.state=\n", currentSeries.state, "\n\n" +\
-                "currentSeries UTC time first_session=\n", utc_dt, "\n" + 70*"=")
             
             # TODO edit the series state to be what we want to serialize
+            # Update time and first session to be UTC
             currentSeries.state["time"] = utc_dt.time().strftime("%I:%M %p")
+            currentSeries.state["first_session"] = utc_dt.date().strftime("%Y-%m-%d")
+
+            # Update last_session to be UTC
+            last_session_date = datetime.strptime(currentSeries.state["last_session"], "%m/%d/%Y")
+            user_local_dt = user_tz.localize(last_session_date)
+            last_session_utc = user_local_dt.astimezone(pytz.utc)
+            currentSeries.state["last_session"] = utc_dt.date().strftime("%Y-%m-%d")
+
+
             series_dict = {organizer_id: [currentSeries.state]}
         
 
@@ -577,24 +583,15 @@ class Bot(object):
                                             blocks=currentSeries.getBlocks()
                                             )
 
-    def acknowledge_past_schedule_warning(self, channel_id, message_ts):
+    def acknowledge_notification(self, channel_id, message_ts):
         """
-        Delete the warning message.
-
+        Delete the message with specified timestamp.
+        This is used primarily for notifications that a user can dismiss.
         """
         delete_message = self.client.chat_delete(
                                             channel=channel_id,
                                             ts=message_ts,
                                             )
-    
-    def acknowledge_successful_series_creation(self, channel_id, message_ts):
-        """
-        Delete the notification of success message.
-        """
-        delete_message = self.client.chat_delete(
-                                        channel=channel_id,
-                                        ts=message_ts,
-                                    )
 
 # ============================= AUTHORIZATION =============================
     def auth(self, code):

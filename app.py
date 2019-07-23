@@ -137,12 +137,12 @@ def _action_handler (payload, action_type, action_id):
         # If the user acknowledges warning about schedule being in the past
         elif action_id == "past_schedule_ok":
             message_ts = payload["container"]["message_ts"] 
-            pyBot.acknowledge_past_schedule_warning(channel_id, message_ts)
+            pyBot.acknowledge_notification(channel_id, message_ts)
 
         # If the user acknowledges message about successful series creation
-        elif action_id == "series_creationH_ok":
+        elif action_id == "series_creation_ok":
             message_ts = payload["container"]["message_ts"] 
-            pyBot.acknowledge_successful_series_creation(channel_id, message_ts)
+            pyBot.acknowledge_notification(channel_id, message_ts)
 
 
     # ==================== DIALOG SUBMISSION ACTIONS ====================
