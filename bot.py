@@ -198,25 +198,6 @@ class Bot(object):
         series state's datetime accordingly.
         """
 
-        """
-        Psuedocode:
-
-        Get user_tz, save this for later.
-        # This will get stored on the Series object
-
-        Get now_user_tz = now(user_tz).
-
-        delta = 15- now_user_tz.minutes % 15
-        
-        now_user_tz = now_user_tz + timedelta(minutes=delta)
-
-        series_start_date = now_user_tz.strftime(DATEFORMAT)
-        series_time = now_user_tz.strftime('%I:%M %p')
-
-
-        newSeries(ts, series_start_date, series_time, user_tz)
-        """
-
         # Get the user's info to extract the timezone
         user_info = self.client.users_info(
                                             user=user_id
@@ -254,7 +235,7 @@ class Bot(object):
                                             icon_emoji=self.emoji,
                                             text="Create new series",
                                             ts=currentSeries.menu_ts,
-                                            blocks=currentSeries.getBlocks()
+                                            blocks=currentSeries.getMenuBlocks()
                                             )
 
     def confirm_new_series(self, channel_id, organizer_id, message_ts):
@@ -331,10 +312,10 @@ class Bot(object):
             last_session_date = datetime.strptime(currentSeries.state["last_session"], "%m/%d/%Y")
             user_local_dt = user_tz.localize(last_session_date)
             last_session_utc = user_local_dt.astimezone(pytz.utc)
-            currentSeries.state["last_session"] = utc_dt.date().strftime("%Y-%m-%d")
+            currentSeries.state["last_session"] = last_session_utc.strftime("%Y-%m-%d")
 
 
-            series_dict = {organizer_id: [currentSeries.state]}
+            # series_dict = {organizer_id: [currentSeries.state]}
         
 
 
@@ -362,11 +343,11 @@ class Bot(object):
 
             
             # Send a confirmation message to the user that their series has been created
-            post_message = self.client.chat_update(
+            update_message = self.client.chat_update(
                                             channel=channel_id,
                                             username=self.name,
                                             icon_emoji=self.emoji,
-                                            ts=message_ts,
+                                            ts=currentSeries.menu_ts,
                                             text="Your Series *" + currentSeries.state["title"] + "* has been created",
                                             blocks=[
                                                 {
@@ -393,6 +374,37 @@ class Bot(object):
                                                 }
                                             ]
                                         )
+            # Console log for populating sessions
+            # print("\n" + 70*"="  + "\nAbout to set the sessions...\ncurrentSeries.state=\n", currentSeries.state, "\n" + 70*"=")
+            # Now that the series has the go ahead, create the sessions
+            currentSeries.setSessions()
+
+            
+
+            # TODO untidy hacking fix here. Clean this up later. (lol as if this is the only section of code like that)
+            # Extract the title from state before resetting the series. This is needed
+            # to display the schedule. This is to fix the situation where the schedule
+            # message crashes because of exceeding the 50-block message limit. In that
+            # situation the series wouldn't reset and it would cause problems when
+            # making creating a series again.
+            series_title = currentSeries.state["title"]
+
+            # At the end of the creation and serialization, reset the series in memory
+            # NOTE: this does NOT reset the sessions object on memory. This object is needed to send
+            # the schedule. This object will be reset LATER.
+            currentSeries.resetSeries()
+
+            # Then, post the schedule message
+            post_message = self.client.chat_postMessage(
+                                            channel=channel_id,
+                                            username=self.name,
+                                            icon_emoji=self.emoji,
+                                            text="Here's the schedule for your series *" + series_title + "*",
+                                            blocks=currentSeries.getScheduleBlocks(series_title)
+                                        )
+
+            # Reset the sessions in the end
+            currentSeries.sessions = []
 
 
     def cancel_new_series(self, channel_id):
@@ -400,9 +412,6 @@ class Bot(object):
         Cancel a new series. Update message with parameter ts to show the series
         canellation confirmation. Revert series state to default
         """
-
-        # Reset the series state
-        currentSeries.resetSeries()
 
         update_message = self.client.chat_update(
                                             channel=channel_id,
@@ -418,6 +427,9 @@ class Bot(object):
                                                     }
                                                 ]
                                             )
+
+        # Reset the series state
+        currentSeries.resetSeries()
         
     def edit_series_title_dialog(self, trigger_id):
         """
@@ -464,7 +476,7 @@ class Bot(object):
                                             icon_emoji=self.emoji,
                                             text="Your series title has been updated",
                                             ts=currentSeries.menu_ts,
-                                            blocks=currentSeries.getBlocks()
+                                            blocks=currentSeries.getMenuBlocks()
                                             )
 
     def update_series_presenter(self, channel_id, user_id):
@@ -483,7 +495,7 @@ class Bot(object):
                                             icon_emoji=self.emoji,
                                             text="Your series presenter has been updated",
                                             ts=currentSeries.menu_ts,
-                                            blocks=currentSeries.getBlocks()
+                                            blocks=currentSeries.getMenuBlocks()
                                             )
 
     def update_topic_selection(self, channel_id, topic_selection):
@@ -503,7 +515,7 @@ class Bot(object):
                                             icon_emoji=self.emoji,
                                             text="Your series topic selection has been updated",
                                             ts=currentSeries.menu_ts,
-                                            blocks=currentSeries.getBlocks()
+                                            blocks=currentSeries.getMenuBlocks()
                                             )
 
     def update_series_time(self, channel_id, series_time):
@@ -522,7 +534,7 @@ class Bot(object):
                                             icon_emoji=self.emoji,
                                             text="Your series time has been updated",
                                             ts=currentSeries.menu_ts,
-                                            blocks=currentSeries.getBlocks()
+                                            blocks=currentSeries.getMenuBlocks()
                                             )
         
     def update_series_frequency(self, channel_id, series_frequency):
@@ -541,7 +553,7 @@ class Bot(object):
                                             icon_emoji=self.emoji,
                                             text="Your series frequency has been updated",
                                             ts=currentSeries.menu_ts,
-                                            blocks=currentSeries.getBlocks()
+                                            blocks=currentSeries.getMenuBlocks()
                                             )
 
     def update_series_numsessions(self, channel_id, series_numsessions):
@@ -561,7 +573,7 @@ class Bot(object):
                                             icon_emoji=self.emoji,
                                             text="Your series numsessions has been updated",
                                             ts=currentSeries.menu_ts,
-                                            blocks=currentSeries.getBlocks()
+                                            blocks=currentSeries.getMenuBlocks()
                                             )
 
     def update_series_menu_date(self, channel_id, series_date):
@@ -580,7 +592,7 @@ class Bot(object):
                                             icon_emoji=self.emoji,
                                             text="Your series first session date has been updated",
                                             ts=currentSeries.menu_ts,
-                                            blocks=currentSeries.getBlocks()
+                                            blocks=currentSeries.getMenuBlocks()
                                             )
 
     def acknowledge_notification(self, channel_id, message_ts):

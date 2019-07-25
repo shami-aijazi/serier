@@ -4,20 +4,21 @@ from datetime import datetime
 import pytz
 from datetime import timedelta
 
+# <!date^1577751600.0^{date_pretty}{time}|fallback_text>
 
-tz = pytz.timezone('America/Los_Angeles')
+# tz = pytz.timezone('America/Los_Angeles')
 
-selected_time = datetime.strptime("04:20 PM", '%I:%M %p')
-selected_date = datetime.strptime("2019-12-30", "%Y-%m-%d")
-selected_dt = selected_date.replace(hour=selected_time.hour, minute=selected_time.minute)
+# selected_time = datetime.strptime("04:20 PM", '%I:%M %p')
+# selected_date = datetime.strptime("2019-12-30", "%Y-%m-%d")
+# selected_dt = selected_date.replace(hour=selected_time.hour, minute=selected_time.minute)
 
 
-print ("Just the time:", selected_dt.time())
-local_dt = tz.localize(selected_dt)
-print("local timestamp:", local_dt.timestamp())
+# print ("Just the time:", selected_dt.time())
+# local_dt = tz.localize(selected_dt)
+# print("local timestamp:", local_dt.timestamp())
 
-utc_dt = local_dt.astimezone(pytz.utc)
-print("utc from local timestamp:", utc_dt.timestamp())
+# utc_dt = local_dt.astimezone(pytz.utc)
+# print("utc from local timestamp:", utc_dt.timestamp())
 # print("Timestamp now:", datetime.now().timestamp())
 # print("Timestamp UTC now:", datetime.now(pytz.utc).timestamp())
 
@@ -52,6 +53,41 @@ print("utc from local timestamp:", utc_dt.timestamp())
 #         num_weekdays -= 1
 #     return current_date
 
+def date_after_adding_weekdays_v2(current_date, num_weekdays):
+    """
+    Increment the date by number of weekdays, including today.
+
+    Parameters
+    current_date: datetime object
+        date to start counting from
+    num_weekdays: int
+        number of weekdays to add to the date
+
+    Return the date n weekdays later.
+    """
+    day_number = 1
+
+    while num_weekdays > day_number:
+
+        if day_number == 1:
+            print("Inside adding weekdays function...")
+            print("day_number:", day_number)
+            print("Current datetime:", current_date)
+            print(50*"=" + "\n")        
+            
+        current_date += timedelta(days=1) 
+
+        if current_date.weekday() < 5: # sunday = 6
+            day_number += 1
+            print("Inside adding weekdays function...")
+            print("day_number:", day_number)
+            print("Current datetime:", current_date)
+            print(50*"=" + "\n")
+    return current_date
+
+
+print("4 weekdays from now:", date_after_adding_weekdays_v2(datetime.now(), 4))
+
 # def date_after_adding_days(current_date, num_days):
 #     """
 #     Increment the current_date by a specified number of days.
@@ -59,7 +95,7 @@ print("utc from local timestamp:", utc_dt.timestamp())
 #     Parameters
 #     current_date: datetime object
 #         date to start counting from
-#     num_weekdays: int
+#     num_days: int
 #         number of days to add to the date
 
 #     Return the date n days later.

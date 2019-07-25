@@ -86,7 +86,7 @@ new_series_menu_blocks = [
         {
           "text":{
             "type":"plain_text",
-            "text":"Presenter's choice",
+            "text":"Presenter's Choice",
             "emoji":True
           },
           "value":"presenter_choice"
@@ -515,7 +515,7 @@ new_series_menu_blocks = [
               "text":"12:00 PM",
               "emoji":True
             },
-            "value":"time-1100"
+            "value":"time-1200"
           },
           {
             "text":{
@@ -523,7 +523,7 @@ new_series_menu_blocks = [
               "text":"12:15 PM",
               "emoji":True
             },
-            "value":"time-1115"
+            "value":"time-1215"
           },
           {
             "text":{
@@ -531,7 +531,7 @@ new_series_menu_blocks = [
               "text":"12:30 PM",
               "emoji":True
             },
-            "value":"time-1130"
+            "value":"time-1230"
           },
           {
             "text":{
@@ -539,7 +539,7 @@ new_series_menu_blocks = [
               "text":"12:45 PM",
               "emoji":True
             },
-            "value":"time-1145"
+            "value":"time-1245"
           },
           {
             "text":{
