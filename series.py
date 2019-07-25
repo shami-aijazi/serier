@@ -141,7 +141,7 @@ class Series(object):
 
         elif frequency == "every-weekday":
             # every weekday sequence
-            while num_sessions-1 > 0:
+            while num_sessions > 0:
                 last_session = last_session + timedelta(days=1)
                 weekday = last_session.weekday()
                 if weekday >= 5: # saturday = 5, sunday = 6
@@ -178,7 +178,7 @@ class Series(object):
         Returns the blocks JSON dict object
         """
         # Console log series menu completeness
-        print("\n" + 70*"="  + "\nRunning getMenuBlocks... \n" + "series.state=\n", self.state, "\n" + 70*"=")
+        # print("\n" + 70*"="  + "\nRunning getMenuBlocks... \n" + "series.state=\n", self.state, "\n" + 70*"=")
 
 
 
@@ -197,7 +197,7 @@ class Series(object):
 
         # console log for series_menu_blocks. Check if there is an initial_option carried over
         # from last run
-        print("\n" + 70*"="  + "\nseries_menu_blocks=\n", current_series_menu_blocks, "\n" + 70*"=")
+        # print("\n" + 70*"="  + "\nseries_menu_blocks=\n", current_series_menu_blocks, "\n" + 70*"=")
 
         # If presenter still has already been selected
         if self.state["presenter"] != "Not Selected":
@@ -372,11 +372,12 @@ class Series(object):
 
         # If the frequency is every weekday
         elif frequency == "every-weekday":
-            session_number = 1
+            session_number = 0
             while num_sessions > session_number:
 
                 # For the first session
-                if session_number == 1:
+                if session_number == 0:
+                    session_number+=1
                     # TODO append here
                     next_session = {
                     "session_id": "session-" + str(session_number),
@@ -384,19 +385,26 @@ class Series(object):
                     "presenter": self.state["presenter"],
                     "topic": "Not Selected"
                     }
+                    self.sessions.append(next_session)
+                    
+                
 
                 # Increment the datetime by one day
                 next_session_dt += timedelta(days=1) 
 
                 # If it is a weekday
                 if next_session_dt.weekday() < 5: # sunday = 6
-                    session_number += 1
+                    session_number+=1
                     next_session = {
                     "session_id": "session-" + str(session_number),
                     "ts": str(int(next_session_dt.timestamp())),
                     "presenter": self.state["presenter"],
                     "topic": "Not Selected"
                     }
+                    self.sessions.append(next_session)
+                    
+
+                
 
 
         # If the frequency is every week
