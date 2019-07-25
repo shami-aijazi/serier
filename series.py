@@ -372,6 +372,7 @@ class Series(object):
 
         # If the frequency is every weekday
         elif frequency == "every-weekday":
+            
             session_number = 0
             while num_sessions > session_number:
 
