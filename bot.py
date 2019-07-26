@@ -251,17 +251,14 @@ class Bot(object):
         series_time = datetime.strptime(currentSeries.state["time"], '%I:%M %p')
         first_session_date = datetime.strptime(currentSeries.state["first_session"], "%Y-%m-%d")
         first_session_dt = first_session_date.replace(hour=series_time.hour, minute=series_time.minute)
-        
+
         # Use the timezone and the series data to convert the time to UTC
         user_local_dt = user_tz.localize(first_session_dt)
         utc_dt = user_local_dt.astimezone(pytz.utc)
 
-
+        
         # Compare the scheduled time to the time now
         utc_now = datetime.now(pytz.utc)
-        # console log for datetimes
-        # print("\n" + 70*"="  + "\nSchedulued Datetime=\n", utc_dt, "\nNow Datetime=\n", utc_now, "\n" + 70*"=")
-        
 
         if utc_dt < utc_now:
             # If the series is scheduled for the past
@@ -305,8 +302,11 @@ class Bot(object):
             
             # TODO edit the series state to be what we want to serialize
             # Update time and first session to be UTC
+
             currentSeries.state["time"] = utc_dt.time().strftime("%I:%M %p")
             currentSeries.state["first_session"] = utc_dt.date().strftime("%Y-%m-%d")
+
+
 
             # Update last_session to be UTC
             last_session_date = datetime.strptime(currentSeries.state["last_session"], "%m/%d/%Y")

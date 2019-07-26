@@ -9,6 +9,7 @@ current_series_menu_blocks = copy.deepcopy(new_series_menu_blocks)
 
 from datetime import datetime
 from datetime import timedelta
+import pytz
 """
 Slack Series class to represent series for the series organizer app.
 """
@@ -350,6 +351,9 @@ class Series(object):
         # Get the datetime of the first session
         next_session_dt = next_session_dt.replace(hour=series_time.hour, minute=series_time.minute)
 
+        # Localize the time to utc
+        next_session_dt = pytz.utc.localize(next_session_dt)
+
 
         # If the frequency is every day
         if frequency == "every-day":
@@ -372,7 +376,7 @@ class Series(object):
 
         # If the frequency is every weekday
         elif frequency == "every-weekday":
-            
+
             session_number = 0
             while num_sessions > session_number:
 
@@ -519,7 +523,7 @@ class Series(object):
 		        "text": {
 			        "type": "mrkdwn",  
                     #  Using Slack's date formatting, only need a timestamp
-			        "text": ":calendar: <!date^" + session["ts"] + "^{date_short_pretty} at {time}|" + datetime.fromtimestamp(float(session["ts"])).strftime("%b %d, %Y at %I:%M %p UTC") + ">"
+			        "text": ":calendar: <!date^" + session["ts"] + "^{date_short_pretty} at {time}|" + datetime.fromtimestamp(int(session["ts"])).strftime("%b %d, %Y at %I:%M %p") + ">"
                     }
                 })
             # 4- append the presenter
