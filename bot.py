@@ -10,6 +10,8 @@ from datetime import datetime
 from datetime import timedelta
 import pytz
 
+import sqlite3
+
 # import the series class and construct an empty Series object
 from series import Series
 currentSeries = Series()
@@ -221,7 +223,7 @@ class Bot(object):
 
         # Set the series start date and series_time
         series_start_date = now_user_tz.strftime("%Y-%m-%d")
-        series_time = now_user_tz.strftime('%I:%M %p')
+        series_time = now_user_tz.strftime('%H:%M')
 
         # Populate the series object with default values
         # Save the timestamp of the menu message on the series object
@@ -248,7 +250,7 @@ class Bot(object):
         user_tz = pytz.timezone(currentSeries.timezone)
 
         # Create a datetime object from the series data
-        series_time = datetime.strptime(currentSeries.state["time"], '%I:%M %p')
+        series_time = datetime.strptime(currentSeries.state["time"], '%H:%M')
         start_date_date = datetime.strptime(currentSeries.state["start_date"], "%Y-%m-%d")
         start_date_dt = start_date_date.replace(hour=series_time.hour, minute=series_time.minute)
 
@@ -297,13 +299,11 @@ class Bot(object):
         # If there is no problem with the series state
         # Give the go ahead
         else:
-
-            # TODO commit the series to db
             
             # TODO edit the series state to be what we want to serialize
             # Update time and first session to be UTC
 
-            currentSeries.state["time"] = utc_dt.time().strftime("%I:%M %p")
+            currentSeries.state["time"] = utc_dt.time().strftime("%H:%M")
             currentSeries.state["start_date"] = utc_dt.date().strftime("%Y-%m-%d")
 
 
@@ -340,6 +340,39 @@ class Bot(object):
                 # rewrite the file with newly added series
                 series_file.seek(0)
                 json.dump(series_dict, series_file)
+
+
+            # DATABASE OPERATIONS
+
+            # First, connect to the sqlite3 database
+            con = sqlite3.connect("serier.db")
+            
+            # Create a cursor
+            cur = con.cursor()
+
+
+            # Prepare the statement and the values
+            series_record = (currentSeries.state["title"], currentSeries.state["presenter"], currentSeries.state["topic_selection"],
+                            currentSeries.state["start_date"], currentSeries.state["end_date"], currentSeries.state["time"],
+                            currentSeries.state["frequency"], currentSeries.state["num_sessions"], 0) # The last 0 is the boolean false for is_paused
+
+            sql_statement = ''' INSERT INTO series(title,presenter,topic_selection,start_date,end_date,
+                                                   session_start, frequency, num_sessions, is_paused)
+              VALUES(?,?,?,?,?,?,?,?,?) '''
+
+            # Execute the insertion
+            cur.execute(sql_statement, series_record)
+
+            # Save the ID of the series that was just inserted
+            current_series_id = cur.lastrowid
+
+            # commit and close the database connection
+            con.commit()
+            con.close()
+
+            # Console log for database
+            print("\n" + 70*"="  + "\nJust inserted the series to database...series_id=\n", current_series_id, "\n" + 70*"=")
+            
 
             
             # Send a confirmation message to the user that their series has been created
@@ -523,6 +556,9 @@ class Bot(object):
         Update the series time. series_time str format: '%I:%M %p'
         """
         # Update the series state time
+
+        # Convert the series time to "%H:%M" and store it in state
+        series_time = datetime.strptime(series_time, '%I:%M %p').strftime('%H:%M')
         currentSeries.updateSeries("time", series_time)
 
         # Console log of updated series time

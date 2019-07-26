@@ -4,33 +4,8 @@ from datetime import datetime
 import pytz
 from datetime import timedelta
 
-
-# Testing an id autoincrement tool for Python classes
-import itertools
-class Student:
-
-    id_iter = itertools.count()
-
-    def __init__(self):
-        # Either:
-        self.id = next(Student.id_iter)
-        self.name = ""
-        self.school = ""
-
-
-s = Student()
-s.name = "Conrad McArthur"
-s.school = "Hasselbank School of Bioengineering"
-
-print("Student (id, name, school):", (s.id, s.name, s.school))
-
-
-s2 = Student()
-s2.name = "Jeeves Coloria"
-s2.school = "Ponqui Institute of Germanic Arts"
-
-print("Student (id, name, school):", (s2.id, s2.name, s2.school))
-
+if ('0'):
+    print(" \'0\' is true")
 
 
 # <!date^1577751600.0^{date_pretty}{time}|fallback_text>

@@ -185,7 +185,7 @@ def _action_handler (payload, action_type, action_id):
             # Format for the time: '%I:%M %p'
             # Might want to convert this to python time format later in backend
             series_time = payload["actions"][0]["selected_option"]["text"]["text"]
-
+            
             pyBot.update_series_time(channel_id, series_time)
             return make_response("New Series Time updated", 200)
 

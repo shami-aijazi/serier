@@ -259,14 +259,14 @@ class Series(object):
         current_series_menu_blocks[10]["elements"][1]["initial_option"] = {
             "text":
                 {"type": "plain_text",
-                "text": self.state["time"],
+                "text": datetime.strptime(self.state["time"], '%H:%M').strftime('%I:%M %p'),
                 "emoji": True},
                 # Format the time for the "value" parameter
-                "value": "time-" + datetime.strptime(self.state["time"], '%I:%M %p').strftime('%H%M')
+                "value": "time-" + datetime.strptime(self.state["time"], '%H:%M').strftime('%H%M')
             }
         
         # 2- === Update summary context ===
-        current_series_menu_blocks[-2]["elements"][4]["text"] = "*Time*: " + self.state["time"]
+        current_series_menu_blocks[-2]["elements"][4]["text"] = "*Time*: " + datetime.strptime(self.state["time"], '%H:%M').strftime('%I:%M %p')
 
         # ==================== Update Frequency ====================
         # 1- === Update select menu ===
@@ -343,7 +343,7 @@ class Series(object):
         frequency = self.state["frequency"]
         num_sessions = int(self.state["num_sessions"])
 
-        series_time = datetime.strptime(self.state["time"],"%I:%M %p")
+        series_time = datetime.strptime(self.state["time"],"%H:%M")
 
 
         next_session_dt = datetime.strptime(self.state["start_date"], "%Y-%m-%d")
