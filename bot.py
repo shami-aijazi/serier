@@ -249,11 +249,11 @@ class Bot(object):
 
         # Create a datetime object from the series data
         series_time = datetime.strptime(currentSeries.state["time"], '%I:%M %p')
-        first_session_date = datetime.strptime(currentSeries.state["first_session"], "%Y-%m-%d")
-        first_session_dt = first_session_date.replace(hour=series_time.hour, minute=series_time.minute)
+        start_date_date = datetime.strptime(currentSeries.state["start_date"], "%Y-%m-%d")
+        start_date_dt = start_date_date.replace(hour=series_time.hour, minute=series_time.minute)
 
         # Use the timezone and the series data to convert the time to UTC
-        user_local_dt = user_tz.localize(first_session_dt)
+        user_local_dt = user_tz.localize(start_date_dt)
         utc_dt = user_local_dt.astimezone(pytz.utc)
 
         
@@ -304,15 +304,15 @@ class Bot(object):
             # Update time and first session to be UTC
 
             currentSeries.state["time"] = utc_dt.time().strftime("%I:%M %p")
-            currentSeries.state["first_session"] = utc_dt.date().strftime("%Y-%m-%d")
+            currentSeries.state["start_date"] = utc_dt.date().strftime("%Y-%m-%d")
 
 
 
-            # Update last_session to be UTC
-            last_session_date = datetime.strptime(currentSeries.state["last_session"], "%m/%d/%Y")
-            user_local_dt = user_tz.localize(last_session_date)
-            last_session_utc = user_local_dt.astimezone(pytz.utc)
-            currentSeries.state["last_session"] = last_session_utc.strftime("%Y-%m-%d")
+            # Update end_date to be UTC
+            end_date_date = datetime.strptime(currentSeries.state["end_date"], "%m/%d/%Y")
+            user_local_dt = user_tz.localize(end_date_date)
+            end_date_utc = user_local_dt.astimezone(pytz.utc)
+            currentSeries.state["end_date"] = end_date_utc.strftime("%Y-%m-%d")
 
 
             # series_dict = {organizer_id: [currentSeries.state]}
@@ -581,8 +581,8 @@ class Bot(object):
         Update the series first session date.
         series_date is in the format "%Y-%m-%d"
         """
-        currentSeries.updateSeries("first_session", series_date)
-        # Console log of updated series first_sessions
+        currentSeries.updateSeries("start_date", series_date)
+        # Console log of updated series start_dates
         # print("\n" + 70*"="  + "\nUpdating Series First sesh date...\ncurrentSeries.state=\n", currentSeries.state, "\n" + 70*"=")
 
         # Update the menu message to reflect the change

@@ -1399,7 +1399,7 @@ new_series_menu_blocks = [
       },
       {
         "type":"mrkdwn",
-        "text":"*First Session*: Not Selected"
+        "text":"*Start Date*: Not Selected"
       },
       {
         "type":"mrkdwn",
@@ -1411,7 +1411,7 @@ new_series_menu_blocks = [
       },
       {
         "type":"mrkdwn",
-        "text":"*Last Session*: N/A"
+        "text":"*End Date*: N/A"
       }
     ]
   },

@@ -30,7 +30,7 @@ class Series(object):
         # A list of session JSON objects. Each session has an id, a POSIX ts, a presenter, and a topic.
         self.sessions = []
 
-    def newSeries(self, ts, first_session, series_time, menu_tz):
+    def newSeries(self, ts, start_date, series_time, menu_tz):
         """
         # TODO Should this modify the series itself or return a new series with the changes??
 
@@ -41,8 +41,8 @@ class Series(object):
         ts: str
             timestamp of the series creation menu message. This is needed to update the message.
 
-        first_session: str
-            the default date of the first session in the series.
+        start_date: str
+            the default starting date of the series.
 
         series_time: str
             the default time of the sessions in the series
@@ -54,11 +54,11 @@ class Series(object):
         self.state = {"title": "My Team's Weekly Brownbag",
                       "presenter": "Not Selected",
                       "topic_selection": "Not Selected",
-                      "first_session": first_session,
+                      "start_date": start_date,
                       "time": series_time,
                       "frequency": "Not Selected",
                       "num_sessions": 0,
-                      "last_session": "N/A"
+                      "end_date": "N/A"
                     }
         self.menu_ts = ts
         self.timezone = menu_tz
@@ -119,14 +119,14 @@ class Series(object):
 
     def getLastSession(self):
         """
-        Calculate and update last session date based on first session date,
+        Calculate and update end date based on Start Date date,
         number of sessions, and frequency.
-
-        Return last session date
+        
+        Return end date?
         """
 
         # Start at the start_date, formatted to be a datetime object
-        last_session = datetime.strptime(self.state["first_session"], "%Y-%m-%d")
+        end_date = datetime.strptime(self.state["start_date"], "%Y-%m-%d")
         
         # Extract frequency and num_sessions
         frequency = self.state["frequency"]
@@ -138,38 +138,38 @@ class Series(object):
 
         if frequency == "every-day":
             # format this correctly
-            last_session += timedelta(days=num_sessions)
+            end_date += timedelta(days=num_sessions)
 
         elif frequency == "every-weekday":
             # every weekday sequence
             while num_sessions > 0:
-                last_session = last_session + timedelta(days=1)
-                weekday = last_session.weekday()
+                end_date = end_date + timedelta(days=1)
+                weekday = end_date.weekday()
                 if weekday >= 5: # saturday = 5, sunday = 6
                     continue
                 num_sessions -= 1
 
         elif frequency == "every-week":
             # every week sequence
-            last_session += timedelta(days=7*num_sessions)
+            end_date += timedelta(days=7*num_sessions)
 
         elif frequency == "every-2-weeks":
             # every 2 weeks sequence
-            last_session += timedelta(days=14*num_sessions)
+            end_date += timedelta(days=14*num_sessions)
 
         elif frequency == "every-3-weeks":
             # every 3 weeks sequence
-            last_session += timedelta(days=21*num_sessions)
+            end_date += timedelta(days=21*num_sessions)
 
         elif frequency == "every-month":
             # every month sequency
-            last_session += timedelta(days=28*num_sessions)
+            end_date += timedelta(days=28*num_sessions)
         
         # Format the datetime object
-        last_session = last_session.strftime("%m/%d/%Y")
+        end_date = end_date.strftime("%m/%d/%Y")
 
         # Store the result in state
-        self.state["last_session"] = last_session
+        self.state["end_date"] = end_date
 
     def getMenuBlocks(self):
         """
@@ -243,15 +243,15 @@ class Series(object):
                 current_series_menu_blocks[-2]["elements"][2]["text"] = "*Topic Selection*: Presenter's Choice"
 
 
-        # ==================== Update First Session Date ====================
+        # ==================== Update Start Date ====================
         # 1- === Update datepicker ===
-        current_series_menu_blocks[10]["elements"][0]["initial_date"] = self.state["first_session"]
+        current_series_menu_blocks[10]["elements"][0]["initial_date"] = self.state["start_date"]
 
         
         # 2- === Update summary context ===
         # Format it correctly
-        if self.state["first_session"] != "Not Selected":
-            current_series_menu_blocks[-2]["elements"][3]["text"] = "*First Session*: " + datetime.strptime(self.state["first_session"], "%Y-%m-%d").strftime("%m/%d/%Y")
+        if self.state["start_date"] != "Not Selected":
+            current_series_menu_blocks[-2]["elements"][3]["text"] = "*Start Date*: " + datetime.strptime(self.state["start_date"], "%Y-%m-%d").strftime("%m/%d/%Y")
 
         # ==================== Update Time ====================
         
@@ -295,11 +295,11 @@ class Series(object):
                         "value": "numsessions-" + str(self.state["num_sessions"])
                     }
                     
-        # ==================== Update Last Session Date ====================
+        # ==================== Update End Date ====================
         # If the frequency and the num_sessions has not been selected
         if self.state["frequency"] != "Not Selected" and self.state["num_sessions"] != 0:
             self.getLastSession()
-        current_series_menu_blocks[-2]["elements"][6]["text"] = "*Last Session*: " + self.state["last_session"]
+        current_series_menu_blocks[-2]["elements"][6]["text"] = "*End Date*: " + self.state["end_date"]
 
 
         # ==================== Add Start Button When Series Complete ====================
@@ -346,9 +346,9 @@ class Series(object):
         series_time = datetime.strptime(self.state["time"],"%I:%M %p")
 
 
-        next_session_dt = datetime.strptime(self.state["first_session"], "%Y-%m-%d")
+        next_session_dt = datetime.strptime(self.state["start_date"], "%Y-%m-%d")
 
-        # Get the datetime of the first session
+        # Get the datetime of the Start Date
         next_session_dt = next_session_dt.replace(hour=series_time.hour, minute=series_time.minute)
 
         # Localize the time to utc
@@ -380,7 +380,7 @@ class Series(object):
             session_number = 0
             while num_sessions > session_number:
 
-                # For the first session
+                # For the Start Date
                 if session_number == 0:
                     session_number+=1
                     # TODO append here
@@ -499,7 +499,7 @@ class Series(object):
 
 
         # Console log for sessions
-        print("\n" + 70*"="  + "\nsessions object:... \n", self.sessions, "\n"+ 70*"=")
+        # print("\n" + 70*"="  + "\nsessions object:... \n", self.sessions, "\n"+ 70*"=")
 
         # Start appending the sessions
         for session in self.sessions:

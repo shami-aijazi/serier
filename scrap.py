@@ -4,23 +4,52 @@ from datetime import datetime
 import pytz
 from datetime import timedelta
 
+
+# Testing an id autoincrement tool for Python classes
+import itertools
+class Student:
+
+    id_iter = itertools.count()
+
+    def __init__(self):
+        # Either:
+        self.id = next(Student.id_iter)
+        self.name = ""
+        self.school = ""
+
+
+s = Student()
+s.name = "Conrad McArthur"
+s.school = "Hasselbank School of Bioengineering"
+
+print("Student (id, name, school):", (s.id, s.name, s.school))
+
+
+s2 = Student()
+s2.name = "Jeeves Coloria"
+s2.school = "Ponqui Institute of Germanic Arts"
+
+print("Student (id, name, school):", (s2.id, s2.name, s2.school))
+
+
+
 # <!date^1577751600.0^{date_pretty}{time}|fallback_text>
 
-tz = pytz.timezone('America/Los_Angeles')
+# tz = pytz.timezone('America/Los_Angeles')
 
-selected_time = datetime.strptime("04:20 PM", '%I:%M %p')
-selected_date = datetime.strptime("2019-12-30", "%Y-%m-%d")
-selected_dt = selected_date.replace(hour=selected_time.hour, minute=selected_time.minute)
+# selected_time = datetime.strptime("04:20 PM", '%I:%M %p')
+# selected_date = datetime.strptime("2019-12-30", "%Y-%m-%d")
+# selected_dt = selected_date.replace(hour=selected_time.hour, minute=selected_time.minute)
 
 
-# Localize the datetime we have.
-local_dt = tz.localize(selected_dt)
-print("Local timezone after making it aware:", local_dt)
-print("local timestamp:", local_dt.timestamp())
+# # Localize the datetime we have.
+# local_dt = tz.localize(selected_dt)
+# print("Local timezone after making it aware:", local_dt)
+# print("local timestamp:", local_dt.timestamp())
 
-utc_dt = local_dt.astimezone(pytz.utc)
-print("UTC time:", utc_dt)
-print("utc from local timestamp:", utc_dt.timestamp())
+# utc_dt = local_dt.astimezone(pytz.utc)
+# print("UTC time:", utc_dt)
+# print("utc from local timestamp:", utc_dt.timestamp())
 
 
 
