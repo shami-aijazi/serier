@@ -316,34 +316,10 @@ class Bot(object):
 
 
             # series_dict = {organizer_id: [currentSeries.state]}
-        
 
 
-            # TODO Serialize this to a file locally
-            # Open the file, read it in, update it (organizer already has a series)
-            # or add it (new organizer).
-            # Write the file back in
-            with open('series.txt', 'r+') as series_file: 
-                try: 
-                    series_dict = json.load(series_file)
-
-                
-                # ValueError is raised when the series file is empty. This should only trigger for first series
-                except ValueError: 
-                    # Each organizer user has a list of series associated with them
-                    # Each series is a dictionary representing its state
-                    series_dict = {organizer_id: []}
-                   
-                
-                series_dict[organizer_id].append({"series_state":currentSeries.state})
-                
-                # rewrite the file with newly added series
-                series_file.seek(0)
-                json.dump(series_dict, series_file)
-
-
+            # TODO Put these in subroutines (make it resuable)
             # DATABASE OPERATIONS
-
             # First, connect to the sqlite3 database
             con = sqlite3.connect("serier.db")
             
@@ -407,10 +383,11 @@ class Bot(object):
                                                 }
                                             ]
                                         )
+
             # Console log for populating sessions
             # print("\n" + 70*"="  + "\nAbout to set the sessions...\ncurrentSeries.state=\n", currentSeries.state, "\n" + 70*"=")
             # Now that the series has the go ahead, create the sessions
-            currentSeries.setSessions()
+            currentSeries.createSessions(current_series_id)
 
             
 

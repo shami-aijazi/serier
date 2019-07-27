@@ -43,11 +43,13 @@ curr.execute('''CREATE TABLE IF NOT EXISTS series
              topic_selection VARCHAR, start_date DATE, end_date DATE, session_start TIME,
              frequency VARCHAR, num_sessions INTEGER, is_paused BOOLEAN);''')
 
-
 # Create the sessions table
 curr.execute('''CREATE TABLE IF NOT EXISTS sessions
              (session_id INTEGER PRIMARY KEY, series_id INTEGER, session_start TIME, presenter VARCHAR,
-              topic DATE, is_skipped BOOLEAN, is_done BOOLEAN, is_modified BOOLEAN);''')
+              topic VARCHAR, is_skipped BOOLEAN, is_done BOOLEAN, is_modified BOOLEAN);''')
+
+# Drop a table
+# curr.execute('''DROP TABLE sessions;''')
 
 # Create the organizers table
 curr.execute('''CREATE TABLE IF NOT EXISTS organizers

@@ -10,6 +10,7 @@ current_series_menu_blocks = copy.deepcopy(new_series_menu_blocks)
 from datetime import datetime
 from datetime import timedelta
 import pytz
+import sqlite3
 """
 Slack Series class to represent series for the series organizer app.
 """
@@ -332,10 +333,13 @@ class Series(object):
         # Return it after modifications
         return current_series_menu_blocks
 
-    def setSessions(self):
+    def createSessions(self, series_id):
         """
         Generate a list of session objects corresponding to the sessions that the series will be composed of.
         Store this list on the Series object.
+
+        Serialize the sessions and commit them to a table in the database
+
         These sessions will be computed and populated based on the values in the series state.
         Since this method assumes that the series state is full this method should only be called after
         making sure the series menu is complete.
@@ -362,7 +366,6 @@ class Series(object):
                 # Create a new session for each day, including the first day
                 # Topic will only be populated if the series topic selection option is "pre-determined"
                 next_session = {
-                "session_id": "session-" + str(session_number),
                 "ts": str(int(next_session_dt.timestamp())),
                 "presenter": self.state["presenter"],
                 "topic": "Not Selected"
@@ -385,7 +388,6 @@ class Series(object):
                     session_number+=1
                     # TODO append here
                     next_session = {
-                    "session_id": "session-" + str(session_number),
                     "ts": str(int(next_session_dt.timestamp())),
                     "presenter": self.state["presenter"],
                     "topic": "Not Selected"
@@ -401,16 +403,13 @@ class Series(object):
                 if next_session_dt.weekday() < 5: # sunday = 6
                     session_number+=1
                     next_session = {
-                    "session_id": "session-" + str(session_number),
                     "ts": str(int(next_session_dt.timestamp())),
                     "presenter": self.state["presenter"],
                     "topic": "Not Selected"
                     }
                     self.sessions.append(next_session)
-                    
 
                 
-
 
         # If the frequency is every week
         elif frequency == "every-week":
@@ -418,7 +417,6 @@ class Series(object):
 
                 # Topic will only be populated if the series topic selection option is "pre-determined"
                 next_session = {
-                "session_id": "session-" + str(session_number),
                 "ts": str(int(next_session_dt.timestamp())),
                 "presenter": self.state["presenter"],
                 "topic": "Not Selected"
@@ -435,7 +433,6 @@ class Series(object):
 
                 # Topic will only be populated if the series topic selection option is "pre-determined"
                 next_session = {
-                "session_id": "session-" + str(session_number),
                 "ts": str(int(next_session_dt.timestamp())),
                 "presenter": self.state["presenter"],
                 "topic": "Not Selected"
@@ -467,7 +464,6 @@ class Series(object):
 
                 # Topic will only be populated if the series topic selection option is "pre-determined"
                 next_session = {
-                "session_id": "session-" + str(session_number),
                 "ts": str(int(next_session_dt.timestamp())),
                 "presenter": self.state["presenter"],
                 "topic": "Not Selected"
@@ -477,14 +473,56 @@ class Series(object):
                 # 28 days
                 next_session_dt += timedelta(days=28)
 
-    def getScheduleBlocks(self, series_title):
+        
+        # Now that all the sessions have been created, commit them to a db
+        
+        # TODO Put these in subroutines (make it resuable)
+        # DATABASE OPERATIONS
+        # First, connect to the sqlite3 database
+        con = sqlite3.connect("serier.db")
+        
+        # Create a cursor
+        cur = con.cursor()
+
+        # Iterate through the sessions list and add them to the database.
+        # TODO: Later, probably just want to commit them to db AS we are creating them (a few lines up in the code)
+        for session in self.sessions:
+            
+            # Prepare the statement and the values
+            session_record = (series_id, session["ts"], session["presenter"], session["topic"],
+                            0, 0, 0) # The last three 0s are the boolean false for is_skipped, is_done, and is_modified respectively
+
+            sql_statement = ''' INSERT INTO sessions(series_id,session_start,presenter,topic,
+                                                    is_skipped, is_done, is_modified)
+                VALUES(?,?,?,?,?,?,?) '''
+
+            # Execute the insertion
+            cur.execute(sql_statement, session_record)
+
+
+        # commit and close the database connection
+        con.commit()
+        con.close()
+
+    def getScheduleBlocks(self, series_title, sessions):
         """
         Generate the blocks that the series schedule will be composed of. 
-        These blocks will be based on the sessions object stored on the current object.
+        These blocks will be based on the sessions parameter.
 
-        # TODO hackfix add series_title to be able to display it in schedule message
+        Set the state to be the default values that the series creation menu will show.
+
+        Parameters
+        ----------
+        series_title: str
+            title of the series the schedule is for
+
+        sessions: list of dicts
+            a list of JSON session objects
+
+        # TODO clean up the hackfix where series_title is a parameter to be able to display it in schedule message
         Returns the blocks JSON dict object
         """
+        
         # The blocks object starts off empty
         series_schedule_blocks = []
 
@@ -499,10 +537,10 @@ class Series(object):
 
 
         # Console log for sessions
-        # print("\n" + 70*"="  + "\nsessions object:... \n", self.sessions, "\n"+ 70*"=")
+        # print("\n" + 70*"="  + "\nsessions object:... \n", sessions, "\n"+ 70*"=")
 
         # Start appending the sessions
-        for session in self.sessions:
+        for session in sessions:
             # 1- append the divider
             series_schedule_blocks.append({
                 "type": "divider"
@@ -513,7 +551,7 @@ class Series(object):
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
-                        "text": "*Session " + session["session_id"][8:] + "*"
+                        "text": "*Session " + session["session_id"] + "*"
                         }
                 })
 
@@ -523,7 +561,7 @@ class Series(object):
 		        "text": {
 			        "type": "mrkdwn",  
                     #  Using Slack's date formatting, only need a timestamp
-			        "text": ":calendar: <!date^" + session["ts"] + "^{date_short_pretty} at {time}|" + datetime.fromtimestamp(int(session["ts"])).strftime("%b %d, %Y at %I:%M %p") + ">"
+			        "text": ":calendar: <!date^" + session["ts"] + "^{date_short_pretty} at {time}|" + datetime.fromtimestamp(int(session["session_start"])).strftime("%b %d, %Y at %I:%M %p") + ">"
                     }
                 })
             # 4- append the presenter
@@ -535,13 +573,13 @@ class Series(object):
                         },
                 "accessory": {
                     "type": "button",
-                    "action_id": "change_presenter_session_" + session["session_id"][8:],
+                    "action_id": "change_presenter_session_" + session["session_id"],
 			        "text": {
                         "type": "plain_text",
                         "text": "Change Presenter",
                         "emoji": True
                         },
-                    "value": "change_presenter_session_" + session["session_id"][8:]
+                    "value": "change_presenter_session_" + session["session_id"]
                     }
                 })
 
@@ -554,13 +592,13 @@ class Series(object):
                     },
                 "accessory": {
                     "type": "button",
-                    "action_id": "change_topic_session_" + session["session_id"][8:],
+                    "action_id": "change_topic_session_" + session["session_id"],
                     "text": {
                 "type": "plain_text",
                 "text": "Change Topic",
                 "emoji": True
                 },
-                "value": "change_presenter_session_" + session["session_id"][8:]
+                "value": "change_presenter_session_" + session["session_id"]
                 }
                 })
 
