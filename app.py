@@ -65,7 +65,7 @@ def verify_signature(timestamp, signature, request_body):
         timestamp of incoming slack request
     signature : str
         signing signature of incoming slack request
-    req: str
+    request_body: str
         The raw request body from incoming slack request
 
     Returns
@@ -79,7 +79,7 @@ def verify_signature(timestamp, signature, request_body):
     # It could be a replay attack.
         return False
     
-    sig_basestring = str.encode('v0:' + str(timestamp) + ':') + request.get_data()
+    sig_basestring = str.encode('v0:' + str(timestamp) + ':') + request_body
 
     request_hash = 'v0=' + hmac.new(
                 str.encode(pyBot.signing_secret),
@@ -222,6 +222,30 @@ def _action_handler (payload, action_type, action_id):
     # If there is an action event that the app can not handle
     # Return an error message
     return make_response("App not equipped for this event", 200, {"X-Slack-No-Retry": 1})
+
+
+@app.route("/serier", methods=["POST"])
+def serier():
+    """
+    This is the slash command endpoint.
+    """
+    # First, verify that the request is coming from Slack by checking the Signing Secret
+    # To verify the signature, extract the relevant information from the request
+    timestamp = request.headers['X-Slack-Request-Timestamp']
+    signature = request.headers['X-Slack-Signature']
+    request_body = request.get_data()
+
+    # If it doesn't pass verification, stop it right there
+    if not verify_signature(timestamp, signature, request_body):
+        return make_response("Invalid Signing Signature on Request", 403)
+
+    # If we want same command request URL to support multiple different commands,
+    # then we can seperate them from here.
+
+    # Extract the payload from the slash command
+    payload  = dict(request.form)
+
+    return make_response("", 200)
 
 
 
