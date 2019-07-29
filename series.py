@@ -344,27 +344,27 @@ class Series(object):
         Since this method assumes that the series state is full this method should only be called after
         making sure the series menu is complete.
         """
+
+        # Extract the frequency and the num_sessions from the series state
         frequency = self.state["frequency"]
         num_sessions = int(self.state["num_sessions"])
 
+        # Extract the series time from state
         series_time = datetime.strptime(self.state["time"],"%H:%M")
 
-
-        next_session_dt = datetime.strptime(self.state["start_date"], "%Y-%m-%d")
-
         # Get the datetime of the Start Date
+        next_session_dt = datetime.strptime(self.state["start_date"], "%Y-%m-%d")
         next_session_dt = next_session_dt.replace(hour=series_time.hour, minute=series_time.minute)
 
         # Localize the time to utc
         next_session_dt = pytz.utc.localize(next_session_dt)
-
 
         # If the frequency is every day
         if frequency == "every-day":
             for session_number in range (1, num_sessions+1):
 
                 # Create a new session for each day, including the first day
-                # Topic will only be populated if the series topic selection option is "pre-determined"
+                # TODO Topic should only be populated if the series topic selection option is "pre-determined"
                 next_session = {
                 "ts": str(int(next_session_dt.timestamp())),
                 "presenter": self.state["presenter"],
@@ -386,7 +386,6 @@ class Series(object):
                 # For the Start Date
                 if session_number == 0:
                     session_number+=1
-                    # TODO append here
                     next_session = {
                     "ts": str(int(next_session_dt.timestamp())),
                     "presenter": self.state["presenter"],
