@@ -94,8 +94,6 @@ def _action_handler (payload, action_type, action_id):
 #     A helper function that routes user interactive actions to our Bot
 #     by action type and and action id.
 #     """
-    # TODO actually write the pyBot functions that are assumed to be there
-
     # Extract the original message channel_id
     # in order to update the message as the state of the series changes.
 
@@ -111,7 +109,7 @@ def _action_handler (payload, action_type, action_id):
         # If the user is creating a new series
         if action_id == "create_new_series":   
             message_ts = payload["container"]["message_ts"]  
-            pyBot.new_series_menu(channel_id, message_ts, user_id)
+            pyBot.new_series_menu(channel_id, user_id, message_ts)
 
             return make_response("New Series Created", 200)
         
@@ -137,12 +135,12 @@ def _action_handler (payload, action_type, action_id):
         # If the user acknowledges warning about schedule being in the past
         elif action_id == "past_schedule_ok":
             message_ts = payload["container"]["message_ts"] 
-            pyBot.acknowledge_notification(channel_id, message_ts)
+            pyBot.delete_message(channel_id, message_ts)
 
         # If the user acknowledges message about successful series creation
         elif action_id == "series_creation_ok":
             message_ts = payload["container"]["message_ts"] 
-            pyBot.acknowledge_notification(channel_id, message_ts)
+            pyBot.delete_message(channel_id, message_ts)
 
 
     # ==================== DIALOG SUBMISSION ACTIONS ====================
@@ -224,30 +222,6 @@ def _action_handler (payload, action_type, action_id):
     return make_response("App not equipped for this event", 200, {"X-Slack-No-Retry": 1})
 
 
-@app.route("/serier", methods=["POST"])
-def serier():
-    """
-    This is the slash command endpoint.
-    """
-    # First, verify that the request is coming from Slack by checking the Signing Secret
-    # To verify the signature, extract the relevant information from the request
-    timestamp = request.headers['X-Slack-Request-Timestamp']
-    signature = request.headers['X-Slack-Signature']
-    request_body = request.get_data()
-
-    # If it doesn't pass verification, stop it right there
-    if not verify_signature(timestamp, signature, request_body):
-        return make_response("Invalid Signing Signature on Request", 403)
-
-    # If we want same command request URL to support multiple different commands,
-    # then we can seperate them from here.
-
-    # Extract the payload from the slash command
-    payload  = dict(request.form)
-
-    return make_response("", 200)
-
-
 
 @app.route("/actions", methods=["POST"])
 def action():
@@ -294,6 +268,76 @@ def action():
     # Pass on the action event to the action handler routing function
     return _action_handler(payload, action_type, action_id)
 
+
+def _slash_handler(payload, slash_command, slash_text):
+    """
+    Helper method to handle Slack slash commands. 
+    Route incoming slash commands to the bot by slash command and text
+
+    NOTE: For now, slash_command will not affect the response action
+    """
+    channel_id = payload["channel_id"]
+    user_id = payload["user_id"]
+    # If the user paged the bot with empty text or with the word help
+    # then send the user the help message
+    if slash_text == "" or slash_text == "help":
+        pyBot.help_message(channel_id)
+
+    # TODO NAME THESE BETTER
+
+    # If the user wants to create a new series
+    elif slash_text == "create":
+        pyBot.new_series_menu(channel_id, user_id)
+        return make_response("", 200)
+    # If the user wants to see already existing series.
+    # elif slash_text == "read":
+    #     # TODO create this method.
+    #     pyBot.read_series(channel_id, user_id)
+
+    # elif slash_text == "update":
+    #     # TODO create this method
+    #     pyBot.update_series(channel_id, user_id)
+    
+    # elif slash_text == "delete":
+    #     # TODO create this method
+    #     pyBot.delete_series(channel_id, user_id)
+
+    # if the command was none of the above.
+    else:
+        # TODO add helpful reroute here. Like the boilerplate DM response message
+        # or a help message.
+        return make_response("App not equipped for this slash command", 200, {"X-Slack-No-Retry": 1})
+
+@app.route("/slash", methods=["POST"])
+def serier():
+    """
+    This is the slash command endpoint.
+    """
+    # First, verify that the request is coming from Slack by checking the Signing Secret
+    # To verify the signature, extract the relevant information from the request
+    timestamp = request.headers['X-Slack-Request-Timestamp']
+    signature = request.headers['X-Slack-Signature']
+    request_body = request.get_data()
+
+    # If it doesn't pass verification, stop it right there
+    if not verify_signature(timestamp, signature, request_body):
+        return make_response("Invalid Signing Signature on Request", 403)
+
+    # Extract the payload from the slash command
+    payload  = dict(request.form)
+
+
+    # Extract the team_id and connect to client
+    # TODO Are we connecting to the client on EVERY action?? Isn't that a lot? Slow?
+    team_id = payload["team_id"]
+    pyBot.client_connect(team_id)
+
+
+    # Extract the slash command the parameter text
+    slash_command = payload["command"]
+    slash_text = payload["text"].strip().lower() # remove whitespace and make it lowercase
+
+    return _slash_handler(payload, slash_command, slash_text)
 
 @app.route("/install", methods=["GET"])
 def pre_install():

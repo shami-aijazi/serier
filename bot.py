@@ -160,10 +160,11 @@ class Bot(object):
     def help_message(self, channel_id):
         """
         Create and send a response message to a user who DM's the bot.
-        :param team_id: str
-            id of the Slack team associated with the incoming event
-        :param user_id: str
-            id of the Slack user associated with the incoming event
+
+        Parameters
+        ----------
+        channel_id: str
+            id of the Slack channel associated with the incoming event
 
         """
 
@@ -193,11 +194,26 @@ class Bot(object):
 
                                         
 # ============================= SERIES BOT LOGIC =============================
-    def new_series_menu(self, channel_id, ts, user_id):
+    def new_series_menu(self, channel_id, user_id, ts=0):
         """
         Create new series. Update message with parameter ts to show the new series
         creation menu. Use the user_id to get the timezone of the user and update the
         series state's datetime accordingly.
+
+        Parameters
+        ----------
+        channel_id : str
+            id of the Slack channel associated with incoming event
+        
+        user_id : str
+            id of the user_id creating the new series
+
+        ts : str
+            timestamp of the series creation button message, if that's how the
+            the user is creating a new series. If series is being created from
+            a slash command, this is disregarded.
+
+        
         """
 
         # Get the user's info to extract the timezone
@@ -227,11 +243,12 @@ class Bot(object):
 
         # Populate the series object with default values
         # Save the timestamp of the menu message on the series object
+        # NOTE: the ts might be zero, handle this case later.
         currentSeries.newSeries(ts, series_start_date, series_time, user_tz)
 
-
-
-        update_message = self.client.chat_update(
+        # Delete the last message if the timestamp is not 0. (it's from button NOT slash)
+        if ts != 0:
+            update_message = self.client.chat_update(
                                             channel=channel_id,
                                             username=self.name,
                                             icon_emoji=self.emoji,
@@ -239,6 +256,20 @@ class Bot(object):
                                             ts=currentSeries.menu_ts,
                                             blocks=currentSeries.getMenuBlocks()
                                             )
+        
+        else:
+            # If the ts is not zero AKA the series creation was via slash command.
+            post_message = self.client.chat_postMessage(
+                                            channel=channel_id,
+                                            username=self.name,
+                                            icon_emoji=self.emoji,
+                                            text="Create new series",
+                                            blocks=currentSeries.getMenuBlocks()
+                                            )
+
+            # set the series menu timestamp to the post_message ts for menu editing
+            currentSeries.menu_ts = post_message["ts"]
+
 
     def confirm_new_series(self, channel_id, organizer_id, message_ts):
         """
@@ -387,34 +418,36 @@ class Bot(object):
             # Console log for populating sessions
             # print("\n" + 70*"="  + "\nAbout to set the sessions...\ncurrentSeries.state=\n", currentSeries.state, "\n" + 70*"=")
             # Now that the series has the go ahead, create the sessions
+            # This method creates and serializes a list of JSON session objects.
+            # It stores these sessions on the Series object.
+            # TODO Unnecessary to store it on Series object right?
             currentSeries.createSessions(current_series_id)
 
-            
+    
+    def printSchedule(self, channel_id):
+        """
+        Print the schedule associated with all the sessions in currentSeries object.
+        Assumes that the currentSeries object that is set is the series whose schedule needs to be shown.
+        """
 
-            # TODO untidy hacking fix here. Clean this up later. (lol as if this is the only section of code like that)
-            # Extract the title from state before resetting the series. This is needed
-            # to display the schedule. This is to fix the situation where the schedule
-            # message crashes because of exceeding the 50-block message limit. In that
-            # situation the series wouldn't reset and it would cause problems when
-            # making creating a series again.
-            series_title = currentSeries.state["title"]
+        # TODO untidy hacking fix here. Clean this up later. 
+        # (lol as if this is the only section of code like that)
+        # Extract the title from state before resetting the series. This is needed
+        # to display the schedule. This is to fix the situation where the schedule
+        # message crashes because of exceeding the 50-block message limit. In that
+        # situation the series wouldn't reset and it would cause problems when
+        # making creating a series again.
+        series_title = currentSeries.state["title"]
 
-            # At the end of the creation and serialization, reset the series in memory
-            # NOTE: this does NOT reset the sessions object on memory. This object is needed to send
-            # the schedule. This object will be reset LATER.
-            currentSeries.resetSeries()
+        # Then, post the schedule message
+        post_message = self.client.chat_postMessage(
+                                        channel=channel_id,
+                                        username=self.name,
+                                        icon_emoji=self.emoji,
+                                        text="Here's the schedule for your series *" + series_title + "*",
+                                        blocks=currentSeries.getScheduleBlocks(series_title, currentSeries.sessions)
+                                    )
 
-            # Then, post the schedule message
-            post_message = self.client.chat_postMessage(
-                                            channel=channel_id,
-                                            username=self.name,
-                                            icon_emoji=self.emoji,
-                                            text="Here's the schedule for your series *" + series_title + "*",
-                                            blocks=currentSeries.getScheduleBlocks(series_title)
-                                        )
-
-            # Reset the sessions in the end
-            currentSeries.sessions = []
 
 
     def cancel_new_series(self, channel_id):
@@ -608,12 +641,12 @@ class Bot(object):
                                             blocks=currentSeries.getMenuBlocks()
                                             )
 
-    def acknowledge_notification(self, channel_id, message_ts):
+    def delete_message(self, channel_id, message_ts):
         """
         Delete the message with specified timestamp.
         This is used primarily for notifications that a user can dismiss.
         """
-        delete_message = self.client.chat_delete(
+        return self.client.chat_delete(
                                             channel=channel_id,
                                             ts=message_ts,
                                             )
