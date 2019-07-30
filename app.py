@@ -282,6 +282,7 @@ def _slash_handler(payload, slash_command, slash_text):
     # then send the user the help message
     if slash_text == "" or slash_text == "help":
         pyBot.help_message(channel_id)
+        return make_response("", 200)
 
     # TODO NAME THESE BETTER
 
