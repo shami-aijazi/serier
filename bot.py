@@ -353,11 +353,10 @@ class Bot(object):
             # DATABASE OPERATIONS
             # First, connect to the sqlite3 database
             con = sqlite3.connect("serier.db")
-            
             # Create a cursor
             cur = con.cursor()
 
-
+            # First, insert the series into the series table.
             # Prepare the statement and the values
             series_record = (currentSeries.state["title"], currentSeries.state["presenter"], currentSeries.state["topic_selection"],
                             currentSeries.state["start_date"], currentSeries.state["end_date"], currentSeries.state["time"],
@@ -372,6 +371,16 @@ class Bot(object):
 
             # Save the ID of the series that was just inserted
             current_series_id = cur.lastrowid
+
+            # Second, insert the organizer into the organizers table
+            # Prepare the statement and the values
+            organizer_record = (organizer_id, current_series_id)
+            sql_statement = ''' INSERT INTO organizers(user_id,series_id)
+              VALUES(?,?) '''
+
+            # Execute the insertion
+            cur.execute(sql_statement, organizer_record)
+
 
             # commit and close the database connection
             con.commit()
@@ -650,6 +659,220 @@ class Bot(object):
                                             channel=channel_id,
                                             ts=message_ts,
                                             )
+
+# ============================= SLASH COMMAND LOGIC =============================
+
+    def read_series_message(self, channel_id, user_id):
+        """
+        This method shows a menu for the user to view their series.
+        Send the user a message showing the list of series they have. The user
+        will select the series they want to view.
+        """
+
+        """
+        Pseudocode:
+        -Connect to SQL database.
+        -Query for all series associated with the user id. (and team_id?)
+        -Use the results of the query to create a list of options for the 
+         select menu (using the title of the series for the text and the 
+         series_id as the value)
+        -Post the message with the blocks
+        """
+
+        # DATABASE OPERATIONS
+        # First, connect to the sqlite3 database
+        con = sqlite3.connect("serier.db")
+        # Create a cursor
+        cur = con.cursor()
+
+
+        # SQL statement to select all series that the user is organizing
+        sql_statement = '''SELECT series_id, title FROM series
+        WHERE series_id IN (SELECT series_id FROM organizers
+        WHERE user_id ='''  + user_id + ")"
+
+
+        # Store the result in a list of tuples of the format (series_id, title)
+        res = cur.execute(sql_statement).fetchall()
+
+        # Close the connection
+        con.close()
+
+        # check if result set res is empty. If it is empty, user has no series.
+        if len(res) <= 0:
+            blocks = [
+                {
+                    "type":"section",
+                    "text":{
+                    "type":"mrkdwn",
+                    "text":"You have no series to read."
+                    }
+                },
+                {
+                    "type":"section",
+                    "text":{
+                    "type":"mrkdwn",
+                    "text":"You can create one using the `/serier create` command."
+                    }
+                },
+                {
+                    "type":"actions",
+                    "elements":[
+                    {
+                        "type":"button",
+                        "action_id":"no_series_read_ok",
+                        "text":{
+                        "type":"plain_text",
+                        "text":"OK",
+                        "emoji":True
+                        },
+                        "value":"no_series_read_ok"
+                    }
+                    ]
+                }
+                ]
+
+        # The user has series
+        # Populate the select menu with the series associated with the user
+        else:
+            blocks = [
+                {  
+                    "type":"section",
+                    "text":{  
+                    "type":"mrkdwn",
+                    "text":"Select a series to read:"
+                    }
+                },
+                {  
+                    "type":"actions",
+                    "elements":[  
+                    {  
+                        "type":"static_select",
+                        "action_id":"select_series_read",
+                        "placeholder":{  
+                        "type":"plain_text",
+                        "text":"Select a series",
+                        "emoji":True
+                        },
+                        "options":[
+                            # Insert here. This format:
+                        #     {
+                        # 	"text": {
+                        # 		"type": "plain_text",
+                        # 		"text": "<series_title>",
+                        # 		"emoji": true
+                        # 	},
+                        # 	"value": "series_id-<series_id>"
+                        # }
+                        ]
+                    }
+                    ]
+                },
+                {  
+                    "type":"actions",
+                    "elements":[  
+                    {  
+                        "type":"button",
+                        "action_id":"cancel_read_series",
+                        "text":{  
+                        "type":"plain_text",
+                        "text":"Cancel",
+                        "emoji":True
+                        },
+                        "value":"cancel_read_series"
+                    }
+                    ]
+                }
+            ]
+
+
+            for series in res:
+                series_id, series_title = series[0], series[1]
+                next_series = {
+                            "text": {
+                                "type": "plain_text",
+                                "text": series_title,
+                                "emoji": True
+                            },
+                            "value": "series_id-" + series_id
+                        }
+
+                blocks[1]["elements"]["options"].append(next_series)
+
+        post_message = self.client.chat_postMessage(
+                                        channel=channel_id,
+                                        username=self.name,
+                                        icon_emoji=self.emoji,
+                                        text="Select a series to read",
+                                        blocks=blocks
+                                    )
+
+    def update_read_series_message(self, message_ts):
+        """
+        Updates the read series message to show a confirm button when the user
+        selects a series to read. Use the parameter message_ts to chat.update
+        the message.
+        """
+        # TODO add this block
+        confirm_read_button =  {  
+                        "type":"button",
+                        "action_id":"confirm_read_series",
+                        "text":{  
+                        "type":"plain_text",
+                        "text":"Read",
+                        "emoji":True
+                        },
+                        "style":"primary",
+                        "value":"confirm_read_series"
+                    }
+
+        # # If the initial blocks don't already contain a confirm button.
+        # if len(initial_message_blocks[-1]["elements"]) == 1 :
+        #     initial_message_blocks[-1]["elements"].insert(0, confirm_read_button)
+
+    def setSeries(self, series_id):
+        """
+        sets currentSeries (the series in memory) to be the series with a specified
+        series_id.
+        """
+        # DATABASE OPERATIONS
+        # First, connect to the sqlite3 database
+        con = sqlite3.connect("serier.db")
+        # Create a cursor
+        cur = con.cursor()
+
+
+        # SQL statement to select the series with specified series_id
+        sql_statement = '''SELECT * FROM series
+        WHERE series_id = ''' + series_id
+
+
+        # Store the result as a tuple in the following format:
+        # (series_id, title, presenter, topic_selection, start_date, end_date,
+        # session_start, frequency, num_sessions, is_paused)
+        series = cur.execute(sql_statement).fetchone()
+
+        # TODO query for all sessions with that series_id too
+
+        # Query for all sessions with the specified series_id
+        sql_statement = '''SELECT * FROM sessions
+        WHERE series_id = ''' + series_id
+
+
+        # Store the result as a list of tuples with following format:
+        # [(session_id, series_id, session_start, presenter, topic, is_skipped,
+        #  is_done, is_modified)]
+        sessions = cur.execute(sql_statement).fetchall()
+
+        # Close the connection
+        con.close()
+
+        # Load current series from the query result
+        currentSeries.loadFromTuple(series, sessions)
+
+
+
+
 
 # ============================= AUTHORIZATION =============================
     def auth(self, code):

@@ -132,6 +132,7 @@ def _action_handler (payload, action_type, action_id):
             pyBot.cancel_new_series(channel_id)
             return make_response("New Series Cancelled", 200)
         
+        # TODO write make_response return statements for the rest of the actions
         # If the user acknowledges warning about schedule being in the past
         elif action_id == "past_schedule_ok":
             message_ts = payload["container"]["message_ts"] 
@@ -141,6 +142,24 @@ def _action_handler (payload, action_type, action_id):
         elif action_id == "series_creation_ok":
             message_ts = payload["container"]["message_ts"] 
             pyBot.delete_message(channel_id, message_ts)
+
+        # If the user acknowledges message about having no series to read
+        elif action_id == "no_series_read_ok":
+            message_ts = payload["container"]["message_ts"] 
+            pyBot.delete_message(channel_id, message_ts)
+
+        # If the user cancels when reading a series
+        elif action_id == "cancel_read_series":
+            message_ts = payload["container"]["message_ts"] 
+            pyBot.delete_message(channel_id, message_ts)
+        
+        # If the user confirms the read for the series, go ahead and load the schedule.
+        elif action_id == "confirm_read_series":
+            message_ts = payload["container"]["message_ts"] 
+            pyBot.printSchedule(channel_id)
+
+            
+
 
 
     # ==================== DIALOG SUBMISSION ACTIONS ====================
@@ -203,6 +222,20 @@ def _action_handler (payload, action_type, action_id):
             series_numsesions = int(payload["actions"][0]["selected_option"]["value"][12:])
             pyBot.update_series_numsessions(channel_id, series_numsesions)
             return make_response("New Series Numsessions Updated", 200)
+
+        # If the user selected the series they want to read, make it the current
+        # Series
+        elif action_id == "select_series_read":
+
+            # update the read menu message to show a confirm button
+            message_ts = payload["container"]["message_ts"]
+            pyBot.update_read_series_message(message_ts)
+
+            # Extract the series id from the payload
+            series_id = payload["actions"][0]["selected_option"]["value"][10:]
+            # Update the series in memory
+            pyBot.setSeries(series_id)
+
 
 
     # ==================== DATEPICKER ACTIONS ====================
@@ -291,9 +324,10 @@ def _slash_handler(payload, slash_command, slash_text):
         pyBot.new_series_menu(channel_id, user_id)
         return make_response("", 200)
     # If the user wants to see already existing series.
-    # elif slash_text == "read":
-    #     # TODO create this method.
-    #     pyBot.read_series(channel_id, user_id)
+    elif slash_text == "read":
+        # TODO create this method.
+        pyBot.read_series_message(channel_id, user_id)
+        return make_response("", 200)
 
     # elif slash_text == "update":
     #     # TODO create this method
@@ -326,7 +360,6 @@ def serier():
 
     # Extract the payload from the slash command
     payload  = dict(request.form)
-
 
     # Extract the team_id and connect to client
     # TODO Are we connecting to the client on EVERY action?? Isn't that a lot? Slow?

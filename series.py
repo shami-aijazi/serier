@@ -84,6 +84,46 @@ class Series(object):
         and self.state["time"] != "Not Selected" and self.state["frequency"] != "Not Selected" and
         self.state["num_sessions"] != 0)
 
+    def loadFromTuple(self, series_tuple, sessions_tuples):
+        """
+        Sets Series fields to match incoming series tuple.
+        The series tuple will be in following format:
+        (series_id, title, presenter, topic_selection, start_date, end_date,
+         session_start, frequency, num_sessions, is_paused)
+
+        The sessions_tuples will be a list of tuples in the following format:
+        (session_id, series_id, session_start, presenter, topic, is_skipped,
+         is_done, is_modified)
+
+        TODO deal with is_paused,
+        is_skipped, is_done, and is_modified modifiers
+
+        This method will be used to load a series into memory
+        from an sqlite database query result set tuple.
+        """
+        self.state = {"title": series_tuple[1],
+                "presenter": series_tuple[2],
+                "topic_selection": series_tuple[3],
+                "start_date": series_tuple[4],
+                "time": series_tuple[5],
+                "frequency": series_tuple[6],
+                "num_sessions": series_tuple[7],
+                "end_date": series_tuple[8]
+            }
+        self.menu_ts = None
+        self.timezone = None
+
+        # Empty the sessions object, ready for refill
+        self.sessions = []
+        for session_tuple in sessions_tuples:
+
+            next_session = {
+                "ts": session_tuple[2],
+                "presenter": session_tuple[3],
+                "topic": session_tuple[4]
+            }
+            self.sessions.append(next_session)
+
 
     def updateSeries(self, field, newValue):
         """
