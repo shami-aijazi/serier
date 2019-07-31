@@ -159,8 +159,10 @@ def _action_handler (payload, action_type, action_id):
             pyBot.printSchedule(channel_id, message_ts)
 
         # If the user hits button to hide the schedule message
+        # And clear the series on memory
         elif action_id == "hide_schedule_message":
             message_ts = payload["container"]["message_ts"] 
+            pyBot.reset_currentSeries()
             pyBot.delete_message(channel_id, message_ts)
             
 
@@ -349,7 +351,8 @@ def _slash_handler(payload, slash_command, slash_text):
     else:
         # TODO add helpful reroute here. Like the boilerplate DM response message
         # or a help message.
-        return make_response("App not equipped for this slash command", 200, {"X-Slack-No-Retry": 1})
+        pyBot.dm_response_message(channel_id)
+        return make_response("", 200)
 
 @app.route("/slash", methods=["POST"])
 def serier():

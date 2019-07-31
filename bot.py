@@ -483,6 +483,7 @@ class Bot(object):
 
         # Reset the series state
         currentSeries.resetSeries()
+        currentSeries.sessions = []
         
     def edit_series_title_dialog(self, trigger_id):
         """
@@ -839,6 +840,13 @@ class Bot(object):
                                 ts=message_ts,
                                 blocks=message_blocks
                                 )
+
+    def reset_currentSeries(self):
+        """
+        resets the currentSeries object in memory.
+        """
+        currentSeries.resetSeries()
+        currentSeries.sessions = []
 
     def setSeries(self, series_id):
         """
