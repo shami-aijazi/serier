@@ -579,7 +579,11 @@ class Series(object):
         # print("\n" + 70*"="  + "\nsessions object:... \n", sessions, "\n"+ 70*"=")
 
         # Start appending the sessions
+
+        # This will number the sessions
+        session_counter = 0
         for session in sessions:
+            session_counter += 1
             # 1- append the divider
             series_schedule_blocks.append({
                 "type": "divider"
@@ -590,7 +594,7 @@ class Series(object):
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
-                        "text": "*Session " + session["session_id"] + "*"
+                        "text": "*Session " + str(session_counter) + "*"
                         }
                 })
 
@@ -600,7 +604,7 @@ class Series(object):
 		        "text": {
 			        "type": "mrkdwn",  
                     #  Using Slack's date formatting, only need a timestamp
-			        "text": ":calendar: <!date^" + session["ts"] + "^{date_short_pretty} at {time}|" + datetime.fromtimestamp(int(session["session_start"])).strftime("%b %d, %Y at %I:%M %p") + ">"
+			        "text": ":calendar: <!date^" + str(session["ts"]) + "^{date_short_pretty} at {time}|" + datetime.fromtimestamp(int(session["ts"])).strftime("%b %d, %Y at %I:%M %p") + ">"
                     }
                 })
             # 4- append the presenter
@@ -612,13 +616,13 @@ class Series(object):
                         },
                 "accessory": {
                     "type": "button",
-                    "action_id": "change_presenter_session_" + session["session_id"],
+                    "action_id": "change_presenter_session_" + str(session_counter),
 			        "text": {
                         "type": "plain_text",
                         "text": "Change Presenter",
                         "emoji": True
                         },
-                    "value": "change_presenter_session_" + session["session_id"]
+                    "value": "change_presenter_session_" + str(session_counter)
                     }
                 })
 
@@ -631,15 +635,47 @@ class Series(object):
                     },
                 "accessory": {
                     "type": "button",
-                    "action_id": "change_topic_session_" + session["session_id"],
+                    "action_id": "change_topic_session_" + str(session_counter),
                     "text": {
                 "type": "plain_text",
                 "text": "Change Topic",
                 "emoji": True
                 },
-                "value": "change_presenter_session_" + session["session_id"]
+                "value": "change_presenter_session_" + str(session_counter)
                 }
                 })
+
+        # Appendage to the schedule message that contains the button to hide the message.
+        appendage_blocks = [  
+        {  
+            "type":"divider"
+        },
+        {  
+            "type":"section",
+            "text":{  
+            "type":"mrkdwn",
+            "text":"*End of schedule message.*"
+            }
+        },
+        {  
+            "type":"actions",
+            "elements":[  
+            {  
+                "type":"button",
+                "action_id":"hide_schedule_message",
+                "text":{  
+                "type":"plain_text",
+                "text":"Hide Schedule",
+                "emoji":True
+                },
+                "value":"hide_schedule_message"
+            }
+            ]
+        }
+        ]
+
+        series_schedule_blocks.extend(appendage_blocks)
+
 
         return series_schedule_blocks
 

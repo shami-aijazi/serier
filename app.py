@@ -156,8 +156,12 @@ def _action_handler (payload, action_type, action_id):
         # If the user confirms the read for the series, go ahead and load the schedule.
         elif action_id == "confirm_read_series":
             message_ts = payload["container"]["message_ts"] 
-            pyBot.printSchedule(channel_id)
+            pyBot.printSchedule(channel_id, message_ts)
 
+        # If the user hits button to hide the schedule message
+        elif action_id == "hide_schedule_message":
+            message_ts = payload["container"]["message_ts"] 
+            pyBot.delete_message(channel_id, message_ts)
             
 
 
@@ -226,10 +230,14 @@ def _action_handler (payload, action_type, action_id):
         # If the user selected the series they want to read, make it the current
         # Series
         elif action_id == "select_series_read":
+            # console log for the payload
+            # print("\n" + 70*"="  + "\ninteractive event payload=\n", json.dumps(payload), "\n" + 70*"=")
 
             # update the read menu message to show a confirm button
             message_ts = payload["container"]["message_ts"]
-            pyBot.update_read_series_message(message_ts)
+            # Parse original message blocks to update
+            message_blocks = payload["message"]["blocks"]
+            pyBot.update_read_series_message(channel_id, message_ts, message_blocks)
 
             # Extract the series id from the payload
             series_id = payload["actions"][0]["selected_option"]["value"][10:]

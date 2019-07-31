@@ -433,7 +433,7 @@ class Bot(object):
             currentSeries.createSessions(current_series_id)
 
     
-    def printSchedule(self, channel_id):
+    def printSchedule(self, channel_id, message_ts):
         """
         Print the schedule associated with all the sessions in currentSeries object.
         Assumes that the currentSeries object that is set is the series whose schedule needs to be shown.
@@ -449,11 +449,12 @@ class Bot(object):
         series_title = currentSeries.state["title"]
 
         # Then, post the schedule message
-        post_message = self.client.chat_postMessage(
+        update_message = self.client.chat_update(
                                         channel=channel_id,
                                         username=self.name,
                                         icon_emoji=self.emoji,
                                         text="Here's the schedule for your series *" + series_title + "*",
+                                        ts=message_ts,
                                         blocks=currentSeries.getScheduleBlocks(series_title, currentSeries.sessions)
                                     )
 
@@ -689,7 +690,7 @@ class Bot(object):
         # SQL statement to select all series that the user is organizing
         sql_statement = '''SELECT series_id, title FROM series
         WHERE series_id IN (SELECT series_id FROM organizers
-        WHERE user_id ='''  + user_id + ")"
+        WHERE user_id =\''''  + user_id + "')"
 
 
         # Store the result in a list of tuples of the format (series_id, title)
@@ -738,9 +739,9 @@ class Bot(object):
             blocks = [
                 {  
                     "type":"section",
-                    "text":{  
-                    "type":"mrkdwn",
-                    "text":"Select a series to read:"
+                    "text":{
+                        "type":"mrkdwn",
+                        "text":"Select a series to read:"
                     }
                 },
                 {  
@@ -749,10 +750,10 @@ class Bot(object):
                     {  
                         "type":"static_select",
                         "action_id":"select_series_read",
-                        "placeholder":{  
-                        "type":"plain_text",
-                        "text":"Select a series",
-                        "emoji":True
+                        "placeholder":{
+                            "type":"plain_text",
+                            "text":"Select a series",
+                            "emoji":True
                         },
                         "options":[
                             # Insert here. This format:
@@ -794,10 +795,10 @@ class Bot(object):
                                 "text": series_title,
                                 "emoji": True
                             },
-                            "value": "series_id-" + series_id
+                            "value": "series_id-" + str(series_id)
                         }
 
-                blocks[1]["elements"]["options"].append(next_series)
+                blocks[1]["elements"][0]["options"].append(next_series)
 
         post_message = self.client.chat_postMessage(
                                         channel=channel_id,
@@ -807,7 +808,7 @@ class Bot(object):
                                         blocks=blocks
                                     )
 
-    def update_read_series_message(self, message_ts):
+    def update_read_series_message(self, channel_id, message_ts, message_blocks):
         """
         Updates the read series message to show a confirm button when the user
         selects a series to read. Use the parameter message_ts to chat.update
@@ -826,9 +827,18 @@ class Bot(object):
                         "value":"confirm_read_series"
                     }
 
-        # # If the initial blocks don't already contain a confirm button.
-        # if len(initial_message_blocks[-1]["elements"]) == 1 :
-        #     initial_message_blocks[-1]["elements"].insert(0, confirm_read_button)
+        # If the initial blocks don't already contain a confirm button.
+        if len(message_blocks[-1]["elements"]) == 1 :
+            message_blocks[-1]["elements"].insert(0, confirm_read_button)
+        
+        update_message = self.client.chat_update(
+                                channel=channel_id,
+                                username=self.name,
+                                icon_emoji=self.emoji,
+                                text="Selected series to read",
+                                ts=message_ts,
+                                blocks=message_blocks
+                                )
 
     def setSeries(self, series_id):
         """
