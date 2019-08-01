@@ -246,7 +246,7 @@ class Bot(object):
         # NOTE: the ts might be zero, handle this case later.
         currentSeries.newSeries(ts, series_start_date, series_time, user_tz)
 
-        # Delete the last message if the timestamp is not 0. (it's from button NOT slash)
+        # Update the last message if the timestamp is not 0. (it's from button NOT slash)
         if ts != 0:
             update_message = self.client.chat_update(
                                             channel=channel_id,
@@ -254,7 +254,7 @@ class Bot(object):
                                             icon_emoji=self.emoji,
                                             text="Create new series",
                                             ts=currentSeries.menu_ts,
-                                            blocks=currentSeries.getMenuBlocks()
+                                            blocks=currentSeries.getCreationMenuBlocks()
                                             )
         
         else:
@@ -264,7 +264,7 @@ class Bot(object):
                                             username=self.name,
                                             icon_emoji=self.emoji,
                                             text="Create new series",
-                                            blocks=currentSeries.getMenuBlocks()
+                                            blocks=currentSeries.getCreationMenuBlocks()
                                             )
 
             # set the series menu timestamp to the post_message ts for menu editing
@@ -530,7 +530,7 @@ class Bot(object):
                                             icon_emoji=self.emoji,
                                             text="Your series title has been updated",
                                             ts=currentSeries.menu_ts,
-                                            blocks=currentSeries.getMenuBlocks()
+                                            blocks=currentSeries.getCreationMenuBlocks()
                                             )
 
     def update_series_presenter(self, channel_id, user_id):
@@ -549,7 +549,7 @@ class Bot(object):
                                             icon_emoji=self.emoji,
                                             text="Your series presenter has been updated",
                                             ts=currentSeries.menu_ts,
-                                            blocks=currentSeries.getMenuBlocks()
+                                            blocks=currentSeries.getCreationMenuBlocks()
                                             )
 
     def update_topic_selection(self, channel_id, topic_selection):
@@ -569,7 +569,7 @@ class Bot(object):
                                             icon_emoji=self.emoji,
                                             text="Your series topic selection has been updated",
                                             ts=currentSeries.menu_ts,
-                                            blocks=currentSeries.getMenuBlocks()
+                                            blocks=currentSeries.getCreationMenuBlocks()
                                             )
 
     def update_series_time(self, channel_id, series_time):
@@ -591,7 +591,7 @@ class Bot(object):
                                             icon_emoji=self.emoji,
                                             text="Your series time has been updated",
                                             ts=currentSeries.menu_ts,
-                                            blocks=currentSeries.getMenuBlocks()
+                                            blocks=currentSeries.getCreationMenuBlocks()
                                             )
         
     def update_series_frequency(self, channel_id, series_frequency):
@@ -610,7 +610,7 @@ class Bot(object):
                                             icon_emoji=self.emoji,
                                             text="Your series frequency has been updated",
                                             ts=currentSeries.menu_ts,
-                                            blocks=currentSeries.getMenuBlocks()
+                                            blocks=currentSeries.getCreationMenuBlocks()
                                             )
 
     def update_series_numsessions(self, channel_id, series_numsessions):
@@ -630,7 +630,7 @@ class Bot(object):
                                             icon_emoji=self.emoji,
                                             text="Your series numsessions has been updated",
                                             ts=currentSeries.menu_ts,
-                                            blocks=currentSeries.getMenuBlocks()
+                                            blocks=currentSeries.getCreationMenuBlocks()
                                             )
 
     def update_series_menu_date(self, channel_id, series_date):
@@ -649,7 +649,7 @@ class Bot(object):
                                             icon_emoji=self.emoji,
                                             text="Your series first session date has been updated",
                                             ts=currentSeries.menu_ts,
-                                            blocks=currentSeries.getMenuBlocks()
+                                            blocks=currentSeries.getCreationMenuBlocks()
                                             )
 
     def delete_message(self, channel_id, message_ts):
@@ -666,6 +666,8 @@ class Bot(object):
 
     def read_series_message(self, channel_id, user_id):
         """
+        TODO this has a lot of overlap with the updation_series_message, merge them?
+
         This method shows a menu for the user to view their series.
         Send the user a message showing the list of series they have. The user
         will select the series they want to view.
@@ -841,6 +843,488 @@ class Bot(object):
                                 blocks=message_blocks
                                 )
 
+    def updation_series_message(self, channel_id, user_id):
+        """
+        TODO this has a lot of overlap with the read_series_message, merge them?
+
+        This method shows a menu for the user to update their series.
+        Send the user a message showing the list of series they have. The user
+        will select the series they want to update.
+        """
+
+        """
+        Pseudocode:
+        -Connect to SQL database.
+        -Query for all series associated with the user id. (and team_id?)
+        -Use the results of the query to create a list of options for the 
+         select menu (using the title of the series for the text and the 
+         series_id as the value)
+        -Post the message with the blocks
+        """
+
+        # DATABASE OPERATIONS
+        # First, connect to the sqlite3 database
+        con = sqlite3.connect("serier.db")
+        # Create a cursor
+        cur = con.cursor()
+
+
+        # SQL statement to select all series that the user is organizing
+        sql_statement = '''SELECT series_id, title FROM series
+        WHERE series_id IN (SELECT series_id FROM organizers
+        WHERE user_id =\''''  + user_id + "')"
+
+
+        # Store the result in a list of tuples of the format (series_id, title)
+        res = cur.execute(sql_statement).fetchall()
+
+        # Close the connection
+        con.close()
+
+        # check if result set res is empty. If it is empty, user has no series.
+        if len(res) <= 0:
+            blocks = [
+                {
+                    "type":"section",
+                    "text":{
+                    "type":"mrkdwn",
+                    "text":"You have no series to update."
+                    }
+                },
+                {
+                    "type":"section",
+                    "text":{
+                    "type":"mrkdwn",
+                    "text":"You can create one using the `/serier create` command."
+                    }
+                },
+                {
+                    "type":"actions",
+                    "elements":[
+                    {
+                        "type":"button",
+                        "action_id":"no_series_update_ok",
+                        "text":{
+                        "type":"plain_text",
+                        "text":"OK",
+                        "emoji":True
+                        },
+                        "value":"no_series_update_ok"
+                    }
+                    ]
+                }
+                ]
+
+        # The user has series
+        # Populate the select menu with the series associated with the user
+        else:
+            blocks = [
+                {  
+                    "type":"section",
+                    "text":{
+                        "type":"mrkdwn",
+                        "text":"Select a series to update:"
+                    }
+                },
+                {  
+                    "type":"actions",
+                    "elements":[  
+                    {  
+                        "type":"static_select",
+                        "action_id":"select_series_update",
+                        "placeholder":{
+                            "type":"plain_text",
+                            "text":"Select a series",
+                            "emoji":True
+                        },
+                        "options":[
+                            # Insert here. This format:
+                        #     {
+                        # 	"text": {
+                        # 		"type": "plain_text",
+                        # 		"text": "<series_title>",
+                        # 		"emoji": true
+                        # 	},
+                        # 	"value": "series_id-<series_id>"
+                        # }
+                        ]
+                    }
+                    ]
+                },
+                {  
+                    "type":"actions",
+                    "elements":[  
+                    {  
+                        "type":"button",
+                        "action_id":"cancel_update_series",
+                        "text":{  
+                        "type":"plain_text",
+                        "text":"Cancel",
+                        "emoji":True
+                        },
+                        "value":"cancel_update_series"
+                    }
+                    ]
+                }
+            ]
+
+
+            for series in res:
+                series_id, series_title = series[0], series[1]
+                next_series = {
+                            "text": {
+                                "type": "plain_text",
+                                "text": series_title,
+                                "emoji": True
+                            },
+                            "value": "series_id-" + str(series_id)
+                        }
+
+                blocks[1]["elements"][0]["options"].append(next_series)
+
+        post_message = self.client.chat_postMessage(
+                                        channel=channel_id,
+                                        username=self.name,
+                                        icon_emoji=self.emoji,
+                                        text="Select a series to update",
+                                        blocks=blocks
+                                    )
+    def update_updation_series_message(self, channel_id, message_ts, message_blocks):
+        """
+        Updates the updation series message to show a confirm button when the user
+        selects a series to update. Use the parameter message_ts to chat.update
+        the message.
+        """
+        # TODO add this block
+        confirm_updation_button =  {  
+                        "type":"button",
+                        "action_id":"confirm_update_series",
+                        "text":{  
+                        "type":"plain_text",
+                        "text":"Read",
+                        "emoji":True
+                        },
+                        "style":"primary",
+                        "value":"confirm_update_series"
+                    }
+
+        # If the initial blocks don't already contain a confirm button.
+        # Add one.
+        if len(message_blocks[-1]["elements"]) == 1 :
+            message_blocks[-1]["elements"].insert(0, confirm_updation_button)
+        
+        update_message = self.client.chat_update(
+                                channel=channel_id,
+                                username=self.name,
+                                icon_emoji=self.emoji,
+                                text="Selected series to update",
+                                ts=message_ts,
+                                blocks=message_blocks
+                                )
+
+    def updation_series_menu(self, channel_id, user_id, ts):
+        """
+        Display the series configuration menu that the user will use to edit
+        the series.
+
+
+        Parameters
+        ----------
+        channel_id : str
+            id of the Slack channel associated with incoming event
+        
+        user_id : str
+            id of the user_id updatingseries
+
+        ts : str
+            timestamp of the series updation message.
+        
+        """
+
+        # Get the user's info to extract the timezone
+        user_info = self.client.users_info(
+                                            user=user_id
+                                            )
+        # Console log for user info
+        # print("\n" + 70*"="  + "\nuser_info=\n", user_info, "\n" + 70*"=")
+
+        # The PyTZ timezone string
+        user_tz = user_info["user"]["tz"]
+        # Console log for user timezone
+        # print("\n" + 70*"="  + "\nuser_tz=\n", user_tz, "\n" + 70*"=")
+
+        # Set the display timezone to be the user's local timezone
+        currentSeries.timezone = user_tz
+
+        # Adjust the dates and times on the currentSeries object
+        # to be in the user's local timezone.
+
+        # get dt object for start date.
+        series_start_date = datetime.strptime(currentSeries.state["start_date"], "%Y-%m-%d")
+        # Get dt object for session_start
+        series_session_start = datetime.strptime(currentSeries.state["time"], '%H:%M')
+        # combine two into one dt object
+        start_date_dt = series_start_date.replace(hour=series_session_start.hour, minute=series_session_start.minute)
+        # Localize to utc time
+        utc_series_dt = pytz.utc.localize(start_date_dt)
+        # translate to user local timezone
+        user_local_dt = utc_series_dt.astimezone(user_tz)
+        # update start date to be the date part of the resulting dt object (string)
+        currentSeries.state["start_date"] = user_local_dt.strftime("%Y-%m-%d")
+        # update session_start to be the time part of the resulting object (string)
+        currentSeries.state["time"] = user_local_dt.strftime('%H:%M')
+        # Repeat for end_date
+        series_end_date = datetime.strptime(currentSeries.state["end_date"], "%Y-%m-%d")
+        end_date_dt = series_end_date.replace(hour=series_session_start.hour, minute=series_session_start.minute)
+        utc_series_dt = pytz.utc.localize(end_date_dt)
+        user_local_dt = utc_series_dt.astimezone(user_tz)
+        currentSeries.state["end_date"] = user_local_dt.strftime("%Y-%m-%d")
+
+
+
+        # Update the last message to show the menu blocks
+        update_message = self.client.chat_update(
+                                        channel=channel_id,
+                                        username=self.name,
+                                        icon_emoji=self.emoji,
+                                        text="Create new series",
+                                        ts=currentSeries.menu_ts,
+                                        blocks=currentSeries.getUpdationMenuBlocks()
+                                        )
+    
+    def confirm_series_updation(self, channel_id, organizer_id, message_ts):
+        """
+        Confirm the updation of the series. Execute and SQL query to update the series
+        and the sessions in the relevant tables.
+        """
+        # FIRST, check if the datetime the user set is in the past.
+
+        # Get the timezone of the creating user at the time of series creation
+        user_tz = pytz.timezone(currentSeries.timezone)
+
+        # Create a datetime object from the series data
+        series_time = datetime.strptime(currentSeries.state["time"], '%H:%M')
+        start_date_date = datetime.strptime(currentSeries.state["start_date"], "%Y-%m-%d")
+        start_date_dt = start_date_date.replace(hour=series_time.hour, minute=series_time.minute)
+
+        # Use the timezone and the series data to convert the time to UTC
+        user_local_dt = user_tz.localize(start_date_dt)
+        utc_dt = user_local_dt.astimezone(pytz.utc)
+
+        
+        # Compare the scheduled time to the time now
+        utc_now = datetime.now(pytz.utc)
+
+        if utc_dt < utc_now:
+            # If the series is scheduled for the past
+            # Send a warning message
+            post_message = self.client.chat_postMessage(
+                                            channel=channel_id,
+                                            username=self.name,
+                                            icon_emoji=self.emoji,
+                                            text="Series schedule for the past",
+                                            blocks=[  
+                                            {  
+                                                "type":"section",
+                                                "text":{  
+                                                "type":"mrkdwn",
+                                                "text":":warning:Your series is scheduled to start in the past. Please pick a time in the future."
+                                                }
+                                            },
+                                            {  
+                                                "type":"actions",
+                                                "elements":[  
+                                                {  
+                                                    "type":"button",
+                                                    "action_id":"past_schedule_ok",
+                                                    "text":{  
+                                                    "type":"plain_text",
+                                                    "text":"OK",
+                                                    "emoji":True
+                                                    },
+                                                    "value":"past_schedule_ok"
+                                                }
+                                                ]
+                                            }
+                                            ]
+                                        )
+
+        # If there is no problem with the series state
+        # Give the go ahead
+        else:
+            
+            # Update time and first session to be UTC
+
+            currentSeries.state["time"] = utc_dt.time().strftime("%H:%M")
+            currentSeries.state["start_date"] = utc_dt.date().strftime("%Y-%m-%d")
+
+
+
+            # Update end_date to be UTC
+            end_date_date = datetime.strptime(currentSeries.state["end_date"], "%m/%d/%Y")
+            user_local_dt = user_tz.localize(end_date_date)
+            end_date_utc = user_local_dt.astimezone(pytz.utc)
+            currentSeries.state["end_date"] = end_date_utc.strftime("%Y-%m-%d")
+
+            # TODO Put these in subroutines (make it resuable)
+            # DATABASE OPERATIONS
+            # First, connect to the sqlite3 database
+            con = sqlite3.connect("serier.db")
+            # Create a cursor
+            cur = con.cursor()
+
+            # First, update the series in the series table.
+            # Prepare the statement and the values
+            series_record = (currentSeries.state["title"], currentSeries.state["presenter"], currentSeries.state["topic_selection"],
+                            currentSeries.state["start_date"], currentSeries.state["end_date"], currentSeries.state["time"],
+                            currentSeries.state["frequency"], currentSeries.state["num_sessions"],
+                            currentSeries.series_id) # The last element is the series_id which will go in the WHERE clause
+
+            sql_statement = ''' UPDATE series(title,presenter,topic_selection,start_date,end_date,
+                                                   session_start, frequency, num_sessions, is_paused)
+                                SET title = ?, presenter = ?, topic_selection = ?, start_date = ?,
+                                    end_date = ?, session_start = ?, frequency = ?, num_sessions = ?
+                                WHERE series_id = ?'''
+
+            # Execute the insertion
+            cur.execute(sql_statement, series_record)
+
+            # Save the ID of the series that was just inserted
+            current_series_id = cur.lastrowid
+
+            # commit and close the database connection
+            con.commit()
+            con.close()
+
+            # Console log for database
+            print("\n" + 70*"="  + "\nJust updated the series in database...series_id=\n", current_series_id, "\n" + 70*"=")
+            
+
+            
+            # Send a confirmation message to the user that their series has been created
+            update_message = self.client.chat_update(
+                                            channel=channel_id,
+                                            username=self.name,
+                                            icon_emoji=self.emoji,
+                                            ts=currentSeries.menu_ts,
+                                            text="Your Series *" + currentSeries.state["title"] + "* has been created",
+                                            blocks=[
+                                                {
+                                                    "type": "section",
+                                                    "text": {
+                                                        "type": "mrkdwn",
+                                                        "text": "Your series *" + currentSeries.state["title"] + "* has been succesfully created!\n"
+                                                    }
+                                                },
+                                                {
+                                                    "type": "actions",
+                                                    "elements": [
+                                                        {
+                                                            "type": "button",
+                                                            "action_id": "series_creation_ok",
+                                                            "text": {
+                                                                "type": "plain_text",
+                                                                "text": "OK",
+                                                                "emoji": True
+                                                            },
+                                                            "value": "series_creation_ok"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        )
+
+            # Console log for populating sessions
+            # print("\n" + 70*"="  + "\nAbout to set the sessions...\ncurrentSeries.state=\n", currentSeries.state, "\n" + 70*"=")
+            # Now that the series has the go ahead, create the sessions
+            # This method creates and serializes a list of JSON session objects.
+            # It stores these sessions on the Series object.
+            # TODO Unnecessary to store it on Series object right?
+            currentSeries.createSessions(current_series_id)
+
+    def delete_series(self, channel_id, user_id, message_ts):
+        """
+        Deletes the currentSeries that is in memory from the db and clears it from memory
+        """
+
+        # TODO Put these in subroutines (make it resuable)
+        # DATABASE OPERATIONS
+        # First, connect to the sqlite3 database
+        con = sqlite3.connect("serier.db")
+        # Create a cursor
+        cur = con.cursor()
+
+        # First, delete the series in the series table.
+        # Prepare the statement and the values
+        # The series_id of the series we want to delete
+        series_record = (currentSeries.series_id) 
+
+        sql_statement = ''' DELETE FROM series
+                            WHERE series_id = ?'''
+
+        # Execute the deletion
+        cur.execute(sql_statement, series_record)
+
+        # Second, delete the sessions associated with that series from sessions table.
+        # Prepare the statement and the values
+        sql_statement = ''' DELETE FROM sessions
+                            WHERE series_id = ?'''
+        # Execute the deletion
+        cur.execute(sql_statement, series_record)
+
+        # Third, remove series from organizer associated with that series from organizers table.
+        # Prepare the statement and the values
+        sql_statement = ''' DELETE FROM organizers
+                            WHERE series_id = ?'''
+        # Execute the deletion
+        cur.execute(sql_statement, series_record)
+
+
+        # commit and close the database connection
+        con.commit()
+        con.close()
+
+
+        # Notify the user about successful series deletion
+        update_message = self.client.chat_update(
+                                    channel=channel_id,
+                                    username=self.name,
+                                    icon_emoji=self.emoji,
+                                    text="Your series has been successfully cancelled",
+                                    ts=message_ts,
+                                    blocks=[
+                                        {
+                                            "type": "divider"
+                                        },
+                                        {
+                                            "type": "section",
+                                            "text": {
+                                                "type": "mrkdwn",
+                                                "text": "Your series *" + currentSeries.state["title"] + "* was successfully deleted."
+                                            }
+                                        },
+                                        {
+                                            "type": "actions",
+                                            "elements": [
+                                                {
+                                                    "type": "button",
+                                                    "action_id": "delete_series_ok",
+                                                    "text": {
+                                                        "type": "plain_text",
+                                                        "text": "OK",
+                                                        "emoji": True
+                                                    },
+                                                    "value": "delete_series_ok"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                )
+        
+        # Finally, clear currentSeries from memory
+        self.reset_currentSeries()
+
+        
     def reset_currentSeries(self):
         """
         resets the currentSeries object in memory.

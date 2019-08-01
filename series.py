@@ -1,9 +1,11 @@
 import json
 from new_series_menu_blocks import new_series_menu_blocks
+from update_series_menu_blocks import update_series_menu_blocks
 import copy
 
 # Make a copy of the blocks so they can be reset to the new blocks if series is cancelled
 current_series_menu_blocks = copy.deepcopy(new_series_menu_blocks)
+current_update_series_menu_blocks = copy.deepcopy(update_series_menu_blocks)
 # Console log for copy
 # print("\n" + 70*"="  + "\nCopying new blocks to current blocks... \n" + 70*"=")
 
@@ -30,6 +32,8 @@ class Series(object):
         self.timezone = ""
         # A list of session JSON objects. Each session has an id, a POSIX ts, a presenter, and a topic.
         self.sessions = []
+        # The series_id is needed to update/delete series from db. It will be populated as necessary.
+        self.series_id = None
 
     def newSeries(self, ts, start_date, series_time, menu_tz):
         """
@@ -112,6 +116,7 @@ class Series(object):
             }
         self.menu_ts = None
         self.timezone = None
+        self.series_id = series_tuple[0]
 
         # Empty the sessions object, ready for refill
         self.sessions = []
@@ -144,12 +149,14 @@ class Series(object):
         Empty series state.
         """
         global current_series_menu_blocks
+        global current_update_series_menu_blocks
 
         # Console log for comparing current series menu to a new one
         # print("\n" + 70*"="  + "\nInside resetSeries...\ncurrent and new menu blocks are identical? \n", current_series_menu_blocks == new_series_menu_blocks, "\n" + 70*"=")
         
         # reset the current series menu blocks
         current_series_menu_blocks = copy.deepcopy(new_series_menu_blocks)
+        current_update_series_menu_blocks = copy.deepcopy(update_series_menu_blocks)
 
         self.state = {}
         self.menu_ts = ""
@@ -212,7 +219,7 @@ class Series(object):
         # Store the result in state
         self.state["end_date"] = end_date
 
-    def getMenuBlocks(self):
+    def getCreationMenuBlocks(self):
         """
         Generate the blocks that the series creation menu will be composed of. 
         These blocks will be based on the current state.
@@ -220,7 +227,7 @@ class Series(object):
         Returns the blocks JSON dict object
         """
         # Console log series menu completeness
-        # print("\n" + 70*"="  + "\nRunning getMenuBlocks... \n" + "series.state=\n", self.state, "\n" + 70*"=")
+        # print("\n" + 70*"="  + "\nRunning getCreationMenuBlocks... \n" + "series.state=\n", self.state, "\n" + 70*"=")
 
 
 
@@ -241,7 +248,7 @@ class Series(object):
         # from last run
         # print("\n" + 70*"="  + "\nseries_menu_blocks=\n", current_series_menu_blocks, "\n" + 70*"=")
 
-        # If presenter still has already been selected
+        # If presenter still has not been selected
         if self.state["presenter"] != "Not Selected":
             current_series_menu_blocks[6]["accessory"]["initial_user"] = self.state["presenter"]
 
@@ -372,6 +379,126 @@ class Series(object):
 
         # Return it after modifications
         return current_series_menu_blocks
+
+    def getUpdationMenuBlocks(self):
+        """
+        Generate the blocks that the series updation menu will be composed of. 
+        These blocks will be based on the current state.
+
+        Returns the blocks JSON dict object
+        """
+        # Console log series menu completeness
+        # print("\n" + 70*"="  + "\nRunning getUpdationMenuBlocks... \n" + "series.state=\n", self.state, "\n" + 70*"=")
+
+
+
+        # Update the series updation menu as state changes
+
+
+        # ==================== Update Title ====================
+        # 1- === Update title section ===
+        current_update_series_menu_blocks[3]["text"]["text"] = "*" + self.state["title"] + "*"
+
+        # 2- === Update summary context ===
+        current_update_series_menu_blocks[-2]["elements"][0]["text"] = "*Title*: " + self.state["title"] 
+
+        # ==================== Update Presenter ====================
+        # 1- === Update users select menu ===
+
+        current_update_series_menu_blocks[6]["accessory"]["initial_user"] = self.state["presenter"]
+
+        # 2- === Update summary context ===
+        current_update_series_menu_blocks[-2]["elements"][1]["text"] = "*Presenter*: " +  "<@" + self.state["presenter"] + ">"
+
+        
+        # ==================== Update Topic Selection ====================
+        
+        if self.state["topic_selection"] != "Not Selected":
+            
+            # 1- === Update select menu ===
+            current_update_series_menu_blocks[7]["accessory"]["initial_option"] = {
+                "text":
+                    {"type":"plain_text",
+                    "text":"Pre-determined",
+                    "emoji":True},
+                    "value":"pre-determined"
+                }
+
+            # 2- === Update summary context ===
+            current_update_series_menu_blocks[-2]["elements"][2]["text"] = "*Topic Selection*: Pre-determined"
+            
+            # 1- === Update select menu ===
+            current_update_series_menu_blocks[7]["accessory"]["initial_option"] = {
+                "text":
+                    {"type":"plain_text",
+                    "text":"Presenter's Choice",
+                    "emoji":True},
+                    "value":"presenter_choice"
+                }
+
+            # 2- === Update summary context ===
+            current_update_series_menu_blocks[-2]["elements"][2]["text"] = "*Topic Selection*: Presenter's Choice"
+
+
+        # ==================== Update Start Date ====================
+        # 1- === Update datepicker ===
+        current_update_series_menu_blocks[10]["elements"][0]["initial_date"] = self.state["start_date"]
+
+        
+        # 2- === Update summary context ===
+        # Format it correctly
+        current_update_series_menu_blocks[-2]["elements"][3]["text"] = "*Start Date*: " + datetime.strptime(self.state["start_date"], "%Y-%m-%d").strftime("%m/%d/%Y")
+
+        # ==================== Update Time ====================
+        
+        # 1- === Update select menu ===
+        current_update_series_menu_blocks[10]["elements"][1]["initial_option"] = {
+            "text":
+                {"type": "plain_text",
+                "text": datetime.strptime(self.state["time"], '%H:%M').strftime('%I:%M %p'),
+                "emoji": True},
+                # Format the time for the "value" parameter
+                "value": "time-" + datetime.strptime(self.state["time"], '%H:%M').strftime('%H%M')
+            }
+        
+        # 2- === Update summary context ===
+        current_update_series_menu_blocks[-2]["elements"][4]["text"] = "*Time*: " + datetime.strptime(self.state["time"], '%H:%M').strftime('%I:%M %p')
+
+        # ==================== Update Frequency ====================
+        # 1- === Update select menu ===
+        current_update_series_menu_blocks[11]["elements"][0]["initial_option"] = {
+                "text":
+                    {"type": "plain_text",
+                    "text": self.state["frequency"].replace("-", " ").title(),
+                    "emoji": True},
+                    # Format the time for the "value" parameter
+                    "value": self.state["frequency"]
+                }
+                    
+        # 2- === Update summary context ===
+        current_update_series_menu_blocks[-2]["elements"][5]["text"] = "*Frequency*: " + self.state["frequency"].replace("-", " ").title()
+
+        # ==================== Update Num_sessions ====================
+        # 1- === Update select menu ===
+        current_update_series_menu_blocks[11]["elements"][1]["initial_option"] = {
+                "text":
+                    {"type": "plain_text",
+                    "text": str(self.state["num_sessions"]),
+                    "emoji": True},
+                    # Format the string for the value parameter
+                    "value": "numsessions-" + str(self.state["num_sessions"])
+                }
+                    
+        # ==================== Update End Date ====================
+        # If the frequency and the num_sessions has not been selected
+        current_update_series_menu_blocks[-2]["elements"][6]["text"] = "*End Date*: " + self.state["end_date"]
+
+
+        # ==================== Add Update Button If Series Modified ==================== ?
+        # TODO If series menu has been modified, add the UPDATE confirmation button?
+
+        # Return it after modifications
+        return current_update_series_menu_blocks
 
     def createSessions(self, series_id):
         """
@@ -534,6 +661,182 @@ class Series(object):
             sql_statement = ''' INSERT INTO sessions(series_id,session_start,presenter,topic,
                                                     is_skipped, is_done, is_modified)
                 VALUES(?,?,?,?,?,?,?) '''
+
+            # Execute the insertion
+            cur.execute(sql_statement, session_record)
+
+
+        # commit and close the database connection
+        con.commit()
+        con.close()
+    def upateSessions(self, series_id):
+        """
+
+        Update the sessions associated with the series.
+        Generate a list of session objects corresponding to the sessions that the series will be composed of.
+        Store this list on the Series object.
+
+        Serialize the sessions and update the table in the database
+
+        These sessions will be computed and populated based on the values in the series state.
+        Since this method assumes that the series state is full this method should only be called after
+        making sure the series update menu is complete.
+
+        NOTE: The series_id is passed as a parameter. The series_id is also stored as a field on the Series object.
+              This is redundant.
+              It is passed as a parameter because this method is copied from the "createSessions" method.
+        """
+
+        # Extract the frequency and the num_sessions from the series state
+        frequency = self.state["frequency"]
+        num_sessions = int(self.state["num_sessions"])
+
+        # Extract the series time from state
+        series_time = datetime.strptime(self.state["time"],"%H:%M")
+
+        # Get the datetime of the Start Date
+        next_session_dt = datetime.strptime(self.state["start_date"], "%Y-%m-%d")
+        next_session_dt = next_session_dt.replace(hour=series_time.hour, minute=series_time.minute)
+
+        # Localize the time to utc
+        next_session_dt = pytz.utc.localize(next_session_dt)
+
+        # If the frequency is every day
+        if frequency == "every-day":
+            for session_number in range (1, num_sessions+1):
+
+                # Create a new session for each day, including the first day
+                # TODO Topic should only be populated if the series topic selection option is "pre-determined"
+                next_session = {
+                "ts": str(int(next_session_dt.timestamp())),
+                "presenter": self.state["presenter"],
+                "topic": "Not Selected"
+                }
+
+                self.sessions.append(next_session)
+
+                # Increment the datetime by one day
+                next_session_dt += timedelta(days=1)
+
+
+        # If the frequency is every weekday
+        elif frequency == "every-weekday":
+
+            session_number = 0
+            while num_sessions > session_number:
+
+                # For the Start Date
+                if session_number == 0:
+                    session_number+=1
+                    next_session = {
+                    "ts": str(int(next_session_dt.timestamp())),
+                    "presenter": self.state["presenter"],
+                    "topic": "Not Selected"
+                    }
+                    self.sessions.append(next_session)
+                    
+                
+
+                # Increment the datetime by one day
+                next_session_dt += timedelta(days=1) 
+
+                # If it is a weekday
+                if next_session_dt.weekday() < 5: # sunday = 6
+                    session_number+=1
+                    next_session = {
+                    "ts": str(int(next_session_dt.timestamp())),
+                    "presenter": self.state["presenter"],
+                    "topic": "Not Selected"
+                    }
+                    self.sessions.append(next_session)
+
+                
+
+        # If the frequency is every week
+        elif frequency == "every-week":
+            for session_number in range (1, num_sessions+1):
+
+                # Topic will only be populated if the series topic selection option is "pre-determined"
+                next_session = {
+                "ts": str(int(next_session_dt.timestamp())),
+                "presenter": self.state["presenter"],
+                "topic": "Not Selected"
+                }
+
+                self.sessions.append(next_session)
+
+                # 7 days
+                next_session_dt += timedelta(days=7)
+
+        # Every 2 weeks
+        elif frequency == "every-2-weeks":
+            for session_number in range (1, num_sessions+1):
+
+                # Topic will only be populated if the series topic selection option is "pre-determined"
+                next_session = {
+                "ts": str(int(next_session_dt.timestamp())),
+                "presenter": self.state["presenter"],
+                "topic": "Not Selected"
+                }
+
+                self.sessions.append(next_session)
+
+                # 14 days
+                next_session_dt += timedelta(days=14)
+
+        elif frequency == "every-3-weeks":
+            for session_number in range (1, num_sessions+1):
+
+                # Topic will only be populated if the series topic selection option is "pre-determined"
+                next_session = {
+                "session_id": "session-" + str(session_number),
+                "ts": str(int(next_session_dt.timestamp())),
+                "presenter": self.state["presenter"],
+                "topic": "Not Selected"
+                }
+
+                self.sessions.append(next_session)
+
+                # 21 days
+                next_session_dt += timedelta(days=21)
+
+        elif frequency == "every-month":
+            for session_number in range (1, num_sessions+1):
+
+                # Topic will only be populated if the series topic selection option is "pre-determined"
+                next_session = {
+                "ts": str(int(next_session_dt.timestamp())),
+                "presenter": self.state["presenter"],
+                "topic": "Not Selected"
+                }
+
+                self.sessions.append(next_session)
+                # 28 days
+                next_session_dt += timedelta(days=28)
+
+        
+        # Now that all the sessions have been created, update the existing sessions in the db
+        
+        # TODO Put these in subroutines (make it resuable)
+        # DATABASE OPERATIONS
+        # First, connect to the sqlite3 database
+        con = sqlite3.connect("serier.db")
+        
+        # Create a cursor
+        cur = con.cursor()
+
+        # Iterate through the sessions list and add them to the database.
+        # TODO: Later, probably just want to commit them to db AS we are creating them (a few lines up in the code)
+        for session in self.sessions:
+            
+            # Prepare the statement and the values
+            session_record = (session["ts"], session["presenter"], session["topic"],
+                            series_id) # The last element is a series_id for the query WHERE clause.
+
+            sql_statement = ''' UPDATE sessions(series_id,session_start,presenter,topic,
+                                                    is_skipped, is_done, is_modified)
+                                SET session_start = ?, presenter = ?, topic = ?
+                                WHERE series_id = ?'''
 
             # Execute the insertion
             cur.execute(sql_statement, session_record)

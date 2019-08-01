@@ -164,7 +164,35 @@ def _action_handler (payload, action_type, action_id):
             message_ts = payload["container"]["message_ts"] 
             pyBot.reset_currentSeries()
             pyBot.delete_message(channel_id, message_ts)
-            
+        
+        # If the user confirms that they want to update the series go ahead and 
+        # load the series configuration menu
+        elif action_id == "confirm_updation_series":
+            message_ts = payload["container"]["message_ts"] 
+            pyBot.printSchedulee(channel_id, message_ts)   
+
+        # If the user confirms the updation of the series
+        elif action_id == "complete_update_series":    
+            message_ts = payload["container"]["message_ts"]  
+            pyBot.confirm_series_updation(channel_id, user_id, message_ts)
+            return make_response("New Series Confirmed", 200)
+        
+        # If the user hit the back button in the series updation workflow
+        elif action_id == "back_to_updation":
+            message_ts = payload["container"]["message_ts"] 
+            pyBot.updation_series_message(channel_id, user_id)
+
+        # If the user pushes the delete series button
+        elif action_id == "delete_series":
+            message_ts = payload["container"]["message_ts"]
+            pyBot.delete_series(channel_id, user_id, message_ts)
+
+        # If the user acknowledged the series deletion notification
+        elif action_id == "delete_series_ok":
+            message_ts = payload["container"]["message_ts"] 
+            pyBot.delete_message(channel_id, message_ts)
+
+
 
 
 
@@ -243,9 +271,25 @@ def _action_handler (payload, action_type, action_id):
 
             # Extract the series id from the payload
             series_id = payload["actions"][0]["selected_option"]["value"][10:]
-            # Update the series in memory
+            # Update the series in memory to be the one that the user selected
             pyBot.setSeries(series_id)
 
+        # If the user selected the series they want to update, make it the current
+        # Series
+        elif action_id == "select_series_update":
+            # console log for the payload
+            # print("\n" + 70*"="  + "\ninteractive event payload=\n", json.dumps(payload), "\n" + 70*"=")
+
+            # update the read menu message to show a confirm button
+            message_ts = payload["container"]["message_ts"]
+            # Parse original message blocks to update
+            message_blocks = payload["message"]["blocks"]
+            pyBot.update_updation_series_message(channel_id, message_ts, message_blocks)
+
+            # Extract the series id from the payload
+            series_id = payload["actions"][0]["selected_option"]["value"][10:]
+            # Update the series in memory to be the one that the user selected
+            pyBot.setSeries(series_id)
 
 
     # ==================== DATEPICKER ACTIONS ====================
@@ -339,9 +383,10 @@ def _slash_handler(payload, slash_command, slash_text):
         pyBot.read_series_message(channel_id, user_id)
         return make_response("", 200)
 
-    # elif slash_text == "update":
-    #     # TODO create this method
-    #     pyBot.update_series(channel_id, user_id)
+    elif slash_text == "update":
+        # TODO create this method
+        pyBot.updation_series_message(channel_id, user_id)
+        return make_response("", 200)
     
     # elif slash_text == "delete":
     #     # TODO create this method
