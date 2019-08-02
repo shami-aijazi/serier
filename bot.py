@@ -403,7 +403,7 @@ class Bot(object):
                                                     "type": "section",
                                                     "text": {
                                                         "type": "mrkdwn",
-                                                        "text": "Your series *" + currentSeries.state["title"] + "* has been succesfully created!\n"
+                                                        "text": "Your series *" + currentSeries.state["title"] + "* has been successfully created!\n"
                                                     }
                                                 },
                                                 {
@@ -475,7 +475,7 @@ class Bot(object):
                                             blocks=[{"type": "section",
                                                     "text": {
                                                     "type": "mrkdwn",
-                                                    "text": "Your series has been succesfully cancelled."
+                                                    "text": "Your series has been successfully cancelled."
                                                         }
                                                     }
                                                 ]
@@ -524,13 +524,25 @@ class Bot(object):
         # Console log of updated series title
         # print("\n" + 70*"="  + "\nUpdating Series Title...\ncurrentSeries.state=\n", currentSeries.state, "\n" + 70*"=")
 
+
+        # If the currentSeries is being updated NOT created from scratch.
+        # The currentSeries object only has a series_id field if it is being
+        # updated. NOT if it is being created for the first time. The series_id
+        # field is only populated if the series is loaded from an SQL query.
+        # This will determine which blocks to load.
+        if not currentSeries.series_id:
+            blocks = currentSeries.getCreationMenuBlocks()
+        
+        else:
+            blocks = currentSeries.getUpdationMenuBlocks()
+
         update_message = self.client.chat_update(
                                             channel=channel_id,
                                             username=self.name,
                                             icon_emoji=self.emoji,
                                             text="Your series title has been updated",
                                             ts=currentSeries.menu_ts,
-                                            blocks=currentSeries.getCreationMenuBlocks()
+                                            blocks=blocks
                                             )
 
     def update_series_presenter(self, channel_id, user_id):
@@ -543,13 +555,24 @@ class Bot(object):
         # Console log of updated series presenter
         # print("\n" + 70*"="  + "\nUpdating Series Presenter...\ncurrentSeries.state=\n", currentSeries.state, "\n" + 70*"=")
 
+        # If the currentSeries is being updated NOT created from scratch.
+        # The currentSeries object only has a series_id field if it is being
+        # updated. NOT if it is being created for the first time. The series_id
+        # field is only populated if the series is loaded from an SQL query.
+        # This will determine which blocks to load.
+        if not currentSeries.series_id:
+            blocks = currentSeries.getCreationMenuBlocks()
+        
+        else:
+            blocks = currentSeries.getUpdationMenuBlocks()
+
         update_message = self.client.chat_update(
                                             channel=channel_id,
                                             username=self.name,
                                             icon_emoji=self.emoji,
-                                            text="Your series presenter has been updated",
+                                            text="Your series title has been updated",
                                             ts=currentSeries.menu_ts,
-                                            blocks=currentSeries.getCreationMenuBlocks()
+                                            blocks=blocks
                                             )
 
     def update_topic_selection(self, channel_id, topic_selection):
@@ -563,13 +586,24 @@ class Bot(object):
         # Console log of updated series topic_selection
         # print("\n" + 70*"="  + "\nUpdating Series Topic Selection...\ncurrentSeries.state=\n", currentSeries.state, "\n" + 70*"=")
 
+        # If the currentSeries is being updated NOT created from scratch.
+        # The currentSeries object only has a series_id field if it is being
+        # updated. NOT if it is being created for the first time. The series_id
+        # field is only populated if the series is loaded from an SQL query.
+        # This will determine which blocks to load.
+        if not currentSeries.series_id:
+            blocks = currentSeries.getCreationMenuBlocks()
+        
+        else:
+            blocks = currentSeries.getUpdationMenuBlocks()
+
         update_message = self.client.chat_update(
                                             channel=channel_id,
                                             username=self.name,
                                             icon_emoji=self.emoji,
-                                            text="Your series topic selection has been updated",
+                                            text="Your series title has been updated",
                                             ts=currentSeries.menu_ts,
-                                            blocks=currentSeries.getCreationMenuBlocks()
+                                            blocks=blocks
                                             )
 
     def update_series_time(self, channel_id, series_time):
@@ -585,15 +619,25 @@ class Bot(object):
         # Console log of updated series time
         # print("\n" + 70*"="  + "\nUpdating Series Time...\ncurrentSeries.state=\n", currentSeries.state, "\n" + 70*"=")
 
+        # If the currentSeries is being updated NOT created from scratch.
+        # The currentSeries object only has a series_id field if it is being
+        # updated. NOT if it is being created for the first time. The series_id
+        # field is only populated if the series is loaded from an SQL query.
+        # This will determine which blocks to load.
+        if not currentSeries.series_id:
+            blocks = currentSeries.getCreationMenuBlocks()
+        
+        else:
+            blocks = currentSeries.getUpdationMenuBlocks()
+
         update_message = self.client.chat_update(
                                             channel=channel_id,
                                             username=self.name,
                                             icon_emoji=self.emoji,
-                                            text="Your series time has been updated",
+                                            text="Your series title has been updated",
                                             ts=currentSeries.menu_ts,
-                                            blocks=currentSeries.getCreationMenuBlocks()
+                                            blocks=blocks
                                             )
-        
     def update_series_frequency(self, channel_id, series_frequency):
         """
         Update the series frequency.
@@ -604,13 +648,24 @@ class Bot(object):
         # Console log of updated series topic_selection
         # print("\n" + 70*"="  + "\nUpdating Series Frequency...\ncurrentSeries.state=\n", currentSeries.state, "\n" + 70*"=")
 
+        # If the currentSeries is being updated NOT created from scratch.
+        # The currentSeries object only has a series_id field if it is being
+        # updated. NOT if it is being created for the first time. The series_id
+        # field is only populated if the series is loaded from an SQL query.
+        # This will determine which blocks to load.
+        if not currentSeries.series_id:
+            blocks = currentSeries.getCreationMenuBlocks()
+        
+        else:
+            blocks = currentSeries.getUpdationMenuBlocks()
+
         update_message = self.client.chat_update(
                                             channel=channel_id,
                                             username=self.name,
                                             icon_emoji=self.emoji,
-                                            text="Your series frequency has been updated",
+                                            text="Your series title has been updated",
                                             ts=currentSeries.menu_ts,
-                                            blocks=currentSeries.getCreationMenuBlocks()
+                                            blocks=blocks
                                             )
 
     def update_series_numsessions(self, channel_id, series_numsessions):
@@ -623,14 +678,24 @@ class Bot(object):
         # Console log of updated series num_sessions
         # print("\n" + 70*"="  + "\nUpdating Series Numsessions...\ncurrentSeries.state=\n", currentSeries.state, "\n" + 70*"=")
 
-        # For now, decided not to show this to frontend
+        # If the currentSeries is being updated NOT created from scratch.
+        # The currentSeries object only has a series_id field if it is being
+        # updated. NOT if it is being created for the first time. The series_id
+        # field is only populated if the series is loaded from an SQL query.
+        # This will determine which blocks to load.
+        if not currentSeries.series_id:
+            blocks = currentSeries.getCreationMenuBlocks()
+        
+        else:
+            blocks = currentSeries.getUpdationMenuBlocks()
+
         update_message = self.client.chat_update(
                                             channel=channel_id,
                                             username=self.name,
                                             icon_emoji=self.emoji,
-                                            text="Your series numsessions has been updated",
+                                            text="Your series title has been updated",
                                             ts=currentSeries.menu_ts,
-                                            blocks=currentSeries.getCreationMenuBlocks()
+                                            blocks=blocks
                                             )
 
     def update_series_menu_date(self, channel_id, series_date):
@@ -642,14 +707,24 @@ class Bot(object):
         # Console log of updated series start_dates
         # print("\n" + 70*"="  + "\nUpdating Series First sesh date...\ncurrentSeries.state=\n", currentSeries.state, "\n" + 70*"=")
 
-        # Update the menu message to reflect the change
+        # If the currentSeries is being updated NOT created from scratch.
+        # The currentSeries object only has a series_id field if it is being
+        # updated. NOT if it is being created for the first time. The series_id
+        # field is only populated if the series is loaded from an SQL query.
+        # This will determine which blocks to load.
+        if not currentSeries.series_id:
+            blocks = currentSeries.getCreationMenuBlocks()
+        
+        else:
+            blocks = currentSeries.getUpdationMenuBlocks()
+
         update_message = self.client.chat_update(
                                             channel=channel_id,
                                             username=self.name,
                                             icon_emoji=self.emoji,
-                                            text="Your series first session date has been updated",
+                                            text="Your series title has been updated",
                                             ts=currentSeries.menu_ts,
-                                            blocks=currentSeries.getCreationMenuBlocks()
+                                            blocks=blocks
                                             )
 
     def delete_message(self, channel_id, message_ts):
@@ -843,13 +918,16 @@ class Bot(object):
                                 blocks=message_blocks
                                 )
 
-    def updation_series_message(self, channel_id, user_id):
+    def updation_series_message(self, channel_id, user_id, message_ts=0):
         """
         TODO this has a lot of overlap with the read_series_message, merge them?
 
-        This method shows a menu for the user to update their series.
         Send the user a message showing the list of series they have. The user
         will select the series they want to update.
+
+        NOTE: the timestamp parameter is defaulted to zero. If one is passed, then
+        this will be the result of the "back" button pressed in the workflow. 
+        Otherwise, the updation is being initiated from the slash command.
         """
 
         """
@@ -982,13 +1060,29 @@ class Bot(object):
 
                 blocks[1]["elements"][0]["options"].append(next_series)
 
-        post_message = self.client.chat_postMessage(
-                                        channel=channel_id,
-                                        username=self.name,
-                                        icon_emoji=self.emoji,
-                                        text="Select a series to update",
-                                        blocks=blocks
-                                    )
+
+        # If the updation is being initiated, then post a new message.
+        if message_ts == 0:
+            post_message = self.client.chat_postMessage(
+                                            channel=channel_id,
+                                            username=self.name,
+                                            icon_emoji=self.emoji,
+                                            text="Select a series to update",
+                                            blocks=blocks
+                                        )
+        
+        # If the user pressed back in the next step (a ts is provided), 
+        # then update the message
+        else:
+            update_message = self.client.chat_update(
+                                channel=channel_id,
+                                ts=message_ts,
+                                username=self.name,
+                                icon_emoji=self.emoji,
+                                text="Select a series to update",
+                                blocks=blocks
+                            )
+
     def update_updation_series_message(self, channel_id, message_ts, message_blocks):
         """
         Updates the updation series message to show a confirm button when the user
@@ -1001,7 +1095,7 @@ class Bot(object):
                         "action_id":"confirm_update_series",
                         "text":{  
                         "type":"plain_text",
-                        "text":"Read",
+                        "text":"Update",
                         "emoji":True
                         },
                         "style":"primary",
@@ -1022,7 +1116,7 @@ class Bot(object):
                                 blocks=message_blocks
                                 )
 
-    def updation_series_menu(self, channel_id, user_id, ts):
+    def updation_series_menu(self, channel_id, user_id, message_ts):
         """
         Display the series configuration menu that the user will use to edit
         the series.
@@ -1050,11 +1144,10 @@ class Bot(object):
 
         # The PyTZ timezone string
         user_tz = user_info["user"]["tz"]
-        # Console log for user timezone
-        # print("\n" + 70*"="  + "\nuser_tz=\n", user_tz, "\n" + 70*"=")
-
+        # Console log for series state
+        # print("\n" + 70*"="  + "\ncurrentSeries.state=\n", currentSeries.state, "\n" + 70*"=")
         # Set the display timezone to be the user's local timezone
-        currentSeries.timezone = user_tz
+        currentSeries.timezone = pytz.timezone(user_tz)
 
         # Adjust the dates and times on the currentSeries object
         # to be in the user's local timezone.
@@ -1068,7 +1161,7 @@ class Bot(object):
         # Localize to utc time
         utc_series_dt = pytz.utc.localize(start_date_dt)
         # translate to user local timezone
-        user_local_dt = utc_series_dt.astimezone(user_tz)
+        user_local_dt = utc_series_dt.astimezone(currentSeries.timezone)
         # update start date to be the date part of the resulting dt object (string)
         currentSeries.state["start_date"] = user_local_dt.strftime("%Y-%m-%d")
         # update session_start to be the time part of the resulting object (string)
@@ -1077,7 +1170,7 @@ class Bot(object):
         series_end_date = datetime.strptime(currentSeries.state["end_date"], "%Y-%m-%d")
         end_date_dt = series_end_date.replace(hour=series_session_start.hour, minute=series_session_start.minute)
         utc_series_dt = pytz.utc.localize(end_date_dt)
-        user_local_dt = utc_series_dt.astimezone(user_tz)
+        user_local_dt = utc_series_dt.astimezone(currentSeries.timezone)
         currentSeries.state["end_date"] = user_local_dt.strftime("%Y-%m-%d")
 
 
@@ -1087,11 +1180,14 @@ class Bot(object):
                                         channel=channel_id,
                                         username=self.name,
                                         icon_emoji=self.emoji,
-                                        text="Create new series",
-                                        ts=currentSeries.menu_ts,
+                                        text="Update a series",
+                                        ts=message_ts,
                                         blocks=currentSeries.getUpdationMenuBlocks()
                                         )
-    
+        # Update the currentSeries menu timestamp so that the menu can be updated
+        currentSeries.menu_ts = update_message["ts"]
+
+
     def confirm_series_updation(self, channel_id, organizer_id, message_ts):
         """
         Confirm the updation of the series. Execute and SQL query to update the series
@@ -1100,7 +1196,7 @@ class Bot(object):
         # FIRST, check if the datetime the user set is in the past.
 
         # Get the timezone of the creating user at the time of series creation
-        user_tz = pytz.timezone(currentSeries.timezone)
+        user_tz = currentSeries.timezone
 
         # Create a datetime object from the series data
         series_time = datetime.strptime(currentSeries.state["time"], '%H:%M')
@@ -1161,7 +1257,7 @@ class Bot(object):
 
 
             # Update end_date to be UTC
-            end_date_date = datetime.strptime(currentSeries.state["end_date"], "%m/%d/%Y")
+            end_date_date = datetime.strptime(currentSeries.state["end_date"], "%Y-%m-%d")
             user_local_dt = user_tz.localize(end_date_date)
             end_date_utc = user_local_dt.astimezone(pytz.utc)
             currentSeries.state["end_date"] = end_date_utc.strftime("%Y-%m-%d")
@@ -1180,8 +1276,7 @@ class Bot(object):
                             currentSeries.state["frequency"], currentSeries.state["num_sessions"],
                             currentSeries.series_id) # The last element is the series_id which will go in the WHERE clause
 
-            sql_statement = ''' UPDATE series(title,presenter,topic_selection,start_date,end_date,
-                                                   session_start, frequency, num_sessions, is_paused)
+            sql_statement = ''' UPDATE series
                                 SET title = ?, presenter = ?, topic_selection = ?, start_date = ?,
                                     end_date = ?, session_start = ?, frequency = ?, num_sessions = ?
                                 WHERE series_id = ?'''
@@ -1189,15 +1284,12 @@ class Bot(object):
             # Execute the insertion
             cur.execute(sql_statement, series_record)
 
-            # Save the ID of the series that was just inserted
-            current_series_id = cur.lastrowid
 
             # commit and close the database connection
             con.commit()
             con.close()
 
-            # Console log for database
-            print("\n" + 70*"="  + "\nJust updated the series in database...series_id=\n", current_series_id, "\n" + 70*"=")
+
             
 
             
@@ -1207,13 +1299,13 @@ class Bot(object):
                                             username=self.name,
                                             icon_emoji=self.emoji,
                                             ts=currentSeries.menu_ts,
-                                            text="Your Series *" + currentSeries.state["title"] + "* has been created",
+                                            text="Your Series *" + currentSeries.state["title"] + "* has been updated",
                                             blocks=[
                                                 {
                                                     "type": "section",
                                                     "text": {
                                                         "type": "mrkdwn",
-                                                        "text": "Your series *" + currentSeries.state["title"] + "* has been succesfully created!\n"
+                                                        "text": "Your series *" + currentSeries.state["title"] + "* has been successfully updated!\n"
                                                     }
                                                 },
                                                 {
@@ -1240,7 +1332,7 @@ class Bot(object):
             # This method creates and serializes a list of JSON session objects.
             # It stores these sessions on the Series object.
             # TODO Unnecessary to store it on Series object right?
-            currentSeries.createSessions(current_series_id)
+            currentSeries.updateSessions(currentSeries.series_id)
 
     def delete_series(self, channel_id, user_id, message_ts):
         """
@@ -1257,7 +1349,7 @@ class Bot(object):
         # First, delete the series in the series table.
         # Prepare the statement and the values
         # The series_id of the series we want to delete
-        series_record = (currentSeries.series_id) 
+        series_record = () 
 
         sql_statement = ''' DELETE FROM series
                             WHERE series_id = ?'''

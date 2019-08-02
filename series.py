@@ -109,10 +109,11 @@ class Series(object):
                 "presenter": series_tuple[2],
                 "topic_selection": series_tuple[3],
                 "start_date": series_tuple[4],
-                "time": series_tuple[5],
-                "frequency": series_tuple[6],
-                "num_sessions": series_tuple[7],
-                "end_date": series_tuple[8]
+                "end_date": series_tuple[5],
+                "time": series_tuple[6],
+                "frequency": series_tuple[7],
+                "num_sessions": series_tuple[8],
+                
             }
         self.menu_ts = None
         self.timezone = None
@@ -123,6 +124,7 @@ class Series(object):
         for session_tuple in sessions_tuples:
 
             next_session = {
+                "session_id" : session_tuple[0],
                 "ts": session_tuple[2],
                 "presenter": session_tuple[3],
                 "topic": session_tuple[4]
@@ -214,7 +216,7 @@ class Series(object):
             end_date += timedelta(days=28*num_sessions)
         
         # Format the datetime object
-        end_date = end_date.strftime("%m/%d/%Y")
+        end_date = end_date.strftime("%Y-%m-%d")
 
         # Store the result in state
         self.state["end_date"] = end_date
@@ -347,7 +349,7 @@ class Series(object):
         # If the frequency and the num_sessions has not been selected
         if self.state["frequency"] != "Not Selected" and self.state["num_sessions"] != 0:
             self.getLastSession()
-        current_series_menu_blocks[-2]["elements"][6]["text"] = "*End Date*: " + self.state["end_date"]
+        current_series_menu_blocks[-2]["elements"][6]["text"] = "*End Date*: " + datetime.strptime(self.state["end_date"], "%Y-%m-%d").strftime("%m/%d/%Y")
 
 
         # ==================== Add Start Button When Series Complete ====================
@@ -490,8 +492,9 @@ class Series(object):
                 }
                     
         # ==================== Update End Date ====================
-        # If the frequency and the num_sessions has not been selected
-        current_update_series_menu_blocks[-2]["elements"][6]["text"] = "*End Date*: " + self.state["end_date"]
+        # Calculate the last session date.
+        self.getLastSession()
+        current_update_series_menu_blocks[-2]["elements"][6]["text"] = "*End Date*: " + datetime.strptime(self.state["end_date"], "%Y-%m-%d").strftime("%m/%d/%Y")
 
 
         # ==================== Add Update Button If Series Modified ==================== ?
@@ -669,7 +672,7 @@ class Series(object):
         # commit and close the database connection
         con.commit()
         con.close()
-    def upateSessions(self, series_id):
+    def updateSessions(self, series_id):
         """
 
         Update the sessions associated with the series.
@@ -833,8 +836,7 @@ class Series(object):
             session_record = (session["ts"], session["presenter"], session["topic"],
                             series_id) # The last element is a series_id for the query WHERE clause.
 
-            sql_statement = ''' UPDATE sessions(series_id,session_start,presenter,topic,
-                                                    is_skipped, is_done, is_modified)
+            sql_statement = ''' UPDATE sessions
                                 SET session_start = ?, presenter = ?, topic = ?
                                 WHERE series_id = ?'''
 

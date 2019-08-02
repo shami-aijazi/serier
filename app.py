@@ -150,7 +150,8 @@ def _action_handler (payload, action_type, action_id):
 
         # If the user cancels when reading a series
         elif action_id == "cancel_read_series":
-            message_ts = payload["container"]["message_ts"] 
+            message_ts = payload["container"]["message_ts"]
+            pyBot.reset_currentSeries()
             pyBot.delete_message(channel_id, message_ts)
         
         # If the user confirms the read for the series, go ahead and load the schedule.
@@ -167,9 +168,14 @@ def _action_handler (payload, action_type, action_id):
         
         # If the user confirms that they want to update the series go ahead and 
         # load the series configuration menu
-        elif action_id == "confirm_updation_series":
+        elif action_id == "confirm_update_series":
             message_ts = payload["container"]["message_ts"] 
-            pyBot.printSchedulee(channel_id, message_ts)   
+            pyBot.updation_series_menu(channel_id, user_id, message_ts)  
+
+        elif action_id == "cancel_update_series":
+            message_ts = payload["container"]["message_ts"] 
+            pyBot.reset_currentSeries()
+            pyBot.delete_message(channel_id, message_ts)
 
         # If the user confirms the updation of the series
         elif action_id == "complete_update_series":    
@@ -180,7 +186,7 @@ def _action_handler (payload, action_type, action_id):
         # If the user hit the back button in the series updation workflow
         elif action_id == "back_to_updation":
             message_ts = payload["container"]["message_ts"] 
-            pyBot.updation_series_message(channel_id, user_id)
+            pyBot.updation_series_message(channel_id, user_id, message_ts)
 
         # If the user pushes the delete series button
         elif action_id == "delete_series":
@@ -191,8 +197,6 @@ def _action_handler (payload, action_type, action_id):
         elif action_id == "delete_series_ok":
             message_ts = payload["container"]["message_ts"] 
             pyBot.delete_message(channel_id, message_ts)
-
-
 
 
 
