@@ -163,6 +163,7 @@ class Series(object):
         self.state = {}
         self.menu_ts = ""
         self.timezone = ""
+        self.series_id = None
         # self.sessions = []
         
 
@@ -349,7 +350,7 @@ class Series(object):
         # If the frequency and the num_sessions has not been selected
         if self.state["frequency"] != "Not Selected" and self.state["num_sessions"] != 0:
             self.getLastSession()
-        current_series_menu_blocks[-2]["elements"][6]["text"] = "*End Date*: " + datetime.strptime(self.state["end_date"], "%Y-%m-%d").strftime("%m/%d/%Y")
+            current_series_menu_blocks[-2]["elements"][6]["text"] = "*End Date*: " + datetime.strptime(self.state["end_date"], "%Y-%m-%d").strftime("%m/%d/%Y")
 
 
         # ==================== Add Start Button When Series Complete ====================
@@ -514,6 +515,8 @@ class Series(object):
         Since this method assumes that the series state is full this method should only be called after
         making sure the series menu is complete.
         """
+        # Console log for sessions
+        print("\n" + 70*"="  + "\nInside createSessions...currentSeries.state = \n", self.state, "\n"+ 70*"=")
 
         # Extract the frequency and the num_sessions from the series state
         frequency = self.state["frequency"]
@@ -526,8 +529,9 @@ class Series(object):
         next_session_dt = datetime.strptime(self.state["start_date"], "%Y-%m-%d")
         next_session_dt = next_session_dt.replace(hour=series_time.hour, minute=series_time.minute)
 
-        # Localize the time to utc
-        next_session_dt = pytz.utc.localize(next_session_dt)
+        # Localize the time to the user's timezone (to avoid weekend confusion)
+        user_tz = pytz.timezone(self.timezone)
+        next_session_dt = user_tz.localize(next_session_dt)
 
         # If the frequency is every day
         if frequency == "every-day":
@@ -536,11 +540,10 @@ class Series(object):
                 # Create a new session for each day, including the first day
                 # TODO Topic should only be populated if the series topic selection option is "pre-determined"
                 next_session = {
-                "ts": str(int(next_session_dt.timestamp())),
+                "ts": str(int(next_session_dt.astimezone(pytz.utc).timestamp())),
                 "presenter": self.state["presenter"],
                 "topic": "Not Selected"
                 }
-
                 self.sessions.append(next_session)
 
                 # Increment the datetime by one day
@@ -557,7 +560,7 @@ class Series(object):
                 if session_number == 0:
                     session_number+=1
                     next_session = {
-                    "ts": str(int(next_session_dt.timestamp())),
+                    "ts": str(int(next_session_dt.astimezone(pytz.utc).timestamp())),
                     "presenter": self.state["presenter"],
                     "topic": "Not Selected"
                     }
@@ -572,7 +575,7 @@ class Series(object):
                 if next_session_dt.weekday() < 5: # sunday = 6
                     session_number+=1
                     next_session = {
-                    "ts": str(int(next_session_dt.timestamp())),
+                    "ts": str(int(next_session_dt.astimezone(pytz.utc).timestamp())),
                     "presenter": self.state["presenter"],
                     "topic": "Not Selected"
                     }
@@ -586,7 +589,7 @@ class Series(object):
 
                 # Topic will only be populated if the series topic selection option is "pre-determined"
                 next_session = {
-                "ts": str(int(next_session_dt.timestamp())),
+                "ts": str(int(next_session_dt.astimezone(pytz.utc).timestamp())),
                 "presenter": self.state["presenter"],
                 "topic": "Not Selected"
                 }
@@ -602,7 +605,7 @@ class Series(object):
 
                 # Topic will only be populated if the series topic selection option is "pre-determined"
                 next_session = {
-                "ts": str(int(next_session_dt.timestamp())),
+                "ts": str(int(next_session_dt.astimezone(pytz.utc).timestamp())),
                 "presenter": self.state["presenter"],
                 "topic": "Not Selected"
                 }
@@ -618,7 +621,7 @@ class Series(object):
                 # Topic will only be populated if the series topic selection option is "pre-determined"
                 next_session = {
                 "session_id": "session-" + str(session_number),
-                "ts": str(int(next_session_dt.timestamp())),
+                "ts": str(int(next_session_dt.astimezone(pytz.utc).timestamp())),
                 "presenter": self.state["presenter"],
                 "topic": "Not Selected"
                 }
@@ -633,7 +636,7 @@ class Series(object):
 
                 # Topic will only be populated if the series topic selection option is "pre-determined"
                 next_session = {
-                "ts": str(int(next_session_dt.timestamp())),
+                "ts": str(int(next_session_dt.astimezone(pytz.utc).timestamp())),
                 "presenter": self.state["presenter"],
                 "topic": "Not Selected"
                 }
@@ -644,6 +647,8 @@ class Series(object):
 
         
         # Now that all the sessions have been created, commit them to a db
+        # Console log for sessions
+        print("\n" + 70*"="  + "\nAbout to serialize sessions...currentSeries.sessions = \n", self.sessions, "\n"+ 70*"=")
         
         # TODO Put these in subroutines (make it resuable)
         # DATABASE OPERATIONS
@@ -672,153 +677,18 @@ class Series(object):
         # commit and close the database connection
         con.commit()
         con.close()
-    def updateSessions(self, series_id):
+    def deleteSessions(self, series_id):
         """
 
-        Update the sessions associated with the series.
-        Generate a list of session objects corresponding to the sessions that the series will be composed of.
-        Store this list on the Series object.
+        Delete the sessions associated with a series from database.
 
-        Serialize the sessions and update the table in the database
-
-        These sessions will be computed and populated based on the values in the series state.
-        Since this method assumes that the series state is full this method should only be called after
-        making sure the series update menu is complete.
-
-        NOTE: The series_id is passed as a parameter. The series_id is also stored as a field on the Series object.
-              This is redundant.
-              It is passed as a parameter because this method is copied from the "createSessions" method.
+        NOTE: This method is useful during updation of a series. First, all the
+        sessions will be deleted, and then they will be repopulated with new updated properties.
         """
-
-        # Extract the frequency and the num_sessions from the series state
-        frequency = self.state["frequency"]
-        num_sessions = int(self.state["num_sessions"])
-
-        # Extract the series time from state
-        series_time = datetime.strptime(self.state["time"],"%H:%M")
-
-        # Get the datetime of the Start Date
-        next_session_dt = datetime.strptime(self.state["start_date"], "%Y-%m-%d")
-        next_session_dt = next_session_dt.replace(hour=series_time.hour, minute=series_time.minute)
-
-        # Localize the time to utc
-        next_session_dt = pytz.utc.localize(next_session_dt)
-
-        # If the frequency is every day
-        if frequency == "every-day":
-            for session_number in range (1, num_sessions+1):
-
-                # Create a new session for each day, including the first day
-                # TODO Topic should only be populated if the series topic selection option is "pre-determined"
-                next_session = {
-                "ts": str(int(next_session_dt.timestamp())),
-                "presenter": self.state["presenter"],
-                "topic": "Not Selected"
-                }
-
-                self.sessions.append(next_session)
-
-                # Increment the datetime by one day
-                next_session_dt += timedelta(days=1)
-
-
-        # If the frequency is every weekday
-        elif frequency == "every-weekday":
-
-            session_number = 0
-            while num_sessions > session_number:
-
-                # For the Start Date
-                if session_number == 0:
-                    session_number+=1
-                    next_session = {
-                    "ts": str(int(next_session_dt.timestamp())),
-                    "presenter": self.state["presenter"],
-                    "topic": "Not Selected"
-                    }
-                    self.sessions.append(next_session)
-                    
-                
-
-                # Increment the datetime by one day
-                next_session_dt += timedelta(days=1) 
-
-                # If it is a weekday
-                if next_session_dt.weekday() < 5: # sunday = 6
-                    session_number+=1
-                    next_session = {
-                    "ts": str(int(next_session_dt.timestamp())),
-                    "presenter": self.state["presenter"],
-                    "topic": "Not Selected"
-                    }
-                    self.sessions.append(next_session)
-
-                
-
-        # If the frequency is every week
-        elif frequency == "every-week":
-            for session_number in range (1, num_sessions+1):
-
-                # Topic will only be populated if the series topic selection option is "pre-determined"
-                next_session = {
-                "ts": str(int(next_session_dt.timestamp())),
-                "presenter": self.state["presenter"],
-                "topic": "Not Selected"
-                }
-
-                self.sessions.append(next_session)
-
-                # 7 days
-                next_session_dt += timedelta(days=7)
-
-        # Every 2 weeks
-        elif frequency == "every-2-weeks":
-            for session_number in range (1, num_sessions+1):
-
-                # Topic will only be populated if the series topic selection option is "pre-determined"
-                next_session = {
-                "ts": str(int(next_session_dt.timestamp())),
-                "presenter": self.state["presenter"],
-                "topic": "Not Selected"
-                }
-
-                self.sessions.append(next_session)
-
-                # 14 days
-                next_session_dt += timedelta(days=14)
-
-        elif frequency == "every-3-weeks":
-            for session_number in range (1, num_sessions+1):
-
-                # Topic will only be populated if the series topic selection option is "pre-determined"
-                next_session = {
-                "session_id": "session-" + str(session_number),
-                "ts": str(int(next_session_dt.timestamp())),
-                "presenter": self.state["presenter"],
-                "topic": "Not Selected"
-                }
-
-                self.sessions.append(next_session)
-
-                # 21 days
-                next_session_dt += timedelta(days=21)
-
-        elif frequency == "every-month":
-            for session_number in range (1, num_sessions+1):
-
-                # Topic will only be populated if the series topic selection option is "pre-determined"
-                next_session = {
-                "ts": str(int(next_session_dt.timestamp())),
-                "presenter": self.state["presenter"],
-                "topic": "Not Selected"
-                }
-
-                self.sessions.append(next_session)
-                # 28 days
-                next_session_dt += timedelta(days=28)
-
+        # Console log for sessions
+        print("\n" + 70*"="  + "\nInside deleteSessions...currentSeries.state = \n", self.state, "\n"+ 70*"=")
+        print("deleting sessions from series with series_id =", self.series_id, "| type of series_id =", type(series_id))
         
-        # Now that all the sessions have been created, update the existing sessions in the db
         
         # TODO Put these in subroutines (make it resuable)
         # DATABASE OPERATIONS
@@ -828,25 +698,22 @@ class Series(object):
         # Create a cursor
         cur = con.cursor()
 
-        # Iterate through the sessions list and add them to the database.
-        # TODO: Later, probably just want to commit them to db AS we are creating them (a few lines up in the code)
-        for session in self.sessions:
             
-            # Prepare the statement and the values
-            session_record = (session["ts"], session["presenter"], session["topic"],
-                            series_id) # The last element is a series_id for the query WHERE clause.
+        # Prepare the statement and the values
+        session_record = (str(series_id),)
 
-            sql_statement = ''' UPDATE sessions
-                                SET session_start = ?, presenter = ?, topic = ?
-                                WHERE series_id = ?'''
-
-            # Execute the insertion
-            cur.execute(sql_statement, session_record)
+        sql_statement = ''' DELETE FROM sessions
+                            WHERE series_id = ''' + str(series_id)
+        # Execute the insertion
+        cur.execute(sql_statement)
 
 
         # commit and close the database connection
         con.commit()
         con.close()
+
+        # Then, clear the sessions from memory
+        self.sessions = []
 
     def getScheduleBlocks(self, series_title, sessions):
         """

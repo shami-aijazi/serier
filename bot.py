@@ -340,7 +340,7 @@ class Bot(object):
 
 
             # Update end_date to be UTC
-            end_date_date = datetime.strptime(currentSeries.state["end_date"], "%m/%d/%Y")
+            end_date_date = datetime.strptime(currentSeries.state["end_date"], "%Y-%m-%d")
             user_local_dt = user_tz.localize(end_date_date)
             end_date_utc = user_local_dt.astimezone(pytz.utc)
             currentSeries.state["end_date"] = end_date_utc.strftime("%Y-%m-%d")
@@ -1146,8 +1146,12 @@ class Bot(object):
         user_tz = user_info["user"]["tz"]
         # Console log for series state
         # print("\n" + 70*"="  + "\ncurrentSeries.state=\n", currentSeries.state, "\n" + 70*"=")
+        
         # Set the display timezone to be the user's local timezone
-        currentSeries.timezone = pytz.timezone(user_tz)
+        currentSeries.timezone = user_tz
+
+        # Convert the timezone string to a pytz timezone object
+        user_tz = pytz.timezone(user_tz)
 
         # Adjust the dates and times on the currentSeries object
         # to be in the user's local timezone.
@@ -1161,7 +1165,7 @@ class Bot(object):
         # Localize to utc time
         utc_series_dt = pytz.utc.localize(start_date_dt)
         # translate to user local timezone
-        user_local_dt = utc_series_dt.astimezone(currentSeries.timezone)
+        user_local_dt = utc_series_dt.astimezone(user_tz)
         # update start date to be the date part of the resulting dt object (string)
         currentSeries.state["start_date"] = user_local_dt.strftime("%Y-%m-%d")
         # update session_start to be the time part of the resulting object (string)
@@ -1170,7 +1174,7 @@ class Bot(object):
         series_end_date = datetime.strptime(currentSeries.state["end_date"], "%Y-%m-%d")
         end_date_dt = series_end_date.replace(hour=series_session_start.hour, minute=series_session_start.minute)
         utc_series_dt = pytz.utc.localize(end_date_dt)
-        user_local_dt = utc_series_dt.astimezone(currentSeries.timezone)
+        user_local_dt = utc_series_dt.astimezone(user_tz)
         currentSeries.state["end_date"] = user_local_dt.strftime("%Y-%m-%d")
 
 
@@ -1196,7 +1200,7 @@ class Bot(object):
         # FIRST, check if the datetime the user set is in the past.
 
         # Get the timezone of the creating user at the time of series creation
-        user_tz = currentSeries.timezone
+        user_tz = pytz.timezone(currentSeries.timezone)
 
         # Create a datetime object from the series data
         series_time = datetime.strptime(currentSeries.state["time"], '%H:%M')
@@ -1208,6 +1212,8 @@ class Bot(object):
         utc_dt = user_local_dt.astimezone(pytz.utc)
 
         
+        # TODO WHY ARE WE COMPARING IT TO NOW? THIS IS AN ALREADY EXISTING SERIES, IT COULD
+        # VERY WELL BE LEGALLY STARTING IN THE PAST.
         # Compare the scheduled time to the time now
         utc_now = datetime.now(pytz.utc)
 
@@ -1291,8 +1297,6 @@ class Bot(object):
 
 
             
-
-            
             # Send a confirmation message to the user that their series has been created
             update_message = self.client.chat_update(
                                             channel=channel_id,
@@ -1326,13 +1330,14 @@ class Bot(object):
                                             ]
                                         )
 
-            # Console log for populating sessions
-            # print("\n" + 70*"="  + "\nAbout to set the sessions...\ncurrentSeries.state=\n", currentSeries.state, "\n" + 70*"=")
-            # Now that the series has the go ahead, create the sessions
-            # This method creates and serializes a list of JSON session objects.
+            
+            # Now, update the sessions of the series.
+            # This is done by first deleting all the sessions in the series, and then creating them again.
             # It stores these sessions on the Series object.
             # TODO Unnecessary to store it on Series object right?
-            currentSeries.updateSessions(currentSeries.series_id)
+            currentSeries.deleteSessions(currentSeries.series_id)
+            currentSeries.createSessions(currentSeries.series_id)
+            
 
     def delete_series(self, channel_id, user_id, message_ts):
         """
@@ -1349,7 +1354,7 @@ class Bot(object):
         # First, delete the series in the series table.
         # Prepare the statement and the values
         # The series_id of the series we want to delete
-        series_record = () 
+        series_record = (currentSeries.series_id,)
 
         sql_statement = ''' DELETE FROM series
                             WHERE series_id = ?'''
@@ -1382,12 +1387,9 @@ class Bot(object):
                                     channel=channel_id,
                                     username=self.name,
                                     icon_emoji=self.emoji,
-                                    text="Your series has been successfully cancelled",
+                                    text="Your series has been successfully deleted",
                                     ts=message_ts,
                                     blocks=[
-                                        {
-                                            "type": "divider"
-                                        },
                                         {
                                             "type": "section",
                                             "text": {

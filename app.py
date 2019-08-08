@@ -192,6 +192,7 @@ def _action_handler (payload, action_type, action_id):
         elif action_id == "delete_series":
             message_ts = payload["container"]["message_ts"]
             pyBot.delete_series(channel_id, user_id, message_ts)
+            return make_response("Series Deleted", 200)
 
         # If the user acknowledged the series deletion notification
         elif action_id == "delete_series_ok":
