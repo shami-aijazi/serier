@@ -531,7 +531,9 @@ class Series(object):
 
         # Localize the time to the user's timezone (to avoid weekend confusion)
         user_tz = pytz.timezone(self.timezone)
-        next_session_dt = user_tz.localize(next_session_dt)
+        next_session_dt = pytz.utc.localize(next_session_dt)
+        next_session_dt = next_session_dt.astimezone(user_tz)
+
 
         # If the frequency is every day
         if frequency == "every-day":
