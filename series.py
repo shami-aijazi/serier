@@ -556,7 +556,7 @@ class Series(object):
             session_number = 0
             while num_sessions > session_number:
 
-                # For the Start Date
+                # For the Start Date, just add it.
                 if session_number == 0:
                     session_number+=1
                     next_session = {
