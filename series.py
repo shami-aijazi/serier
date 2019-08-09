@@ -508,7 +508,6 @@ class Series(object):
         """
         Generate a list of session objects corresponding to the sessions that the series will be composed of.
         Store this list on the Series object.
-
         Serialize the sessions and commit them to a table in the database
 
         These sessions will be computed and populated based on the values in the series state.
@@ -650,7 +649,7 @@ class Series(object):
         
         # Now that all the sessions have been created, commit them to a db
         # Console log for sessions
-        print("\n" + 70*"="  + "\nAbout to serialize sessions...currentSeries.sessions = \n", self.sessions, "\n"+ 70*"=")
+        # print("\n" + 70*"="  + "\nAbout to serialize sessions...currentSeries.sessions = \n", self.sessions, "\n"+ 70*"=")
         
         # TODO Put these in subroutines (make it resuable)
         # DATABASE OPERATIONS
@@ -674,6 +673,9 @@ class Series(object):
 
             # Execute the insertion
             cur.execute(sql_statement, session_record)
+
+            # Store the session_id of the session that was just serialized on the session object.
+            session["session_id"] = cur.lastrowid
 
 
         # commit and close the database connection
@@ -757,7 +759,6 @@ class Series(object):
         # This will number the sessions
         session_counter = 0
         for session in sessions:
-            session_counter += 1
             # 1- append the divider
             series_schedule_blocks.append({
                 "type": "divider"
@@ -768,7 +769,8 @@ class Series(object):
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
-                        "text": "*Session " + str(session_counter) + "*"
+                        # Increment the session number by one to shift zero-indexing
+                        "text": "*Session " + str(session_counter + 1) + "*"
                         }
                 })
 
@@ -790,13 +792,15 @@ class Series(object):
                         },
                 "accessory": {
                     "type": "button",
-                    "action_id": "change_presenter_session_" + str(session_counter),
+                    "action_id": "change_session_presenter",
 			        "text": {
                         "type": "plain_text",
                         "text": "Change Presenter",
                         "emoji": True
                         },
-                    "value": "change_presenter_session_" + str(session_counter)
+                    
+                    # Format of value string: session_counter-session_id   Example: 0-3492 OR 12-3504 
+                    "value": str(session_counter) + "-" + session["session_id"]
                     }
                 })
 
@@ -809,15 +813,18 @@ class Series(object):
                     },
                 "accessory": {
                     "type": "button",
-                    "action_id": "change_topic_session_" + str(session_counter),
+                    "action_id": "change_session_topic",
                     "text": {
                 "type": "plain_text",
                 "text": "Change Topic",
                 "emoji": True
                 },
-                "value": "change_presenter_session_" + str(session_counter)
+                "value": str(session_counter) + "-" + session["session_id"]
                 }
                 })
+
+            # Increment the session counter
+            session_counter += 1
 
         # Appendage to the schedule message that contains the button to hide the message.
         appendage_blocks = [  

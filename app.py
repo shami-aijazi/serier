@@ -199,6 +199,14 @@ def _action_handler (payload, action_type, action_id):
             message_ts = payload["container"]["message_ts"] 
             pyBot.delete_message(channel_id, message_ts)
 
+        # If the user wants to change the presenter for a session
+        elif action_id == "change_session_presenter":
+            pyBot.changeSessionPresenter(newPresenter, session_count, session_id)
+
+        # If the user wants to change the topic for a session
+        elif action_id == "change_session_topic":
+            pyBot.changeSessionTopic(newTopic, session_count, session_id)
+
 
 
     # ==================== DIALOG SUBMISSION ACTIONS ====================
