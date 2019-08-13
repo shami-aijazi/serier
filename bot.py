@@ -439,13 +439,6 @@ class Bot(object):
         Assumes that the currentSeries object that is set is the series whose schedule needs to be shown.
         """
 
-        # TODO untidy hacking fix here. Clean this up later. 
-        # (lol as if this is the only section of code like that)
-        # Extract the title from state before resetting the series. This is needed
-        # to display the schedule. This is to fix the situation where the schedule
-        # message crashes because of exceeding the 50-block message limit. In that
-        # situation the series wouldn't reset and it would cause problems when
-        # making creating a series again.
         series_title = currentSeries.state["title"]
 
         # Then, post the schedule message
@@ -1417,6 +1410,171 @@ class Bot(object):
         
         # Finally, clear currentSeries from memory
         self.reset_currentSeries()
+
+
+    def change_session_presenter_dialog(self, trigger_id, session_index, message_ts):
+        """
+        Open a dialog to change the presenter for a session.
+
+        Parameters
+        ----------
+        trigger_id : str
+            trigger_id of the edit series action to open a dialog
+        session_index: int
+            the session number of the session associated with the change.
+        message_ts: str
+            the timestamp of the original schedule message, this will be passed as state.
+        """
+        # Cast the session_index string to int
+        dialog_data = {
+                "callback_id": "update_session_presenter",
+                "title": "Change Session Presenter",
+                # Update state in the following format: schedule_ts,sesion_index, 
+                "state": message_ts + "," + str(session_index),
+                "elements": [
+                    {
+                    "label": "Presenter",
+                    "name": "session_presenter",
+                    "type": "select",
+                    "data_source": "users",
+                    # Set the defaulted option to the session's presenter
+                    "value": currentSeries.sessions[session_index]["presenter"]
+                    }
+                ]
+            }
+
+        open_dialog =  self.client.dialog_open(
+                                            dialog=dialog_data,
+                                            trigger_id=trigger_id
+                                            )
+
+    def change_session_topic_dialog(self, trigger_id, session_index, message_ts):
+        """
+        Open a dialog to change the topic for a session.
+
+        Parameters
+        ----------
+        trigger_id : str
+            trigger_id of the edit series action to open a dialog
+        session_index: str
+            the session number of the session associated with the change.
+        message_ts: str
+            the timestamp of the original schedule message, this will be passed as state.
+       
+        """
+        session_index = int(session_index)
+
+        # If a topic has not been selected yet, default to blank field.
+        if currentSeries.sessions[session_index]["topic"] == "Not Selected":
+            dialog_data = {
+                    "callback_id": "update_session_topic",
+                    "title": "Edit Topic",
+                    # Update state in the following format: schedule_ts,sesion_index, 
+                    "state": message_ts + "," + str(session_index),
+                    "elements": [
+                        {
+                            "type": "text",
+                            "label": "Topic",
+                            "name": "session_topic"
+                        }
+                    ]
+                }
+        else: # If a topic has been selected, make it the default.
+            dialog_data = {
+                    "callback_id": "update_session_topic",
+                    "title": "Edit Topic",
+                    # Update state in the following format: schedule_ts,sesion_index, 
+                    "state": message_ts + "," + str(session_index),
+                    "elements": [
+                        {
+                            "type": "text",
+                            "label": "Topic",
+                            "name": "session_topic",
+                            # Set the default value to be the current topic
+                            "value": currentSeries.sessions[session_index]["topic"]
+                        }
+                    ]
+                }
+
+        open_dialog =  self.client.dialog_open(
+                                            dialog=dialog_data,
+                                            trigger_id=trigger_id
+                                            )
+
+    def update_session_presenter(self, session_index, session_presenter, channel_id, message_ts):
+        """
+        Updates the presenter for the session with specified session index.
+        Renders message with new schedule blocks, reflecting the change in presenter.
+
+        """
+        # Update the session presenter in memory
+        currentSeries.sessions[session_index]["presenter"] = session_presenter
+
+        # Render the schedule
+        self.printSchedule(channel_id, message_ts)
+        
+
+        # Then, update the session data in the database.
+        session_id =  currentSeries.sessions[session_index]["session_id"]
+
+        # DATABASE OPERATIONS
+        # First, connect to the sqlite3 database
+        con = sqlite3.connect("serier.db")
+        # Create a cursor
+        cur = con.cursor()
+
+
+        session_record = (session_presenter, session_id)
+
+        # Update the session with specified session_id
+        sql_statement = '''UPDATE sessions
+        SET presenter = ?
+        WHERE session_id = ?'''
+
+
+        cur.execute(sql_statement, session_record)
+
+        # Close the connection
+        con.commit()
+        con.close()
+
+
+    def update_session_topic(self, session_index, session_topic, channel_id, message_ts):
+        """
+        Updates the topic for the session with specified session index.
+        Renders message with new schedule blocks, reflecting the change in topic.
+
+        """
+        # Update the session topic in memory
+        currentSeries.sessions[session_index]["topic"] = session_topic
+
+        # Render the schedule
+        self.printSchedule(channel_id, message_ts)
+        
+
+        # Then, update the session data in the database.
+        session_id =  currentSeries.sessions[session_index]["session_id"]
+
+        # DATABASE OPERATIONS
+        # First, connect to the sqlite3 database
+        con = sqlite3.connect("serier.db")
+        # Create a cursor
+        cur = con.cursor()
+
+
+        session_record = (session_topic, session_id)
+
+        # Update the session with specified session_id
+        sql_statement = '''UPDATE sessions
+        SET topic = ?
+        WHERE session_id = ?'''
+
+
+        cur.execute(sql_statement, session_record)
+
+        # Close the connection
+        con.commit()
+        con.close()
 
         
     def reset_currentSeries(self):

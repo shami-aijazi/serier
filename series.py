@@ -757,7 +757,7 @@ class Series(object):
         # Start appending the sessions
 
         # This will number the sessions
-        session_counter = 0
+        session_index = 0
         for session in sessions:
             # 1- append the divider
             series_schedule_blocks.append({
@@ -770,7 +770,7 @@ class Series(object):
                     "text": {
                         "type": "mrkdwn",
                         # Increment the session number by one to shift zero-indexing
-                        "text": "*Session " + str(session_counter + 1) + "*"
+                        "text": "*Session " + str(session_index + 1) + "*"
                         }
                 })
 
@@ -799,8 +799,8 @@ class Series(object):
                         "emoji": True
                         },
                     
-                    # Format of value string: session_counter-session_id   Example: 0-3492 OR 12-3504 
-                    "value": str(session_counter) + "-" + session["session_id"]
+                    # Format of value string: session_index-(session_index)   Example: session_index-1 OR session_index-13
+                    "value": "session_index-" + str(session_index)
                     }
                 })
 
@@ -809,22 +809,22 @@ class Series(object):
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": ":bookmark_tabs: Not Selected"
+                    "text": ":bookmark_tabs:" + session["topic"]
                     },
                 "accessory": {
                     "type": "button",
                     "action_id": "change_session_topic",
                     "text": {
-                "type": "plain_text",
-                "text": "Change Topic",
-                "emoji": True
-                },
-                "value": str(session_counter) + "-" + session["session_id"]
+                        "type": "plain_text",
+                        "text": "Change Topic",
+                        "emoji": True
+                        },
+                    "value": "session_index-" + str(session_index)
                 }
                 })
 
             # Increment the session counter
-            session_counter += 1
+            session_index += 1
 
         # Appendage to the schedule message that contains the button to hide the message.
         appendage_blocks = [  

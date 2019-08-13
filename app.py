@@ -90,10 +90,14 @@ def verify_signature(timestamp, signature, request_body):
     return hmac.compare_digest(request_hash, signature)
 
 def _action_handler (payload, action_type, action_id):
-#     """
-#     A helper function that routes user interactive actions to our Bot
-#     by action type and and action id.
-#     """
+    """
+    A helper function that routes user interactive actions to our Bot
+    by action type and and action id.
+    """
+
+    # console log for the payload
+    print("\n" + 70*"="  + "\ninteractive event payload=\n", json.dumps(payload), "\n" + 70*"=")
+
     # Extract the original message channel_id
     # in order to update the message as the state of the series changes.
 
@@ -201,11 +205,20 @@ def _action_handler (payload, action_type, action_id):
 
         # If the user wants to change the presenter for a session
         elif action_id == "change_session_presenter":
-            pyBot.changeSessionPresenter(newPresenter, session_count, session_id)
+            # Exctract the message timestamp to dynamically update the message
+            message_ts = payload["container"]["message_ts"] 
+            # Extracting the session_index to display default values
+            session_index = int(payload["actions"][0]["value"][14:])
+            trigger_id = payload["trigger_id"]
+            pyBot.change_session_presenter_dialog(trigger_id, session_index, message_ts)
 
         # If the user wants to change the topic for a session
         elif action_id == "change_session_topic":
-            pyBot.changeSessionTopic(newTopic, session_count, session_id)
+            message_ts = payload["container"]["message_ts"] 
+            # Extracting the session_index to display default values
+            session_index = int(payload["actions"][0]["value"][14:])
+            trigger_id = payload["trigger_id"]
+            pyBot.change_session_topic_dialog(trigger_id, session_index, message_ts)
 
 
 
@@ -219,9 +232,38 @@ def _action_handler (payload, action_type, action_id):
             series_title = payload["submission"]["series_title"]
             pyBot.update_series_title(channel_id, series_title)
 
+            # console log for the payload
+            # print("\n" + 70*"="  + "\ninteractive event payload=\n", json.dumps(payload), "\n" + 70*"=")
             # A-OK
             return make_response("", 200)
 
+        elif action_id == "update_session_presenter":
+            # Extract the new session presenter
+            session_presenter = payload["submission"]["session_presenter"]
+            # The timestamp and the session_index is in the state string delimited by a comma
+            message_ts, session_index = payload["state"].split(",")
+            session_index = int(session_index)
+            # Extract the channel_id to send the newly updated message
+            channel_id = payload["channel"]["id"]
+            pyBot.update_session_presenter(session_index, session_presenter, channel_id, message_ts)
+
+            # console log for the payload
+            # print("\n" + 70*"="  + "\ninteractive event payload=\n", json.dumps(payload), "\n" + 70*"=")
+            # A-OK
+            return make_response("", 200)
+
+        elif action_id == "update_session_topic":
+            # Extract the new session topic
+            session_topic = payload["submission"]["session_topic"]
+            # The timestamp and the session_index is in the state string delimited by a comma
+            message_ts, session_index = payload["state"].split(",")
+            session_index = int(session_index)
+            # Extract the channel_id to send the newly updated message
+            channel_id = payload["channel"]["id"]
+            pyBot.update_session_topic(session_index, session_topic, channel_id, message_ts)
+
+
+            return make_response("", 200)
     # ==================== USER_SELECT ACTIONS ====================
     # If the user picked an option from a user_select menu
     elif action_type == "users_select":
