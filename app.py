@@ -179,12 +179,29 @@ def _action_handler (payload, action_type, action_id):
         # If the user confirms the read for the series, go ahead and load the schedule.
         elif action_id == "confirm_read_series":
             message_ts = payload["container"]["message_ts"] 
-            pyBot.printSchedule(channel_id, message_ts)
+            
+            # Whether or not the schedule request came from the series creation confirmation
+            isFromConfirmation = False
 
-        # TODO If the user hits the button to go back to the Series Read menu
+            # If the schedule request came from button after creating a series, the value
+            # will be the series_id of the series it is associated with
+            if payload["actions"][0]["value"][:10] == "series_id-":
+                series_id = payload["actions"][0]["value"][10:]
+                # Set the series in memory to be that series
+                pyBot.setSeries(series_id)
+                isFromConfirmation = True
+
+            pyBot.printSchedule(channel_id, message_ts, isFromConfirmation)
+
         elif action_id == "back_to_read":
             message_ts = payload["container"]["message_ts"] 
-            pyBot.read_series_message(channel_id, user_id, message_ts)
+            isFromHelp = False
+
+            # Parse the value to check if the user came from the help message
+            if payload["actions"][0]["value"] == "from_help_message":
+                isFromHelp = True
+            
+            pyBot.read_series_message(channel_id, user_id, message_ts, isFromHelp)
 
         # If the user hits button to hide the schedule message
         # And clear the series on memory

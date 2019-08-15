@@ -756,7 +756,7 @@ class Series(object):
         # Then, clear the sessions from memory
         self.sessions = []
 
-    def getScheduleBlocks(self, series_title, sessions):
+    def getScheduleBlocks(self, series_title, sessions, isFromConfirmation):
         """
         Generate the blocks that the series schedule will be composed of. 
         These blocks will be based on the sessions parameter.
@@ -770,9 +770,10 @@ class Series(object):
 
         sessions: list of dicts
             a list of JSON session objects
+        
+        isFromConfirmation: bool
+            (Optional) Whether or not the schedule printing request came from the series creation confirmation.
 
-        # TODO clean up the hackfix where series_title is a parameter to be able to display it in schedule message
-        Returns the blocks JSON dict object
         """
         
         # The blocks object starts off empty
@@ -863,34 +864,75 @@ class Series(object):
             # Increment the session counter
             session_index += 1
 
-        # Appendage to the schedule message that contains the button to hide the message.
-        appendage_blocks = [  
-        {  
-            "type":"divider"
-        },
-        {  
-            "type":"section",
-            "text":{  
-            "type":"mrkdwn",
-            "text":"*End of schedule message.*"
-            }
-        },
-        {  
-            "type":"actions",
-            "elements":[  
-            {  
-                "type":"button",
-                "action_id":"hide_schedule_message",
-                "text":{  
-                "type":"plain_text",
-                "text":"Hide Schedule",
-                "emoji":True
+        # Appendage to the schedule message that contains the button to go back and the button to hide the message.
+
+        # Do not add a "back" button if the schedle reqeust workflow came via the button in the series creation confirmation message
+        if isFromConfirmation:
+            appendage_blocks = [  
+                {  
+                    "type":"divider"
                 },
-                "value":"hide_schedule_message"
+                {  
+                    "type":"section",
+                    "text":{  
+                    "type":"mrkdwn",
+                    "text":"*End of schedule message.*"
+                    }
+                },
+                {  
+                    "type":"actions",
+                    "elements":[{  
+                            "type":"button",
+                            "action_id":"hide_schedule_message",
+                            "text":{  
+                            "type":"plain_text",
+                            "text":"Hide Schedule",
+                            "emoji":True
+                            },
+                            "value":"hide_schedule_message"
+                        }
+                    ]
+                }
+                ]
+        else:
+            appendage_blocks = [  
+            {  
+                "type":"divider"
+            },
+            {  
+                "type":"section",
+                "text":{  
+                "type":"mrkdwn",
+                "text":"*End of schedule message.*"
+                }
+            },
+            {  
+                "type":"actions",
+                "elements":[  
+                    {  
+                        "type":"button",
+                        "action_id":"back_to_read",
+                        "text":{  
+                        "type":"plain_text",
+                        "text":"Back",
+                        "emoji":True
+                        },
+                        "value":"from_schedule_message"
+                    },
+                    {  
+                        "type":"button",
+                        "action_id":"hide_schedule_message",
+                        "text":{  
+                        "type":"plain_text",
+                        "text":"Hide Schedule",
+                        "emoji":True
+                        },
+                        "value":"hide_schedule_message"
+                    }
+                ]
             }
             ]
-        }
-        ]
+
 
         series_schedule_blocks.extend(appendage_blocks)
 

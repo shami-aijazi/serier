@@ -539,7 +539,7 @@ class Bot(object):
             con.close()
 
             # Console log for database
-            print("\n" + 70*"="  + "\nJust inserted the series to database...series_id=\n", current_series_id, "\n" + 70*"=")
+            # print("\n" + 70*"="  + "\nJust inserted the series to database...series_id=\n", current_series_id, "\n" + 70*"=")
             
 
             
@@ -570,6 +570,18 @@ class Bot(object):
                                                                 "emoji": True
                                                             },
                                                             "value": "series_creation_ok"
+                                                        },
+                                                        # Add a button to show the schedule of the series that was just created
+                                                        {
+                                                            "type": "button",
+                                                            "action_id": "confirm_read_series",
+                                                            "text": {
+                                                                "type": "plain_text",
+                                                                "text": "View Schedule",
+                                                                "emoji": True
+                                                            },
+                                                            # The value is in the format: "series-id-{series_id}" example: "series_id-3230"
+                                                            "value": "series_id-" + str(current_series_id)
                                                         }
                                                     ]
                                                 }
@@ -585,10 +597,20 @@ class Bot(object):
             currentSeries.createSessions(current_series_id)
 
     
-    def printSchedule(self, channel_id, message_ts):
+    def printSchedule(self, channel_id, message_ts, isFromConfirmation=False):
         """
         Print the schedule associated with all the sessions in currentSeries object.
         Assumes that the currentSeries object that is set is the series whose schedule needs to be shown.
+
+        Parameters
+        ----------
+        channel_id : str
+            ID of the Slack channel to send the schedule to
+        message_ts : str
+            Timestamp of the slack message to update
+        isFromConfirmation : bool
+            (Optional) Whether or not the schedule printing request came from the series creation confirmation.
+
         """
 
         series_title = currentSeries.state["title"]
@@ -600,7 +622,7 @@ class Bot(object):
                                         # icon_emoji=self.emoji,
                                         text="Here's the schedule for your series *" + series_title + "*",
                                         ts=message_ts,
-                                        blocks=currentSeries.getScheduleBlocks(series_title, currentSeries.sessions)
+                                        blocks=currentSeries.getScheduleBlocks(series_title, currentSeries.sessions, isFromConfirmation)
                                     )
 
 
@@ -884,16 +906,28 @@ class Bot(object):
 
 # ============================= SLASH COMMAND LOGIC =============================
 
-    def read_series_message(self, channel_id, user_id, message_ts=0):
+    def read_series_message(self, channel_id, user_id, message_ts=0, isFromHelp=False):
         """
         TODO this has a lot of overlap with the updation_series_message, merge them?
 
         This method shows a menu for the user to view their series.
         Send the user a message showing the list of series they have. The user
         will select the series they want to view.
-        NOTE: the timestamp parameter is defaulted to zero. If one is passed, then
-        this will be the result of the "back" button pressed in the workflow. 
-        Otherwise, the updation is being initiated from the slash command.
+
+        Parameters
+        ----------
+        channel_id : str
+            the Slack channel ID to send the message on
+        user_id: int
+            the Slack user_id of the user checking for their list of series
+        message_ts: str
+            (Optional) the timestamp of the original schedule message, this will be passed as state.
+            If it is passed then the message will update the latest message, if it
+            is not passed, it will post a new message.
+        isFromHelp :  bool
+            (Optional) Whether or not the user came from the help message. This will 
+            decide whether or not to render a "back to help" button.
+        
         """
 
 
@@ -1038,8 +1072,24 @@ class Bot(object):
                                         )
         
         # If the user pressed back in the next step (a ts is provided), 
+        # Or if the user entered this workflow from the button in the help message
         # then update the message
         else:
+            # If the user is coming from the help message, insert a "back to help" button block
+            if isFromHelp:
+                back_to_help_button = {
+                    "type": "button",
+                    "action_id": "back_to_help",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "Back",
+                        "emoji": True
+                    },
+                    "value": "from_view_series_message"
+                }
+
+                blocks[-1]["elements"].insert(0, back_to_help_button)
+
             update_message = self.client.chat_update(
                                 channel=channel_id,
                                 ts=message_ts,
@@ -1068,7 +1118,7 @@ class Bot(object):
                     }
 
         # If the initial blocks don't already contain a confirm button.
-        if len(message_blocks[-1]["elements"]) == 1 :
+        if message_blocks[-1]["elements"][0]["action_id"] != "confirm_read_series":
             message_blocks[-1]["elements"].insert(0, confirm_read_button)
         
         update_message = self.client.chat_update(
@@ -1487,7 +1537,7 @@ class Bot(object):
 
 
             
-            # Send a confirmation message to the user that their series has been created
+            # Send a confirmation message to the user that their series has been updated
             update_message = self.client.chat_update(
                                             channel=channel_id,
                                             username=self.name,
