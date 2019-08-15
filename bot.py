@@ -1080,16 +1080,27 @@ class Bot(object):
                                 blocks=message_blocks
                                 )
 
-    def updation_series_message(self, channel_id, user_id, message_ts=0):
+    def updation_series_message(self, channel_id, user_id, message_ts=0, isFromHelp=False):
         """
         TODO this has a lot of overlap with the read_series_message, merge them?
 
         Send the user a message showing the list of series they have. The user
         will select the series they want to update.
 
-        NOTE: the timestamp parameter is defaulted to zero. If one is passed, then
-        this will be the result of the "back" button pressed in the workflow. 
-        Otherwise, the updation is being initiated from the slash command.
+        Parameters
+        ----------
+        channel_id : str
+            the Slack channel ID to send the message on
+        user_id: int
+            the Slack user_id of the user checking for their list of series
+        message_ts: str
+            the timestamp of the original schedule message, this will be passed as state.
+            Optional, if it is passed then the message will update the latest message, if it
+            is not passed, it will post a new message.
+        isFromHelp :  bool
+            Whether or not the user came from the help message. Optional, this will 
+            decide whether or not to render a "back to help" button.
+        
         """
 
         """
@@ -1234,8 +1245,25 @@ class Bot(object):
                                         )
         
         # If the user pressed back in the next step (a ts is provided), 
-        # then update the message
+        # then update the message.
+        # (OR IF THE USER IS COMING FROM THE HELP MESSAGE)
         else:
+
+            # If the user is coming from the help message, insert a "back to help" button block
+            if isFromHelp:
+                back_to_help_button = {
+                    "type": "button",
+                    "action_id": "back_to_help",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "Back",
+                        "emoji": True
+                    },
+                    "value": "from_edit_series_message"
+                }
+
+                blocks[-1]["elements"].insert(0, back_to_help_button)
+
             update_message = self.client.chat_update(
                                 channel=channel_id,
                                 ts=message_ts,
@@ -1266,7 +1294,7 @@ class Bot(object):
 
         # If the initial blocks don't already contain a confirm button.
         # Add one.
-        if len(message_blocks[-1]["elements"]) == 1 :
+        if message_blocks[-1]["elements"][0]["action_id"] != "confirm_update_series":
             message_blocks[-1]["elements"].insert(0, confirm_updation_button)
         
         update_message = self.client.chat_update(

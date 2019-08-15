@@ -126,6 +126,8 @@ def _action_handler (payload, action_type, action_id):
         if action_id == "create_new_series":   
             message_ts = payload["container"]["message_ts"]
             isFromHelp = False
+
+            # Parse the value to check if the user came from the help message
             if payload["actions"][0]["value"] == "from_help_message":
                 isFromHelp = True
 
@@ -211,7 +213,13 @@ def _action_handler (payload, action_type, action_id):
         # If the user hit the back button in the series updation workflow
         elif action_id == "back_to_updation":
             message_ts = payload["container"]["message_ts"] 
-            pyBot.updation_series_message(channel_id, user_id, message_ts)
+            isFromHelp = False
+
+            # Parse the value to check if the user came from the help message
+            if payload["actions"][0]["value"] == "from_help_message":
+                isFromHelp = True
+            
+            pyBot.updation_series_message(channel_id, user_id, message_ts, isFromHelp)
 
         # If the user pushes the delete series button
         elif action_id == "delete_series":
