@@ -34,8 +34,11 @@ class Series(object):
         self.sessions = []
         # The series_id is needed to update/delete series from db. It will be populated as necessary.
         self.series_id = None
+        # Whether or not the new series creation workflow was inititated from the help message button
+        # This is useful for knowing when to render a "back" button that returns to the help message
+        self.isFromHelp = False
 
-    def newSeries(self, ts, start_date, series_time, menu_tz):
+    def newSeries(self, ts, start_date, series_time, menu_tz, IsFromHelp):
         """
         # TODO Should this modify the series itself or return a new series with the changes??
 
@@ -54,6 +57,9 @@ class Series(object):
         
         menu_tz: str
             the timezone associated with the date and time of the series.
+        
+        IsFromHelp: bool
+            Whether or not the new series creation workflow was inititated from the help message button
 
         """
         self.state = {"title": "My Team's Weekly Brownbag",
@@ -67,6 +73,7 @@ class Series(object):
                     }
         self.menu_ts = ts
         self.timezone = menu_tz
+        self.IsFromHelp = IsFromHelp
 
 
     def isComplete(self):
@@ -222,10 +229,17 @@ class Series(object):
         # Store the result in state
         self.state["end_date"] = end_date
 
-    def getCreationMenuBlocks(self):
+    def getCreationMenuBlocks(self, fromHelp=False):
         """
         Generate the blocks that the series creation menu will be composed of. 
         These blocks will be based on the current state.
+
+        Parameters
+        ----------
+        fromHelp: bool
+            True if the new series creation workflow came from the help message button,
+            False otherwise.
+
 
         Returns the blocks JSON dict object
         """
@@ -351,8 +365,27 @@ class Series(object):
         if self.state["frequency"] != "Not Selected" and self.state["num_sessions"] != 0:
             self.getLastSession()
             current_series_menu_blocks[-2]["elements"][6]["text"] = "*End Date*: " + datetime.strptime(self.state["end_date"], "%Y-%m-%d").strftime("%m/%d/%Y")
+        
 
+        # ==================== Add Back Button if Coming From Help====================
+        # If this workflow was initiated from the help message (as indicated by fromHelp param)
 
+        if self.IsFromHelp:
+            back_to_help_button = {
+				"type": "button",
+				"action_id": "back_to_help",
+				"text": {
+					"type": "plain_text",
+					"text": "Back",
+					"emoji": True
+				},
+				"value": "from_help_message"
+            }
+            
+            # Add the start button to the menu (if it doesn't already exist)
+            if (current_series_menu_blocks[-1]["elements"][0]["action_id"] != "back_to_help" and
+                    len(current_series_menu_blocks[-1]["elements"]) < 2):
+                current_series_menu_blocks[-1]["elements"].insert(0, back_to_help_button)
         # ==================== Add Start Button When Series Complete ====================
         # If series menu is complete
         if self.isComplete():
@@ -371,10 +404,14 @@ class Series(object):
 				},
 				"style": "primary",
 				"value": "start"
-			}
-
+            }
+            
+            # Console log for buttons in menu
+            # print("\n" + 70*"="  + "\ncurrent_series_menu_blocks[-1][\"elements\"] \n", current_series_menu_blocks[-1]["elements"], "\n" + 70*"=")
+            
             # Add the start button to the menu (if it doesn't already exist)
-            if len(current_series_menu_blocks[-1]["elements"]) == 1 :
+            if (current_series_menu_blocks[-1]["elements"][0]["action_id"] != "start_series" and
+                    len(current_series_menu_blocks[-1]["elements"]) < 3):
                 current_series_menu_blocks[-1]["elements"].insert(0, start_series_button)
         # else:
         #     # Console log series menu completeness

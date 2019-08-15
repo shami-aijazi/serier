@@ -4,6 +4,8 @@ from datetime import datetime
 import pytz
 from datetime import timedelta
 
-x, y =  [10, 20]
+if 0:
+    print("hi")
 
-print(x, y)
+else:
+    print("bye")

@@ -27,7 +27,7 @@ def handle_message(slack_event):
     "message" Event listener. Parse message events and route them to bot for action.
     """
     # console log for the event
-    # print("\n" + 70*"="  + "\nslack_event=\n", slack_event, "\n" + 70*"=")
+    # print("\n" + 70*"="  + "\nslack_event=\n", json.dumps(slack_event), "\n" + 70*"=")
 
     # parse team_id and connect to client
     team_id = slack_event["team_id"]
@@ -43,9 +43,21 @@ def handle_message(slack_event):
             message_text = slack_event["event"]["text"]
             channel_id = slack_event["event"]["channel"]
 
+            # === User sent a greeting ===
+            if (message_text.lower() == "hi" or
+                    message_text.lower() == "hello" or
+                    message_text.lower() == "hey" or
+                    message_text.lower() == "greetings" or
+                    message_text.lower() == "serier"):
+
+                    user_id = slack_event["event"]["user"]
+                    pyBot.greeting_message(user_id, channel_id)
+                    return make_response("Greeting DM Sent", 200,)
+                
+
             # === User asked for help ===
-            if message_text[:4].lower()=="help":
-                pyBot.help_message(channel_id)
+            elif message_text[:4].lower()=="help":
+                pyBot.send_help_message(channel_id)
                 return make_response("Help DM Sent", 200,)
 
 
@@ -96,7 +108,7 @@ def _action_handler (payload, action_type, action_id):
     """
 
     # console log for the payload
-    print("\n" + 70*"="  + "\ninteractive event payload=\n", json.dumps(payload), "\n" + 70*"=")
+    # print("\n" + 70*"="  + "\ninteractive event payload=\n", json.dumps(payload), "\n" + 70*"=")
 
     # Extract the original message channel_id
     # in order to update the message as the state of the series changes.
@@ -112,8 +124,12 @@ def _action_handler (payload, action_type, action_id):
     if action_type == "button":
         # If the user is creating a new series
         if action_id == "create_new_series":   
-            message_ts = payload["container"]["message_ts"]  
-            pyBot.new_series_menu(channel_id, user_id, message_ts)
+            message_ts = payload["container"]["message_ts"]
+            isFromHelp = False
+            if payload["actions"][0]["value"] == "from_help_message":
+                isFromHelp = True
+
+            pyBot.new_series_menu(channel_id, user_id, message_ts, isFromHelp)
 
             return make_response("New Series Created", 200)
         
@@ -162,6 +178,11 @@ def _action_handler (payload, action_type, action_id):
         elif action_id == "confirm_read_series":
             message_ts = payload["container"]["message_ts"] 
             pyBot.printSchedule(channel_id, message_ts)
+
+        # TODO If the user hits the button to go back to the Series Read menu
+        elif action_id == "back_to_read":
+            message_ts = payload["container"]["message_ts"] 
+            pyBot.read_series_message(channel_id, user_id, message_ts)
 
         # If the user hits button to hide the schedule message
         # And clear the series on memory
@@ -219,6 +240,26 @@ def _action_handler (payload, action_type, action_id):
             session_index = int(payload["actions"][0]["value"][14:])
             trigger_id = payload["trigger_id"]
             pyBot.change_session_topic_dialog(trigger_id, session_index, message_ts)
+        
+        # If the user hits the "close help" button
+        elif action_id == "close_help_message":
+            message_ts = payload["container"]["message_ts"] 
+            pyBot.delete_message(channel_id, message_ts) 
+        
+        # If the user hits the "OK" button in the commands list menu
+        elif action_id == "commands_list_ok":
+            message_ts = payload["container"]["message_ts"] 
+            pyBot.delete_message(channel_id, message_ts) 
+        
+        # If the user hits the "Serier Commands" button in the help message
+        elif action_id == "show_app_commands":
+            message_ts = payload["container"]["message_ts"]
+            pyBot.show_app_commands(channel_id, message_ts)
+        
+        # If the user hits the button to go back the help message
+        elif action_id == "back_to_help":
+            message_ts = payload["container"]["message_ts"]
+            pyBot.send_help_message(channel_id, message_ts)
 
 
 
@@ -416,14 +457,13 @@ def _slash_handler(payload, slash_command, slash_text):
     Helper method to handle Slack slash commands. 
     Route incoming slash commands to the bot by slash command and text
 
-    NOTE: For now, slash_command will not affect the response action
     """
     channel_id = payload["channel_id"]
     user_id = payload["user_id"]
     # If the user paged the bot with empty text or with the word help
     # then send the user the help message
     if slash_text == "" or slash_text == "help":
-        pyBot.help_message(channel_id)
+        pyBot.send_help_message(channel_id)
         return make_response("", 200)
 
     # TODO NAME THESE BETTER
@@ -434,18 +474,16 @@ def _slash_handler(payload, slash_command, slash_text):
         return make_response("", 200)
     # If the user wants to see already existing series.
     elif slash_text == "read":
-        # TODO create this method.
         pyBot.read_series_message(channel_id, user_id)
         return make_response("", 200)
 
     elif slash_text == "update":
-        # TODO create this method
         pyBot.updation_series_message(channel_id, user_id)
         return make_response("", 200)
     
-    # elif slash_text == "delete":
-    #     # TODO create this method
-    #     pyBot.delete_series(channel_id, user_id)
+    elif slash_text == "commands":
+        pyBot.show_app_commands(channel_id)
+        return make_response("", 200)
 
     # if the command was none of the above.
     else:
@@ -470,7 +508,7 @@ def serier():
         return make_response("Invalid Signing Signature on Request", 403)
 
     # Extract the payload from the slash command
-    payload  = dict(request.form)
+    payload = dict(request.form)
 
     # Extract the team_id and connect to client
     # TODO Are we connecting to the client on EVERY action?? Isn't that a lot? Slow?

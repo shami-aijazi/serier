@@ -36,7 +36,7 @@ class Bot(object):
                       # scope that your app will need.
                       "scope": "bot"}
         self.signing_secret = os.environ.get("SIGNING_SECRET")
-        self.emoji = ":space_invader:"
+        # self.emoji = ":space_invader:"
 
         # NOTE: Python-slack requires a client connection to generate
         # an oauth token. We can connect to the client without authenticating
@@ -45,6 +45,7 @@ class Bot(object):
         self.client = WebClient("")
 
     def client_connect(self, team_id):
+        # TODO make this connect to database instead of file
         """
         Connect to the Slack web client corresponding to the team.
 
@@ -122,11 +123,39 @@ class Bot(object):
         post_message = self.client.chat_postMessage(
                                             channel=message_obj.channel,
                                             username=self.name,
-                                            icon_emoji=self.emoji,
+                                            # icon_emoji=self.emoji,
                                             text=message_obj.text,
                                             blocks=message_obj.blocks
                                             )
-    
+    def greeting_message(self, user_id, channel_id):
+        """
+        Create and send a response to a user saying hi.
+        :param user_id: str
+            id of the Slack user to send the greeting message to
+        :param channel_id: str
+            id of the Slack channel to send the greeting on
+        """
+
+        # create a Greeting message Message object
+
+        blocks = [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "Hi, <@" + user_id + "> :wave:"
+                }
+            }
+        ]
+
+        post_message = self.client.chat_postMessage(
+                                            channel=channel_id,
+                                            username=self.name,
+                                            # icon_emoji=self.emoji,
+                                            text="Hi!",
+                                            blocks=blocks
+                                            )
+
 
     def dm_response_message(self, channel_id):
         """
@@ -140,24 +169,26 @@ class Bot(object):
 
         """
 
-        # create a Greeting message Message object
-
-        message_obj = message.DMResponse()
-
-        # Then we'll set the message object's channel attribute to the IM
-        # channel of the user we'll communicate with. We'll find this using
-        # the open_dm function, which uses the im.open API call.
-        message_obj.channel = channel_id
+        # Create the message blocks
+        blocks = [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "Sorry, I didn't get that. You can type `help` to find out what I can do!"
+                }
+            }
+        ]
 
         post_message = self.client.chat_postMessage(
-                                            channel=message_obj.channel,
+                                            channel=channel_id,
                                             username=self.name,
-                                            icon_emoji=self.emoji,
-                                            text=message_obj.text,
-                                            blocks=message_obj.blocks
+                                            # icon_emoji=self.emoji,
+                                            text="Sorry, I didn't get that. You can type `help` to find out what I can do!",
+                                            blocks=blocks
                                             )
                                             
-    def help_message(self, channel_id):
+    def send_help_message(self, channel_id, message_ts=0):
         """
         Create and send a response message to a user who DM's the bot.
 
@@ -166,35 +197,155 @@ class Bot(object):
         channel_id: str
             id of the Slack channel associated with the incoming event
 
+        NOTE: the timestamp parameter is defaulted to zero. If one is passed, then
+        this will be the result of the "back" button pressed in the help. 
+        Otherwise, the help is being initiated from a message/slashcommand.
         """
-
-        # create a Help message Message object
-
-        message_obj = message.Help()
-
-        # Then we'll set the message object's channel
-        message_obj.channel = channel_id
-
-        post_message = self.client.chat_postMessage(
-                                            channel=message_obj.channel,
+        blocks = [
+            {
+                "type":"section",
+                "text":{
+                    "type":"mrkdwn",
+                    "text":"Hi! This is Serier. Serier can help you manage a bookclub or a brownbag series :books:\nHere's how:"
+                }
+            },
+            {
+                "type":"section",
+                "text":{
+                    "type":"mrkdwn",
+                    "text":"*Start a Series*\nYou can start a series with `/serier create` or by pressing this button:"
+                }
+            },
+            {
+                "type":"actions",
+                "elements":[
+                    {
+                        "type":"button",
+                        "action_id":"create_new_series",
+                        "text":{
+                            "type":"plain_text",
+                            "text":"Start a Series",
+                            "emoji":True
+                        },
+                        "value":"from_help_message"
+                    }
+                ]
+            },
+            {
+                "type":"divider"
+            },
+            {
+                "type":"section",
+                "text":{
+                    "type":"mrkdwn",
+                    "text":"*Edit a Series*\nYou can edit an ongoing series with `/serier edit` or by pressing this button:"
+                }
+            },
+            {
+                "type":"actions",
+                "elements":[
+                    {
+                        "type":"button",
+                        "action_id":"back_to_updation",
+                        "text":{
+                            "type":"plain_text",
+                            "text":"Edit a Series",
+                            "emoji":True
+                        },
+                        "value":"from_help_message"
+                    }
+                ]
+            },
+            {
+                "type":"divider"
+            },
+            {
+                "type":"section",
+                "text":{
+                    "type":"mrkdwn",
+                    "text":"*View Schedule*\nYou can view the schedule for an ongoing series with `/serier schedule` or by pressing this button:"
+                }
+            },
+            {
+                "type":"actions",
+                "elements":[
+                    {
+                        "type":"button",
+                        "action_id":"back_to_read",
+                        "text":{
+                            "type":"plain_text",
+                            "text":"View Series Schedule",
+                            "emoji":True
+                        },
+                        "value":"from_help_message"
+                    }
+                ]
+            },
+            {
+                "type":"divider"
+            },
+            {
+                "type":"divider"
+            },
+            {
+                "type":"section",
+                "text":{
+                    "type":"mrkdwn",
+                    "text":"*More:*"
+                }
+            },
+            {
+                "type":"actions",
+                "elements":[
+                    {
+                        "type":"button",
+                        "action_id":"show_app_commands",
+                        "text":{
+                            "type":"plain_text",
+                            "text":"Serier Commands",
+                            "emoji":True
+                        },
+                        "value":"from_help_message"
+                    },
+                    {
+                        "type":"button",
+                        "action_id":"close_help_message",
+                        "text":{
+                            "type":"plain_text",
+                            "text":"Close Help",
+                            "emoji":True
+                        },
+                        "value":"from_help_message"
+                    }
+                ]
+            }
+        ]
+        # If the help message is being initiated, post a help message.
+        if message_ts == 0:
+            post_message = self.client.chat_postMessage(
+                                            channel=channel_id,
                                             username=self.name,
-                                            icon_emoji=self.emoji,
-                                            text=message_obj.text,
-                                            blocks=message_obj.blocks
-                                            )
-
-
-
-
-
-
-
-
+                                            # icon_emoji=self.emoji,
+                                            text="Serier Help Message",
+                                            blocks=blocks
+                                        )
+        
+        # If the user pressed back in the next step (a ts is provided), 
+        # then update the message
+        else:
+            update_message = self.client.chat_update(
+                                channel=channel_id,
+                                ts=message_ts,
+                                username=self.name,
+                                # icon_emoji=self.emoji,
+                                text="Serier Help Message",
+                                blocks=blocks
+                            )
 
 
                                         
 # ============================= SERIES BOT LOGIC =============================
-    def new_series_menu(self, channel_id, user_id, ts=0):
+    def new_series_menu(self, channel_id, user_id, ts=0, isFromHelp=False):
         """
         Create new series. Update message with parameter ts to show the new series
         creation menu. Use the user_id to get the timezone of the user and update the
@@ -213,7 +364,8 @@ class Bot(object):
             the user is creating a new series. If series is being created from
             a slash command, this is disregarded.
 
-        
+        isFromHelp : bool
+            Whether or not the series creation workflow is from the help message button.
         """
 
         # Get the user's info to extract the timezone
@@ -243,15 +395,15 @@ class Bot(object):
 
         # Populate the series object with default values
         # Save the timestamp of the menu message on the series object
-        # NOTE: the ts might be zero, handle this case later.
-        currentSeries.newSeries(ts, series_start_date, series_time, user_tz)
+        # NOTE: the ts might be zero.
+        currentSeries.newSeries(ts, series_start_date, series_time, user_tz, isFromHelp)
 
         # Update the last message if the timestamp is not 0. (it's from button NOT slash)
         if ts != 0:
             update_message = self.client.chat_update(
                                             channel=channel_id,
                                             username=self.name,
-                                            icon_emoji=self.emoji,
+                                            # icon_emoji=self.emoji,
                                             text="Create new series",
                                             ts=currentSeries.menu_ts,
                                             blocks=currentSeries.getCreationMenuBlocks()
@@ -262,7 +414,7 @@ class Bot(object):
             post_message = self.client.chat_postMessage(
                                             channel=channel_id,
                                             username=self.name,
-                                            icon_emoji=self.emoji,
+                                            # icon_emoji=self.emoji,
                                             text="Create new series",
                                             blocks=currentSeries.getCreationMenuBlocks()
                                             )
@@ -299,7 +451,7 @@ class Bot(object):
             post_message = self.client.chat_postMessage(
                                             channel=channel_id,
                                             username=self.name,
-                                            icon_emoji=self.emoji,
+                                            # icon_emoji=self.emoji,
                                             text="Series schedule for the past",
                                             blocks=[  
                                             {  
@@ -395,7 +547,7 @@ class Bot(object):
             update_message = self.client.chat_update(
                                             channel=channel_id,
                                             username=self.name,
-                                            icon_emoji=self.emoji,
+                                            # icon_emoji=self.emoji,
                                             ts=currentSeries.menu_ts,
                                             text="Your Series *" + currentSeries.state["title"] + "* has been created",
                                             blocks=[
@@ -445,7 +597,7 @@ class Bot(object):
         update_message = self.client.chat_update(
                                         channel=channel_id,
                                         username=self.name,
-                                        icon_emoji=self.emoji,
+                                        # icon_emoji=self.emoji,
                                         text="Here's the schedule for your series *" + series_title + "*",
                                         ts=message_ts,
                                         blocks=currentSeries.getScheduleBlocks(series_title, currentSeries.sessions)
@@ -462,7 +614,7 @@ class Bot(object):
         update_message = self.client.chat_update(
                                             channel=channel_id,
                                             username=self.name,
-                                            icon_emoji=self.emoji,
+                                            # icon_emoji=self.emoji,
                                             text="Your series has been successfully cancelled",
                                             ts=currentSeries.menu_ts,
                                             blocks=[{"type": "section",
@@ -532,7 +684,7 @@ class Bot(object):
         update_message = self.client.chat_update(
                                             channel=channel_id,
                                             username=self.name,
-                                            icon_emoji=self.emoji,
+                                            # icon_emoji=self.emoji,
                                             text="Your series title has been updated",
                                             ts=currentSeries.menu_ts,
                                             blocks=blocks
@@ -562,7 +714,7 @@ class Bot(object):
         update_message = self.client.chat_update(
                                             channel=channel_id,
                                             username=self.name,
-                                            icon_emoji=self.emoji,
+                                            # icon_emoji=self.emoji,
                                             text="Your series title has been updated",
                                             ts=currentSeries.menu_ts,
                                             blocks=blocks
@@ -593,7 +745,7 @@ class Bot(object):
         update_message = self.client.chat_update(
                                             channel=channel_id,
                                             username=self.name,
-                                            icon_emoji=self.emoji,
+                                            # icon_emoji=self.emoji,
                                             text="Your series title has been updated",
                                             ts=currentSeries.menu_ts,
                                             blocks=blocks
@@ -626,7 +778,7 @@ class Bot(object):
         update_message = self.client.chat_update(
                                             channel=channel_id,
                                             username=self.name,
-                                            icon_emoji=self.emoji,
+                                            # icon_emoji=self.emoji,
                                             text="Your series title has been updated",
                                             ts=currentSeries.menu_ts,
                                             blocks=blocks
@@ -655,7 +807,7 @@ class Bot(object):
         update_message = self.client.chat_update(
                                             channel=channel_id,
                                             username=self.name,
-                                            icon_emoji=self.emoji,
+                                            # icon_emoji=self.emoji,
                                             text="Your series title has been updated",
                                             ts=currentSeries.menu_ts,
                                             blocks=blocks
@@ -685,7 +837,7 @@ class Bot(object):
         update_message = self.client.chat_update(
                                             channel=channel_id,
                                             username=self.name,
-                                            icon_emoji=self.emoji,
+                                            # icon_emoji=self.emoji,
                                             text="Your series title has been updated",
                                             ts=currentSeries.menu_ts,
                                             blocks=blocks
@@ -714,7 +866,7 @@ class Bot(object):
         update_message = self.client.chat_update(
                                             channel=channel_id,
                                             username=self.name,
-                                            icon_emoji=self.emoji,
+                                            # icon_emoji=self.emoji,
                                             text="Your series title has been updated",
                                             ts=currentSeries.menu_ts,
                                             blocks=blocks
@@ -732,14 +884,18 @@ class Bot(object):
 
 # ============================= SLASH COMMAND LOGIC =============================
 
-    def read_series_message(self, channel_id, user_id):
+    def read_series_message(self, channel_id, user_id, message_ts=0):
         """
         TODO this has a lot of overlap with the updation_series_message, merge them?
 
         This method shows a menu for the user to view their series.
         Send the user a message showing the list of series they have. The user
         will select the series they want to view.
+        NOTE: the timestamp parameter is defaulted to zero. If one is passed, then
+        this will be the result of the "back" button pressed in the workflow. 
+        Otherwise, the updation is being initiated from the slash command.
         """
+
 
         """
         Pseudocode:
@@ -832,7 +988,7 @@ class Bot(object):
                         # 	"text": {
                         # 		"type": "plain_text",
                         # 		"text": "<series_title>",
-                        # 		"emoji": true
+                        # 		"emoji": True
                         # 	},
                         # 	"value": "series_id-<series_id>"
                         # }
@@ -870,14 +1026,28 @@ class Bot(object):
                         }
 
                 blocks[1]["elements"][0]["options"].append(next_series)
-
-        post_message = self.client.chat_postMessage(
-                                        channel=channel_id,
-                                        username=self.name,
-                                        icon_emoji=self.emoji,
-                                        text="Select a series to read",
-                                        blocks=blocks
-                                    )
+        
+        # If the updation is being initiated, then post a new message.
+        if message_ts == 0:
+            post_message = self.client.chat_postMessage(
+                                            channel=channel_id,
+                                            username=self.name,
+                                            # icon_emoji=self.emoji,
+                                            text="Select a series to view schedule",
+                                            blocks=blocks
+                                        )
+        
+        # If the user pressed back in the next step (a ts is provided), 
+        # then update the message
+        else:
+            update_message = self.client.chat_update(
+                                channel=channel_id,
+                                ts=message_ts,
+                                username=self.name,
+                                # icon_emoji=self.emoji,
+                                text="Select a series to view schedule",
+                                blocks=blocks
+                            )
 
     def update_read_series_message(self, channel_id, message_ts, message_blocks):
         """
@@ -885,7 +1055,6 @@ class Bot(object):
         selects a series to read. Use the parameter message_ts to chat.update
         the message.
         """
-        # TODO add this block
         confirm_read_button =  {  
                         "type":"button",
                         "action_id":"confirm_read_series",
@@ -905,7 +1074,7 @@ class Bot(object):
         update_message = self.client.chat_update(
                                 channel=channel_id,
                                 username=self.name,
-                                icon_emoji=self.emoji,
+                                # icon_emoji=self.emoji,
                                 text="Selected series to read",
                                 ts=message_ts,
                                 blocks=message_blocks
@@ -1014,7 +1183,7 @@ class Bot(object):
                         # 	"text": {
                         # 		"type": "plain_text",
                         # 		"text": "<series_title>",
-                        # 		"emoji": true
+                        # 		"emoji": True
                         # 	},
                         # 	"value": "series_id-<series_id>"
                         # }
@@ -1059,7 +1228,7 @@ class Bot(object):
             post_message = self.client.chat_postMessage(
                                             channel=channel_id,
                                             username=self.name,
-                                            icon_emoji=self.emoji,
+                                            # icon_emoji=self.emoji,
                                             text="Select a series to update",
                                             blocks=blocks
                                         )
@@ -1071,7 +1240,7 @@ class Bot(object):
                                 channel=channel_id,
                                 ts=message_ts,
                                 username=self.name,
-                                icon_emoji=self.emoji,
+                                # icon_emoji=self.emoji,
                                 text="Select a series to update",
                                 blocks=blocks
                             )
@@ -1103,7 +1272,7 @@ class Bot(object):
         update_message = self.client.chat_update(
                                 channel=channel_id,
                                 username=self.name,
-                                icon_emoji=self.emoji,
+                                # icon_emoji=self.emoji,
                                 text="Selected series to update",
                                 ts=message_ts,
                                 blocks=message_blocks
@@ -1176,7 +1345,7 @@ class Bot(object):
         update_message = self.client.chat_update(
                                         channel=channel_id,
                                         username=self.name,
-                                        icon_emoji=self.emoji,
+                                        # icon_emoji=self.emoji,
                                         text="Update a series",
                                         ts=message_ts,
                                         blocks=currentSeries.getUpdationMenuBlocks()
@@ -1216,7 +1385,7 @@ class Bot(object):
             post_message = self.client.chat_postMessage(
                                             channel=channel_id,
                                             username=self.name,
-                                            icon_emoji=self.emoji,
+                                            # icon_emoji=self.emoji,
                                             text="Series schedule for the past",
                                             blocks=[  
                                             {  
@@ -1294,7 +1463,7 @@ class Bot(object):
             update_message = self.client.chat_update(
                                             channel=channel_id,
                                             username=self.name,
-                                            icon_emoji=self.emoji,
+                                            # icon_emoji=self.emoji,
                                             ts=currentSeries.menu_ts,
                                             text="Your Series *" + currentSeries.state["title"] + "* has been updated",
                                             blocks=[
@@ -1379,7 +1548,7 @@ class Bot(object):
         update_message = self.client.chat_update(
                                     channel=channel_id,
                                     username=self.name,
-                                    icon_emoji=self.emoji,
+                                    # icon_emoji=self.emoji,
                                     text="Your series has been successfully deleted",
                                     ts=message_ts,
                                     blocks=[
@@ -1624,8 +1793,94 @@ class Bot(object):
         # Load current series from the query result
         currentSeries.loadFromTuple(series, sessions)
 
+    def show_app_commands(self, channel_id, message_ts=0):
+        """
+        Show the user a list of the app's slash commands
+        NOTE: the timestamp parameter is defaulted to zero. If one is passed, then
+        this will be the result of the "commands" button being pressed from the help message.
+        Otherwise, the updation is being initiated from the slash command.
+        """
+        blocks = [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "*Here's the list of commands for what Serier can do*:\n*Command*\t\t\t\t\t\t\t\t\t\t*Description*\n_/serier create_\t\t\t\t\t\t\t\t\t Start a series\n_/serier schedule_\t\t\t\t\t\t\t\t View a series schedule\n_/serier edit_\t\t\t\t\t\t\t\t\t\t Edit a series\n_/serier help_\t\t\t\t\t\t\t\t\t\tGet help\n_/serier commands_\t\t\t\t\t\t\t  View this commands list"
+                }
+            },
+            {
+                "type": "divider"
+            }
+        ]
+        
+        # If the commands list was requested from the help message button (ts != 0)
+        if message_ts:
+            blocks.append(
+                {
+                    "type": "actions",
+                    "elements": [
+                        {
+                            "type": "button",
+                            "action_id": "back_to_help",
+                            "text": {
+                                "type": "plain_text",
+                                "text": "Back",
+                                "emoji": True
+                            },
+                            "value": "click_me_123"
+                        },
+                        {
+                            "type": "button",
+                            "action_id": "close_help_message",
+                            "text": {
+                                "type": "plain_text",
+                                "text": "Close Help",
+                                "emoji": True
+                            },
+                            "value": "from_help_message"
+                        }
+                    ]
+                }
+            )
 
+            # Update the message
+            update_message = self.client.chat_update(
+                channel=channel_id,
+                ts=message_ts,
+                username=self.name,
+                # icon_emoji=self.emoji,
+                text="Select a series to update",
+                blocks=blocks
+            )
 
+        # If the commands list was requested from the slash command (ts == 0)
+        else:
+            blocks.append(
+                {
+                    "type": "actions",
+                    "elements": [
+                        {
+                            "type": "button",
+                            "action_id": "commands_list_ok",
+                            "text": {
+                                "type": "plain_text",
+                                "text": "OK",
+                                "emoji": True
+                            },
+                            "value": "from_slash_command"
+                        }
+                    ]
+                }
+            )
+
+            # Post the message
+            post_message = self.client.chat_postMessage(
+                channel=channel_id,
+                username=self.name,
+                # icon_emoji=self.emoji,
+                text="Select a series to update",
+                blocks=blocks
+            )
 
 
 # ============================= AUTHORIZATION =============================
