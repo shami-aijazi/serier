@@ -246,7 +246,7 @@ class Bot(object):
                 "elements":[
                     {
                         "type":"button",
-                        "action_id":"back_to_updation",
+                        "action_id":"back_to_editing",
                         "text":{
                             "type":"plain_text",
                             "text":"Edit a Series",
@@ -271,7 +271,7 @@ class Bot(object):
                 "elements":[
                     {
                         "type":"button",
-                        "action_id":"back_to_read",
+                        "action_id":"back_to_view",
                         "text":{
                             "type":"plain_text",
                             "text":"View Series Schedule",
@@ -574,7 +574,7 @@ class Bot(object):
                                                         # Add a button to show the schedule of the series that was just created
                                                         {
                                                             "type": "button",
-                                                            "action_id": "confirm_read_series",
+                                                            "action_id": "confirm_view_series",
                                                             "text": {
                                                                 "type": "plain_text",
                                                                 "text": "View Schedule",
@@ -701,7 +701,7 @@ class Bot(object):
             blocks = currentSeries.getCreationMenuBlocks()
         
         else:
-            blocks = currentSeries.getUpdationMenuBlocks()
+            blocks = currentSeries.getEditMenuBlocks()
 
         update_message = self.client.chat_update(
                                             channel=channel_id,
@@ -731,7 +731,7 @@ class Bot(object):
             blocks = currentSeries.getCreationMenuBlocks()
         
         else:
-            blocks = currentSeries.getUpdationMenuBlocks()
+            blocks = currentSeries.getEditMenuBlocks()
 
         update_message = self.client.chat_update(
                                             channel=channel_id,
@@ -762,7 +762,7 @@ class Bot(object):
             blocks = currentSeries.getCreationMenuBlocks()
         
         else:
-            blocks = currentSeries.getUpdationMenuBlocks()
+            blocks = currentSeries.getEditMenuBlocks()
 
         update_message = self.client.chat_update(
                                             channel=channel_id,
@@ -795,7 +795,7 @@ class Bot(object):
             blocks = currentSeries.getCreationMenuBlocks()
         
         else:
-            blocks = currentSeries.getUpdationMenuBlocks()
+            blocks = currentSeries.getEditMenuBlocks()
 
         update_message = self.client.chat_update(
                                             channel=channel_id,
@@ -824,7 +824,7 @@ class Bot(object):
             blocks = currentSeries.getCreationMenuBlocks()
         
         else:
-            blocks = currentSeries.getUpdationMenuBlocks()
+            blocks = currentSeries.getEditMenuBlocks()
 
         update_message = self.client.chat_update(
                                             channel=channel_id,
@@ -854,7 +854,7 @@ class Bot(object):
             blocks = currentSeries.getCreationMenuBlocks()
         
         else:
-            blocks = currentSeries.getUpdationMenuBlocks()
+            blocks = currentSeries.getEditMenuBlocks()
 
         update_message = self.client.chat_update(
                                             channel=channel_id,
@@ -883,7 +883,7 @@ class Bot(object):
             blocks = currentSeries.getCreationMenuBlocks()
         
         else:
-            blocks = currentSeries.getUpdationMenuBlocks()
+            blocks = currentSeries.getEditMenuBlocks()
 
         update_message = self.client.chat_update(
                                             channel=channel_id,
@@ -906,9 +906,9 @@ class Bot(object):
 
 # ============================= SLASH COMMAND LOGIC =============================
 
-    def read_series_message(self, channel_id, user_id, message_ts=0, isFromHelp=False):
+    def view_series_message(self, channel_id, user_id, message_ts=0, isFromHelp=False):
         """
-        TODO this has a lot of overlap with the updation_series_message, merge them?
+        TODO this has a lot of overlap with the edit_series_message, merge them?
 
         This method shows a menu for the user to view their series.
         Send the user a message showing the list of series they have. The user
@@ -967,7 +967,7 @@ class Bot(object):
                     "type":"section",
                     "text":{
                     "type":"mrkdwn",
-                    "text":"You have no series to read."
+                    "text":"You have no series to view."
                     }
                 },
                 {
@@ -982,13 +982,13 @@ class Bot(object):
                     "elements":[
                     {
                         "type":"button",
-                        "action_id":"no_series_read_ok",
+                        "action_id":"no_series_view_ok",
                         "text":{
                         "type":"plain_text",
                         "text":"OK",
                         "emoji":True
                         },
-                        "value":"no_series_read_ok"
+                        "value":"no_series_view_ok"
                     }
                     ]
                 }
@@ -1002,7 +1002,7 @@ class Bot(object):
                     "type":"section",
                     "text":{
                         "type":"mrkdwn",
-                        "text":"Select a series to read:"
+                        "text":"Select a series to view its schedule:"
                     }
                 },
                 {  
@@ -1010,7 +1010,7 @@ class Bot(object):
                     "elements":[  
                     {  
                         "type":"static_select",
-                        "action_id":"select_series_read",
+                        "action_id":"select_series_view",
                         "placeholder":{
                             "type":"plain_text",
                             "text":"Select a series",
@@ -1035,13 +1035,13 @@ class Bot(object):
                     "elements":[  
                     {  
                         "type":"button",
-                        "action_id":"cancel_read_series",
+                        "action_id":"cancel_view_series",
                         "text":{  
                         "type":"plain_text",
                         "text":"Cancel",
                         "emoji":True
                         },
-                        "value":"cancel_read_series"
+                        "value":"cancel_view_series"
                     }
                     ]
                 }
@@ -1061,13 +1061,13 @@ class Bot(object):
 
                 blocks[1]["elements"][0]["options"].append(next_series)
         
-        # If the updation is being initiated, then post a new message.
+        # If the edit is being initiated, then post a new message.
         if message_ts == 0:
             post_message = self.client.chat_postMessage(
                                             channel=channel_id,
                                             username=self.name,
                                             # icon_emoji=self.emoji,
-                                            text="Select a series to view schedule",
+                                            text="Select a series to view its schedule",
                                             blocks=blocks
                                         )
         
@@ -1095,47 +1095,47 @@ class Bot(object):
                                 ts=message_ts,
                                 username=self.name,
                                 # icon_emoji=self.emoji,
-                                text="Select a series to view schedule",
+                                text="Select a series to view its schedule",
                                 blocks=blocks
                             )
 
-    def update_read_series_message(self, channel_id, message_ts, message_blocks):
+    def update_view_series_message(self, channel_id, message_ts, message_blocks):
         """
-        Updates the read series message to show a confirm button when the user
-        selects a series to read. Use the parameter message_ts to chat.update
+        Updates the view series message to show a confirm button when the user
+        selects a series to view. Use the parameter message_ts to chat.update
         the message.
         """
-        confirm_read_button =  {  
+        confirm_view_button =  {  
                         "type":"button",
-                        "action_id":"confirm_read_series",
+                        "action_id":"confirm_view_series",
                         "text":{  
                         "type":"plain_text",
-                        "text":"Read",
+                        "text":"View Schedule",
                         "emoji":True
                         },
                         "style":"primary",
-                        "value":"confirm_read_series"
+                        "value":"confirm_view_series"
                     }
 
         # If the initial blocks don't already contain a confirm button.
-        if message_blocks[-1]["elements"][0]["action_id"] != "confirm_read_series":
-            message_blocks[-1]["elements"].insert(0, confirm_read_button)
+        if message_blocks[-1]["elements"][0]["action_id"] != "confirm_view_series":
+            message_blocks[-1]["elements"].insert(0, confirm_view_button)
         
         update_message = self.client.chat_update(
                                 channel=channel_id,
                                 username=self.name,
                                 # icon_emoji=self.emoji,
-                                text="Selected series to read",
+                                text="Selected series to view its schedule",
                                 ts=message_ts,
                                 blocks=message_blocks
                                 )
 
-    def updation_series_message(self, channel_id, user_id, message_ts=0, isFromHelp=False):
+    def edit_series_message(self, channel_id, user_id, message_ts=0, isFromHelp=False):
         """
-        TODO this has a lot of overlap with the read_series_message, merge them?
+        TODO this has a lot of overlap with the view_series_message, merge them?
 
         Send the user a message showing the list of series they have. The user
-        will select the series they want to update.
+        will select the series they want to edit.
 
         Parameters
         ----------
@@ -1189,7 +1189,7 @@ class Bot(object):
                     "type":"section",
                     "text":{
                     "type":"mrkdwn",
-                    "text":"You have no series to update."
+                    "text":"You have no series to edit."
                     }
                 },
                 {
@@ -1204,13 +1204,13 @@ class Bot(object):
                     "elements":[
                     {
                         "type":"button",
-                        "action_id":"no_series_update_ok",
+                        "action_id":"no_series_edit_ok",
                         "text":{
                         "type":"plain_text",
                         "text":"OK",
                         "emoji":True
                         },
-                        "value":"no_series_update_ok"
+                        "value":"no_series_edit_ok"
                     }
                     ]
                 }
@@ -1224,7 +1224,7 @@ class Bot(object):
                     "type":"section",
                     "text":{
                         "type":"mrkdwn",
-                        "text":"Select a series to update:"
+                        "text":"Select a series to edit:"
                     }
                 },
                 {  
@@ -1232,7 +1232,7 @@ class Bot(object):
                     "elements":[  
                     {  
                         "type":"static_select",
-                        "action_id":"select_series_update",
+                        "action_id":"select_series_edit",
                         "placeholder":{
                             "type":"plain_text",
                             "text":"Select a series",
@@ -1257,13 +1257,13 @@ class Bot(object):
                     "elements":[  
                     {  
                         "type":"button",
-                        "action_id":"cancel_update_series",
+                        "action_id":"cancel_edit_series",
                         "text":{  
                         "type":"plain_text",
                         "text":"Cancel",
                         "emoji":True
                         },
-                        "value":"cancel_update_series"
+                        "value":"cancel_edit_series"
                     }
                     ]
                 }
@@ -1284,13 +1284,13 @@ class Bot(object):
                 blocks[1]["elements"][0]["options"].append(next_series)
 
 
-        # If the updation is being initiated, then post a new message.
+        # If the edit is being initiated, then post a new message.
         if message_ts == 0:
             post_message = self.client.chat_postMessage(
                                             channel=channel_id,
                                             username=self.name,
                                             # icon_emoji=self.emoji,
-                                            text="Select a series to update",
+                                            text="Select a series to edit",
                                             blocks=blocks
                                         )
         
@@ -1319,44 +1319,44 @@ class Bot(object):
                                 ts=message_ts,
                                 username=self.name,
                                 # icon_emoji=self.emoji,
-                                text="Select a series to update",
+                                text="Select a series to edit",
                                 blocks=blocks
                             )
 
-    def update_updation_series_message(self, channel_id, message_ts, message_blocks):
+    def update_edit_series_message(self, channel_id, message_ts, message_blocks):
         """
-        Updates the updation series message to show a confirm button when the user
-        selects a series to update. Use the parameter message_ts to chat.update
+        Updates the edit series message to show a confirm button when the user
+        selects a series to edit. Use the parameter message_ts to chat.update
         the message.
         """
         # TODO add this block
-        confirm_updation_button =  {  
+        confirm_edit_button =  {  
                         "type":"button",
-                        "action_id":"confirm_update_series",
+                        "action_id":"confirm_edit_series",
                         "text":{  
                         "type":"plain_text",
-                        "text":"Update",
+                        "text":"Edit",
                         "emoji":True
                         },
                         "style":"primary",
-                        "value":"confirm_update_series"
+                        "value":"confirm_edit_series"
                     }
 
         # If the initial blocks don't already contain a confirm button.
         # Add one.
-        if message_blocks[-1]["elements"][0]["action_id"] != "confirm_update_series":
-            message_blocks[-1]["elements"].insert(0, confirm_updation_button)
+        if message_blocks[-1]["elements"][0]["action_id"] != "confirm_edit_series":
+            message_blocks[-1]["elements"].insert(0, confirm_edit_button)
         
         update_message = self.client.chat_update(
                                 channel=channel_id,
                                 username=self.name,
                                 # icon_emoji=self.emoji,
-                                text="Selected series to update",
+                                text="Selected series to edit",
                                 ts=message_ts,
                                 blocks=message_blocks
                                 )
 
-    def updation_series_menu(self, channel_id, user_id, message_ts):
+    def edit_series_menu(self, channel_id, user_id, message_ts):
         """
         Display the series configuration menu that the user will use to edit
         the series.
@@ -1371,7 +1371,7 @@ class Bot(object):
             id of the user_id updatingseries
 
         ts : str
-            timestamp of the series updation message.
+            timestamp of the series edit message.
         
         """
 
@@ -1424,17 +1424,17 @@ class Bot(object):
                                         channel=channel_id,
                                         username=self.name,
                                         # icon_emoji=self.emoji,
-                                        text="Update a series",
+                                        text="Edit a series",
                                         ts=message_ts,
-                                        blocks=currentSeries.getUpdationMenuBlocks()
+                                        blocks=currentSeries.getEditMenuBlocks()
                                         )
         # Update the currentSeries menu timestamp so that the menu can be updated
         currentSeries.menu_ts = update_message["ts"]
 
 
-    def confirm_series_updation(self, channel_id, organizer_id, message_ts):
+    def confirm_series_edit(self, channel_id, organizer_id, message_ts):
         """
-        Confirm the updation of the series. Execute and SQL query to update the series
+        Confirm the edit of the series. Execute and SQL query to edit the series
         and the sessions in the relevant tables.
         """
         # FIRST, check if the datetime the user set is in the past.
@@ -1537,19 +1537,19 @@ class Bot(object):
 
 
             
-            # Send a confirmation message to the user that their series has been updated
+            # Send a confirmation message to the user that their series has been edited
             update_message = self.client.chat_update(
                                             channel=channel_id,
                                             username=self.name,
                                             # icon_emoji=self.emoji,
                                             ts=currentSeries.menu_ts,
-                                            text="Your Series *" + currentSeries.state["title"] + "* has been updated",
+                                            text="Your Series *" + currentSeries.state["title"] + "* has been edited",
                                             blocks=[
                                                 {
                                                     "type": "section",
                                                     "text": {
                                                         "type": "mrkdwn",
-                                                        "text": "Your series *" + currentSeries.state["title"] + "* has been successfully updated!\n"
+                                                        "text": "Your series *" + currentSeries.state["title"] + "* has been successfully edited!\n"
                                                     }
                                                 },
                                                 {
@@ -1876,7 +1876,7 @@ class Bot(object):
         Show the user a list of the app's slash commands
         NOTE: the timestamp parameter is defaulted to zero. If one is passed, then
         this will be the result of the "commands" button being pressed from the help message.
-        Otherwise, the updation is being initiated from the slash command.
+        Otherwise, the edit is being initiated from the slash command.
         """
         blocks = [
             {
@@ -1927,7 +1927,7 @@ class Bot(object):
                 ts=message_ts,
                 username=self.name,
                 # icon_emoji=self.emoji,
-                text="Select a series to update",
+                text="Select a series to edit",
                 blocks=blocks
             )
 
@@ -1956,7 +1956,7 @@ class Bot(object):
                 channel=channel_id,
                 username=self.name,
                 # icon_emoji=self.emoji,
-                text="Select a series to update",
+                text="Select a series to edit",
                 blocks=blocks
             )
 

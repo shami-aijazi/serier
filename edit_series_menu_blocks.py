@@ -1,4 +1,4 @@
-update_series_menu_blocks = [
+edit_series_menu_blocks = [
 	{
 		"type":"section",
 		"text":{
@@ -1419,14 +1419,14 @@ update_series_menu_blocks = [
 		"elements":[
 			{
 				"type":"button",
-				"action_id":"complete_update_series",
+				"action_id":"complete_edit_series",
 				"style":"primary",
 				"text":{
 					"type":"plain_text",
-					"text":"Update",
+					"text":"Confirm",
 					"emoji":True
 				},
-				"value":"complete_update_series",
+				"value":"complete_edit_series",
 				"confirm":{
 					"title":{
 						"type":"plain_text",
@@ -1448,13 +1448,13 @@ update_series_menu_blocks = [
 			},
 			{
 				"type":"button",
-				"action_id":"back_to_updation",
+				"action_id":"back_to_editing",
 				"text":{
 					"type":"plain_text",
 					"text":"Back",
 					"emoji":True
 				},
-				"value":"back_to_updation"
+				"value":"back_to_editing"
 			},
 			{
 				"type":"button",

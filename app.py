@@ -165,19 +165,19 @@ def _action_handler (payload, action_type, action_id):
             message_ts = payload["container"]["message_ts"] 
             pyBot.delete_message(channel_id, message_ts)
 
-        # If the user acknowledges message about having no series to read
-        elif action_id == "no_series_read_ok":
+        # If the user acknowledges message about having no series to view
+        elif action_id == "no_series_view_ok":
             message_ts = payload["container"]["message_ts"] 
             pyBot.delete_message(channel_id, message_ts)
 
-        # If the user cancels when reading a series
-        elif action_id == "cancel_read_series":
+        # If the user cancels when viewing a series
+        elif action_id == "cancel_view_series":
             message_ts = payload["container"]["message_ts"]
             pyBot.reset_currentSeries()
             pyBot.delete_message(channel_id, message_ts)
         
-        # If the user confirms the read for the series, go ahead and load the schedule.
-        elif action_id == "confirm_read_series":
+        # If the user confirms the view for the series, go ahead and load the schedule.
+        elif action_id == "confirm_view_series":
             message_ts = payload["container"]["message_ts"] 
             
             # Whether or not the schedule request came from the series creation confirmation
@@ -193,7 +193,7 @@ def _action_handler (payload, action_type, action_id):
 
             pyBot.printSchedule(channel_id, message_ts, isFromConfirmation)
 
-        elif action_id == "back_to_read":
+        elif action_id == "back_to_view":
             message_ts = payload["container"]["message_ts"] 
             isFromHelp = False
 
@@ -201,7 +201,7 @@ def _action_handler (payload, action_type, action_id):
             if payload["actions"][0]["value"] == "from_help_message":
                 isFromHelp = True
             
-            pyBot.read_series_message(channel_id, user_id, message_ts, isFromHelp)
+            pyBot.view_series_message(channel_id, user_id, message_ts, isFromHelp)
 
         # If the user hits button to hide the schedule message
         # And clear the series on memory
@@ -210,25 +210,25 @@ def _action_handler (payload, action_type, action_id):
             pyBot.reset_currentSeries()
             pyBot.delete_message(channel_id, message_ts)
         
-        # If the user confirms that they want to update the series go ahead and 
+        # If the user confirms that they want to edit the series go ahead and 
         # load the series configuration menu
-        elif action_id == "confirm_update_series":
+        elif action_id == "confirm_edit_series":
             message_ts = payload["container"]["message_ts"] 
-            pyBot.updation_series_menu(channel_id, user_id, message_ts)  
+            pyBot.edit_series_menu(channel_id, user_id, message_ts)  
 
-        elif action_id == "cancel_update_series":
+        elif action_id == "cancel_edit_series":
             message_ts = payload["container"]["message_ts"] 
             pyBot.reset_currentSeries()
             pyBot.delete_message(channel_id, message_ts)
 
-        # If the user confirms the updation of the series
-        elif action_id == "complete_update_series":    
+        # If the user confirms the edit of the series
+        elif action_id == "complete_edit_series":    
             message_ts = payload["container"]["message_ts"]  
-            pyBot.confirm_series_updation(channel_id, user_id, message_ts)
+            pyBot.confirm_series_edit(channel_id, user_id, message_ts)
             return make_response("New Series Confirmed", 200)
         
-        # If the user hit the back button in the series updation workflow
-        elif action_id == "back_to_updation":
+        # If the user hit the back button in the series edit workflow
+        elif action_id == "back_to_editing":
             message_ts = payload["container"]["message_ts"] 
             isFromHelp = False
 
@@ -236,7 +236,7 @@ def _action_handler (payload, action_type, action_id):
             if payload["actions"][0]["value"] == "from_help_message":
                 isFromHelp = True
             
-            pyBot.updation_series_message(channel_id, user_id, message_ts, isFromHelp)
+            pyBot.edit_series_message(channel_id, user_id, message_ts, isFromHelp)
 
         # If the user pushes the delete series button
         elif action_id == "delete_series":
@@ -378,38 +378,38 @@ def _action_handler (payload, action_type, action_id):
             pyBot.update_series_numsessions(channel_id, series_numsesions)
             return make_response("New Series Numsessions Updated", 200)
 
-        # If the user selected the series they want to read, make it the current
+        # If the user selected the series they want to view, make it the current
         # Series
-        elif action_id == "select_series_read":
+        elif action_id == "select_series_view":
             # console log for the payload
             # print("\n" + 70*"="  + "\ninteractive event payload=\n", json.dumps(payload), "\n" + 70*"=")
 
-            # update the read menu message to show a confirm button
+            # update the view menu message to show a confirm button
             message_ts = payload["container"]["message_ts"]
             # Parse original message blocks to update
             message_blocks = payload["message"]["blocks"]
-            pyBot.update_read_series_message(channel_id, message_ts, message_blocks)
+            pyBot.update_view_series_message(channel_id, message_ts, message_blocks)
 
             # Extract the series id from the payload
             series_id = payload["actions"][0]["selected_option"]["value"][10:]
             # Update the series in memory to be the one that the user selected
             pyBot.setSeries(series_id)
 
-        # If the user selected the series they want to update, make it the current
+        # If the user selected the series they want to edit, make it the current
         # Series
-        elif action_id == "select_series_update":
+        elif action_id == "select_series_edit":
             # console log for the payload
             # print("\n" + 70*"="  + "\ninteractive event payload=\n", json.dumps(payload), "\n" + 70*"=")
 
-            # update the read menu message to show a confirm button
+            # update the edit menu message to show a confirm button
             message_ts = payload["container"]["message_ts"]
-            # Parse original message blocks to update
+            # Parse original message blocks to edit
             message_blocks = payload["message"]["blocks"]
-            pyBot.update_updation_series_message(channel_id, message_ts, message_blocks)
+            pyBot.update_edit_series_message(channel_id, message_ts, message_blocks)
 
             # Extract the series id from the payload
             series_id = payload["actions"][0]["selected_option"]["value"][10:]
-            # Update the series in memory to be the one that the user selected
+            # Set the series in memory to be the one that the user selected
             pyBot.setSeries(series_id)
 
 
@@ -498,12 +498,12 @@ def _slash_handler(payload, slash_command, slash_text):
         pyBot.new_series_menu(channel_id, user_id)
         return make_response("", 200)
     # If the user wants to see already existing series.
-    elif slash_text == "read":
-        pyBot.read_series_message(channel_id, user_id)
+    elif slash_text == "schedule":
+        pyBot.view_series_message(channel_id, user_id)
         return make_response("", 200)
 
-    elif slash_text == "update":
-        pyBot.updation_series_message(channel_id, user_id)
+    elif slash_text == "edit":
+        pyBot.edit_series_message(channel_id, user_id)
         return make_response("", 200)
     
     elif slash_text == "commands":
