@@ -45,9 +45,10 @@ class Bot(object):
         self.client = WebClient("")
 
     def client_connect(self, team_id):
-        # TODO make this connect to database instead of file
         """
-        Connect to the Slack web client corresponding to the team.
+        Connect to the Slack web client corresponding to the team,
+        from database.
+
 
         Parameters
         ----------
@@ -60,12 +61,22 @@ class Bot(object):
             True if connection successful, False otherwise.
 
         """
-        # Read the authed_teams from file
-        with open('authed_teams.txt', 'r') as authed_teams_file:  
-            authed_teams = json.load(authed_teams_file)
+        # DATABASE OPERATIONS
+        # First, connect to the sqlite3 database
+        con = sqlite3.connect("serier.db")
+        # Create a cursor
+        cur = con.cursor()
 
-        if authed_teams.get(team_id, False):
-          self.client = WebClient(authed_teams[team_id]["bot_token"])
+        # SQL statement to select the bot token corresponding to the team_id
+        sql_statement = '''SELECT bot_token FROM teams
+        WHERE team_id =\''''  + team_id + "'"
+        
+
+        bot_token = cur.execute(sql_statement).fetchone()
+
+        # If such a bot_token was foud
+        if bot_token:
+          self.client = WebClient(bot_token)
           return True
 
         else: #team_id not found in authed_teams
@@ -1979,8 +1990,7 @@ class Bot(object):
     def auth(self, code):
         """
         Authenticate with OAuth and assign correct scopes.
-        Save a dictionary of authed team information in memory on the bot
-        object.
+        Write the authed teams information to database.
 
         :param code: str
             temporary authorization code sent by Slack to be exchanged for an
@@ -1998,40 +2008,46 @@ class Bot(object):
         # Console log of oauth.access
         # print("\n" + 70*"="  + "\nauth_response=\n", auth_response, "\n" + 70*"=")
 
+        # Extract the team_id and the bot token from the authorization event
+        team_id = auth_response["team_id"]
+        bot_token = auth_response["bot"]["bot_access_token"]
 
         # To keep track of authorized teams and their associated OAuth tokens,
         # we will save the team ID and bot tokens to the global authed_teams object
 
-        # TODO The following deserialization of the bot token works, but is it most efficient?
-        # It reads in the whole list, and then rewrites it.
+        # DATABASE OPERATIONS
+        # First, connect to the sqlite3 database
+        con = sqlite3.connect("serier.db")
+        # Create a cursor
+        cur = con.cursor()
 
-        # Open the file, read it in, update it (if already exists) or add it (new team).
-        # Write the file back in
-        with open('authed_teams.txt', 'r+') as authed_teams_file: 
-            try: 
-                authed_teams = json.load(authed_teams_file)
+        # Assume the team already exists, try updating with the team ID
+        # this would execute if a team is reinstalling
 
-                # Console log for reinstallation process
-                # print("\n" + 70*"="  + "\nauthed_teams =\n", authed_teams, "\n" + 70*"=")
-                # print("\n" + 70*"="  + "\nauthed_teams already exists, updating... =\n", "\n" + 70*"=")
-            
-            # ValueError is raised when the authed_teams file is empty. This should only trigger for first installer
-            except ValueError: 
-                authed_teams = {}
-                # Console log for installation process
-                # print ("\n" + 70*"="  + "\nauthed_teams does not already exist, creating new... =\n" + 70*"=")
+        # prepare the statement and the data
+        sql_statement = '''UPDATE teams
+        SET bot_token = ?
+        WHERE team_id = ?'''
+        authed_team_record = (bot_token, team_id)
 
-            team_id = auth_response["team_id"]
-            authed_teams[team_id] = {"bot_token":
-                auth_response["bot"]["bot_access_token"]}
-            
-            # rewrite the file with newly added bot token
-            authed_teams_file.seek(0)
-            json.dump(authed_teams, authed_teams_file)
+        # execute
+        cur.execute(sql_statement, authed_team_record)
 
+        # If no UPDATE was executed, this means that this is a new team
+        if cur.rowcount == 0:
+            sql_statement = ''' INSERT INTO teams
+            VALUES(?, ?)
+            '''
+            authed_team_record = (team_id, bot_token)
+            cur.execute(sql_statement, authed_team_record)
+
+        # Close the connection
+        con.commit()
+        con.close()
 
         # Then we'll reconnect to the Slack Client with the correct team's bot token.
         # Then, send the installing user the onboarding help message
-        self.client_connect(team_id)
+        self.client = WebClient(bot_token)
         user_id = auth_response["user_id"]
         self.send_help_message(self.open_dm(user_id))
+        

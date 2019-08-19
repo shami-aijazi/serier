@@ -35,9 +35,16 @@ cur = conn.cursor()
 conn = sqlite3.connect("scrap/markets.db")
 cur = conn.cursor()
 
-res = cur.execute('SELECT * FROM stocks GROUP BY price').fetchall()
+# Test update query rowcount 
+stonk_record = ('dummy_date', 15) 
 
-print("res = \n", res)
+sql_statement = '''SELECT * FROM stocks WHERE ID=100'''
+
+res = cur.execute(sql_statement).fetchone()
+
+
+print("res (value if there is no such record) =\n", res)
+# print("rowcount (this is the default value when nothing done) = \n", cur.rowcount)
 
 # print("type(res[0]) = ", type(res[0]))
 conn.close()
