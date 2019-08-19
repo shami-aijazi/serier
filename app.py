@@ -496,8 +496,6 @@ def _slash_handler(payload, slash_command, slash_text):
         pyBot.send_help_message(channel_id)
         return make_response("", 200)
 
-    # TODO NAME THESE BETTER
-
     # If the user wants to create a new series
     elif slash_text == "create":
         pyBot.new_series_menu(channel_id, user_id)

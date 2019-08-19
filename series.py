@@ -36,9 +36,9 @@ class Series(object):
         # This is useful for knowing when to render a "back" button that returns to the help message
         self.isFromHelp = False
         # The Slack message blocks for the series creation menu
-        self.new_series_menu_blocks = []
+        self.new_series_menu_blocks = copy.deepcopy(new_series_menu_blocks)
         # The Slack message blocks for the series editing menu
-        self.edit_series_menu_blocks = []
+        self.edit_series_menu_blocks = copy.deepcopy(edit_series_menu_blocks)
 
     def newSeries(self, ts, start_date, series_time, menu_tz, IsFromHelp):
         """
@@ -76,8 +76,7 @@ class Series(object):
         self.menu_ts = ts
         self.timezone = menu_tz
         self.IsFromHelp = IsFromHelp
-        self.new_series_menu_blocks = copy.deepcopy(new_series_menu_blocks)
-        self.edit_series_menu_blocks = copy.deepcopy(edit_series_menu_blocks)
+
 
 
 
@@ -433,6 +432,8 @@ class Series(object):
 
         # Update the series edit menu as state changes
 
+        # Console log for the edit menu blocks
+        # print("\n" + 70*"="  + "\n.edit_series_menu_blocks =\n", self.edit_series_menu_blocks, "\n" + 70*"=")
 
         # ==================== Update Title ====================
         # 1- === Update title section ===
