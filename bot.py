@@ -54,7 +54,6 @@ class Bot(object):
         team_id : str
             id of the Slack team associated with incoming event
 
-
         Returns
         ----------
         connected : bool
@@ -2017,7 +2016,7 @@ class Bot(object):
 
 
         # Then we'll reconnect to the Slack Client with the correct team's bot token.
-        # Then, send the installing user the onboarding (greeting) message.
+        # Then, send the installing user the onboarding help message
         self.client_connect(team_id)
         user_id = auth_response["user_id"]
-        self.onboarding_message(user_id)
+        self.send_help_message(self.open_dm(user_id))

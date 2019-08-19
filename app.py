@@ -221,6 +221,11 @@ def _action_handler (payload, action_type, action_id):
             pyBot.reset_currentSeries()
             pyBot.delete_message(channel_id, message_ts)
 
+        # If the user acknowledges message about having no series to view
+        elif action_id == "no_series_edit_ok":
+            message_ts = payload["container"]["message_ts"] 
+            pyBot.delete_message(channel_id, message_ts)
+
         # If the user confirms the edit of the series
         elif action_id == "complete_edit_series":    
             message_ts = payload["container"]["message_ts"]  
