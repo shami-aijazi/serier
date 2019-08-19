@@ -173,7 +173,7 @@ def _action_handler (payload, action_type, action_id):
         # If the user cancels when viewing a series
         elif action_id == "cancel_view_series":
             message_ts = payload["container"]["message_ts"]
-            pyBot.reset_currentSeries()
+            pyBot._resetSeries()
             pyBot.delete_message(channel_id, message_ts)
         
         # If the user confirms the view for the series, go ahead and load the schedule.
@@ -207,7 +207,7 @@ def _action_handler (payload, action_type, action_id):
         # And clear the series on memory
         elif action_id == "hide_schedule_message":
             message_ts = payload["container"]["message_ts"] 
-            pyBot.reset_currentSeries()
+            pyBot._resetSeries()
             pyBot.delete_message(channel_id, message_ts)
         
         # If the user confirms that they want to edit the series go ahead and 
@@ -218,7 +218,7 @@ def _action_handler (payload, action_type, action_id):
 
         elif action_id == "cancel_edit_series":
             message_ts = payload["container"]["message_ts"] 
-            pyBot.reset_currentSeries()
+            pyBot._resetSeries()
             pyBot.delete_message(channel_id, message_ts)
 
         # If the user acknowledges message about having no series to view

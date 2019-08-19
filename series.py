@@ -4,8 +4,6 @@ from edit_series_menu_blocks import edit_series_menu_blocks
 import copy
 
 # Make a copy of the blocks so they can be reset to the new blocks if series is cancelled
-current_series_menu_blocks = copy.deepcopy(new_series_menu_blocks)
-current_edit_series_menu_blocks = copy.deepcopy(edit_series_menu_blocks)
 # Console log for copy
 # print("\n" + 70*"="  + "\nCopying new blocks to current blocks... \n" + 70*"=")
 
@@ -37,6 +35,10 @@ class Series(object):
         # Whether or not the new series creation workflow was inititated from the help message button
         # This is useful for knowing when to render a "back" button that returns to the help message
         self.isFromHelp = False
+        # The Slack message blocks for the series creation menu
+        self.new_series_menu_blocks = []
+        # The Slack message blocks for the series editing menu
+        self.edit_series_menu_blocks = []
 
     def newSeries(self, ts, start_date, series_time, menu_tz, IsFromHelp):
         """
@@ -74,6 +76,9 @@ class Series(object):
         self.menu_ts = ts
         self.timezone = menu_tz
         self.IsFromHelp = IsFromHelp
+        self.new_series_menu_blocks = copy.deepcopy(new_series_menu_blocks)
+        self.edit_series_menu_blocks = copy.deepcopy(edit_series_menu_blocks)
+
 
 
     def isComplete(self):
@@ -157,15 +162,9 @@ class Series(object):
         """
         Empty series state.
         """
-        global current_series_menu_blocks
-        global current_edit_series_menu_blocks
-
-        # Console log for comparing current series menu to a new one
-        # print("\n" + 70*"="  + "\nInside resetSeries...\ncurrent and new menu blocks are identical? \n", current_series_menu_blocks == new_series_menu_blocks, "\n" + 70*"=")
-        
         # reset the current series menu blocks
-        current_series_menu_blocks = copy.deepcopy(new_series_menu_blocks)
-        current_edit_series_menu_blocks = copy.deepcopy(edit_series_menu_blocks)
+        self.new_series_menu_blocks = copy.deepcopy(new_series_menu_blocks)
+        self.edit_series_menu_blocks = copy.deepcopy(edit_series_menu_blocks)
 
         self.state = {}
         self.menu_ts = ""
@@ -253,28 +252,28 @@ class Series(object):
 
         # ==================== Update Title ====================
         # 1- === Update title section ===
-        current_series_menu_blocks[3]["text"]["text"] = "*" + self.state["title"] + "*"
+        self.new_series_menu_blocks[3]["text"]["text"] = "*" + self.state["title"] + "*"
 
         # 2- === Update summary context ===
-        current_series_menu_blocks[-2]["elements"][0]["text"] = "*Title*: " + self.state["title"] 
+        self.new_series_menu_blocks[-2]["elements"][0]["text"] = "*Title*: " + self.state["title"] 
 
         # ==================== Update Presenter ====================
         # 1- === Update users select menu ===
 
         # console log for series_menu_blocks. Check if there is an initial_option carried over
         # from last run
-        # print("\n" + 70*"="  + "\nseries_menu_blocks=\n", current_series_menu_blocks, "\n" + 70*"=")
+        # print("\n" + 70*"="  + "\nseries_menu_blocks=\n", self.new_series_menu_blocks, "\n" + 70*"=")
 
         # If presenter still has not been selected
         if self.state["presenter"] != "Not Selected":
-            current_series_menu_blocks[6]["accessory"]["initial_user"] = self.state["presenter"]
+            self.new_series_menu_blocks[6]["accessory"]["initial_user"] = self.state["presenter"]
 
         # 2- === Update summary context ===
         # If the presenter still has not been selected
         if self.state["presenter"] == "Not Selected":
-            current_series_menu_blocks[-2]["elements"][1]["text"] = "*Presenter*: " +  self.state["presenter"]
+            self.new_series_menu_blocks[-2]["elements"][1]["text"] = "*Presenter*: " +  self.state["presenter"]
         else:
-            current_series_menu_blocks[-2]["elements"][1]["text"] = "*Presenter*: " +  "<@" + self.state["presenter"] + ">"
+            self.new_series_menu_blocks[-2]["elements"][1]["text"] = "*Presenter*: " +  "<@" + self.state["presenter"] + ">"
 
         
         # ==================== Update Topic Selection ====================
@@ -283,7 +282,7 @@ class Series(object):
             
             # 1- === Update select menu ===
             if self.state["topic_selection"] == "pre-determined":
-                current_series_menu_blocks[7]["accessory"]["initial_option"] = {
+                self.new_series_menu_blocks[7]["accessory"]["initial_option"] = {
                     "text":
                         {"type":"plain_text",
                         "text":"Pre-determined",
@@ -292,11 +291,11 @@ class Series(object):
                     }
 
                 # 2- === Update summary context ===
-                current_series_menu_blocks[-2]["elements"][2]["text"] = "*Topic Selection*: Pre-determined"
+                self.new_series_menu_blocks[-2]["elements"][2]["text"] = "*Topic Selection*: Pre-determined"
             
             # 1- === Update select menu ===
             elif self.state["topic_selection"] == "presenter_choice":
-                current_series_menu_blocks[7]["accessory"]["initial_option"] = {
+                self.new_series_menu_blocks[7]["accessory"]["initial_option"] = {
                     "text":
                         {"type":"plain_text",
                         "text":"Presenter's Choice",
@@ -305,23 +304,23 @@ class Series(object):
                     }
 
                 # 2- === Update summary context ===
-                current_series_menu_blocks[-2]["elements"][2]["text"] = "*Topic Selection*: Presenter's Choice"
+                self.new_series_menu_blocks[-2]["elements"][2]["text"] = "*Topic Selection*: Presenter's Choice"
 
 
         # ==================== Update Start Date ====================
         # 1- === Update datepicker ===
-        current_series_menu_blocks[10]["elements"][0]["initial_date"] = self.state["start_date"]
+        self.new_series_menu_blocks[10]["elements"][0]["initial_date"] = self.state["start_date"]
 
         
         # 2- === Update summary context ===
         # Format it correctly
         if self.state["start_date"] != "Not Selected":
-            current_series_menu_blocks[-2]["elements"][3]["text"] = "*Start Date*: " + datetime.strptime(self.state["start_date"], "%Y-%m-%d").strftime("%m/%d/%Y")
+            self.new_series_menu_blocks[-2]["elements"][3]["text"] = "*Start Date*: " + datetime.strptime(self.state["start_date"], "%Y-%m-%d").strftime("%m/%d/%Y")
 
         # ==================== Update Time ====================
         
         # 1- === Update select menu ===
-        current_series_menu_blocks[10]["elements"][1]["initial_option"] = {
+        self.new_series_menu_blocks[10]["elements"][1]["initial_option"] = {
             "text":
                 {"type": "plain_text",
                 "text": datetime.strptime(self.state["time"], '%H:%M').strftime('%I:%M %p'),
@@ -331,12 +330,12 @@ class Series(object):
             }
         
         # 2- === Update summary context ===
-        current_series_menu_blocks[-2]["elements"][4]["text"] = "*Time*: " + datetime.strptime(self.state["time"], '%H:%M').strftime('%I:%M %p')
+        self.new_series_menu_blocks[-2]["elements"][4]["text"] = "*Time*: " + datetime.strptime(self.state["time"], '%H:%M').strftime('%I:%M %p')
 
         # ==================== Update Frequency ====================
         # 1- === Update select menu ===
         if self.state["frequency"] != "Not Selected":
-            current_series_menu_blocks[11]["elements"][0]["initial_option"] = {
+            self.new_series_menu_blocks[11]["elements"][0]["initial_option"] = {
                     "text":
                         {"type": "plain_text",
                         "text": self.state["frequency"].replace("-", " ").title(),
@@ -346,12 +345,12 @@ class Series(object):
                     }
                     
         # 2- === Update summary context ===
-        current_series_menu_blocks[-2]["elements"][5]["text"] = "*Frequency*: " + self.state["frequency"].replace("-", " ").title()
+        self.new_series_menu_blocks[-2]["elements"][5]["text"] = "*Frequency*: " + self.state["frequency"].replace("-", " ").title()
 
         # ==================== Update Num_sessions ====================
         # 1- === Update select menu ===
         if self.state["num_sessions"] != 0:
-            current_series_menu_blocks[11]["elements"][1]["initial_option"] = {
+            self.new_series_menu_blocks[11]["elements"][1]["initial_option"] = {
                     "text":
                         {"type": "plain_text",
                         "text": str(self.state["num_sessions"]),
@@ -364,7 +363,7 @@ class Series(object):
         # If the frequency and the num_sessions has not been selected
         if self.state["frequency"] != "Not Selected" and self.state["num_sessions"] != 0:
             self.getLastSession()
-            current_series_menu_blocks[-2]["elements"][6]["text"] = "*End Date*: " + datetime.strptime(self.state["end_date"], "%Y-%m-%d").strftime("%m/%d/%Y")
+            self.new_series_menu_blocks[-2]["elements"][6]["text"] = "*End Date*: " + datetime.strptime(self.state["end_date"], "%Y-%m-%d").strftime("%m/%d/%Y")
         
 
         # ==================== Add Back Button if Coming From Help====================
@@ -383,9 +382,9 @@ class Series(object):
             }
             
             # Add the start button to the menu (if it doesn't already exist)
-            if (current_series_menu_blocks[-1]["elements"][0]["action_id"] != "back_to_help" and
-                    len(current_series_menu_blocks[-1]["elements"]) < 2):
-                current_series_menu_blocks[-1]["elements"].insert(0, back_to_help_button)
+            if (self.new_series_menu_blocks[-1]["elements"][0]["action_id"] != "back_to_help" and
+                    len(self.new_series_menu_blocks[-1]["elements"]) < 2):
+                self.new_series_menu_blocks[-1]["elements"].insert(0, back_to_help_button)
         # ==================== Add Start Button When Series Complete ====================
         # If series menu is complete
         if self.isComplete():
@@ -407,18 +406,18 @@ class Series(object):
             }
             
             # Console log for buttons in menu
-            # print("\n" + 70*"="  + "\ncurrent_series_menu_blocks[-1][\"elements\"] \n", current_series_menu_blocks[-1]["elements"], "\n" + 70*"=")
+            # print("\n" + 70*"="  + "\nself.new_series_menu_blocks[-1][\"elements\"] \n", self.new_series_menu_blocks[-1]["elements"], "\n" + 70*"=")
             
             # Add the start button to the menu (if it doesn't already exist)
-            if (current_series_menu_blocks[-1]["elements"][0]["action_id"] != "start_series" and
-                    len(current_series_menu_blocks[-1]["elements"]) < 3):
-                current_series_menu_blocks[-1]["elements"].insert(0, start_series_button)
+            if (self.new_series_menu_blocks[-1]["elements"][0]["action_id"] != "start_series" and
+                    len(self.new_series_menu_blocks[-1]["elements"]) < 3):
+                self.new_series_menu_blocks[-1]["elements"].insert(0, start_series_button)
         # else:
         #     # Console log series menu completeness
         #     print("\n" + 70*"="  + "\nSeries menu is NOT complete... \n" + 70*"=")
 
         # Return it after modifications
-        return current_series_menu_blocks
+        return self.new_series_menu_blocks
 
     def getEditMenuBlocks(self):
         """
@@ -437,18 +436,18 @@ class Series(object):
 
         # ==================== Update Title ====================
         # 1- === Update title section ===
-        current_edit_series_menu_blocks[3]["text"]["text"] = "*" + self.state["title"] + "*"
+        self.edit_series_menu_blocks[3]["text"]["text"] = "*" + self.state["title"] + "*"
 
         # 2- === Update summary context ===
-        current_edit_series_menu_blocks[-2]["elements"][0]["text"] = "*Title*: " + self.state["title"] 
+        self.edit_series_menu_blocks[-2]["elements"][0]["text"] = "*Title*: " + self.state["title"] 
 
         # ==================== Update Presenter ====================
         # 1- === Update users select menu ===
 
-        current_edit_series_menu_blocks[6]["accessory"]["initial_user"] = self.state["presenter"]
+        self.edit_series_menu_blocks[6]["accessory"]["initial_user"] = self.state["presenter"]
 
         # 2- === Update summary context ===
-        current_edit_series_menu_blocks[-2]["elements"][1]["text"] = "*Presenter*: " +  "<@" + self.state["presenter"] + ">"
+        self.edit_series_menu_blocks[-2]["elements"][1]["text"] = "*Presenter*: " +  "<@" + self.state["presenter"] + ">"
 
         
         # ==================== Update Topic Selection ====================
@@ -456,7 +455,7 @@ class Series(object):
         if self.state["topic_selection"] != "Not Selected":
             
             # 1- === Update select menu ===
-            current_edit_series_menu_blocks[7]["accessory"]["initial_option"] = {
+            self.edit_series_menu_blocks[7]["accessory"]["initial_option"] = {
                 "text":
                     {"type":"plain_text",
                     "text":"Pre-determined",
@@ -465,10 +464,10 @@ class Series(object):
                 }
 
             # 2- === Update summary context ===
-            current_edit_series_menu_blocks[-2]["elements"][2]["text"] = "*Topic Selection*: Pre-determined"
+            self.edit_series_menu_blocks[-2]["elements"][2]["text"] = "*Topic Selection*: Pre-determined"
             
             # 1- === Update select menu ===
-            current_edit_series_menu_blocks[7]["accessory"]["initial_option"] = {
+            self.edit_series_menu_blocks[7]["accessory"]["initial_option"] = {
                 "text":
                     {"type":"plain_text",
                     "text":"Presenter's Choice",
@@ -477,22 +476,22 @@ class Series(object):
                 }
 
             # 2- === Update summary context ===
-            current_edit_series_menu_blocks[-2]["elements"][2]["text"] = "*Topic Selection*: Presenter's Choice"
+            self.edit_series_menu_blocks[-2]["elements"][2]["text"] = "*Topic Selection*: Presenter's Choice"
 
 
         # ==================== Update Start Date ====================
         # 1- === Update datepicker ===
-        current_edit_series_menu_blocks[10]["elements"][0]["initial_date"] = self.state["start_date"]
+        self.edit_series_menu_blocks[10]["elements"][0]["initial_date"] = self.state["start_date"]
 
         
         # 2- === Update summary context ===
         # Format it correctly
-        current_edit_series_menu_blocks[-2]["elements"][3]["text"] = "*Start Date*: " + datetime.strptime(self.state["start_date"], "%Y-%m-%d").strftime("%m/%d/%Y")
+        self.edit_series_menu_blocks[-2]["elements"][3]["text"] = "*Start Date*: " + datetime.strptime(self.state["start_date"], "%Y-%m-%d").strftime("%m/%d/%Y")
 
         # ==================== Update Time ====================
         
         # 1- === Update select menu ===
-        current_edit_series_menu_blocks[10]["elements"][1]["initial_option"] = {
+        self.edit_series_menu_blocks[10]["elements"][1]["initial_option"] = {
             "text":
                 {"type": "plain_text",
                 "text": datetime.strptime(self.state["time"], '%H:%M').strftime('%I:%M %p'),
@@ -502,11 +501,11 @@ class Series(object):
             }
         
         # 2- === Update summary context ===
-        current_edit_series_menu_blocks[-2]["elements"][4]["text"] = "*Time*: " + datetime.strptime(self.state["time"], '%H:%M').strftime('%I:%M %p')
+        self.edit_series_menu_blocks[-2]["elements"][4]["text"] = "*Time*: " + datetime.strptime(self.state["time"], '%H:%M').strftime('%I:%M %p')
 
         # ==================== Update Frequency ====================
         # 1- === Update select menu ===
-        current_edit_series_menu_blocks[11]["elements"][0]["initial_option"] = {
+        self.edit_series_menu_blocks[11]["elements"][0]["initial_option"] = {
                 "text":
                     {"type": "plain_text",
                     "text": self.state["frequency"].replace("-", " ").title(),
@@ -516,11 +515,11 @@ class Series(object):
                 }
                     
         # 2- === Update summary context ===
-        current_edit_series_menu_blocks[-2]["elements"][5]["text"] = "*Frequency*: " + self.state["frequency"].replace("-", " ").title()
+        self.edit_series_menu_blocks[-2]["elements"][5]["text"] = "*Frequency*: " + self.state["frequency"].replace("-", " ").title()
 
         # ==================== Update Num_sessions ====================
         # 1- === Update select menu ===
-        current_edit_series_menu_blocks[11]["elements"][1]["initial_option"] = {
+        self.edit_series_menu_blocks[11]["elements"][1]["initial_option"] = {
                 "text":
                     {"type": "plain_text",
                     "text": str(self.state["num_sessions"]),
@@ -532,14 +531,14 @@ class Series(object):
         # ==================== Update End Date ====================
         # Calculate the last session date.
         self.getLastSession()
-        current_edit_series_menu_blocks[-2]["elements"][6]["text"] = "*End Date*: " + datetime.strptime(self.state["end_date"], "%Y-%m-%d").strftime("%m/%d/%Y")
+        self.edit_series_menu_blocks[-2]["elements"][6]["text"] = "*End Date*: " + datetime.strptime(self.state["end_date"], "%Y-%m-%d").strftime("%m/%d/%Y")
 
 
         # ==================== Add Update Button If Series Modified ==================== ?
         # TODO If series menu has been modified, add the UPDATE confirmation button?
 
         # Return it after modifications
-        return current_edit_series_menu_blocks
+        return self.edit_series_menu_blocks
 
     def createSessions(self, series_id):
         """
