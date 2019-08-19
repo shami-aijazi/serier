@@ -424,7 +424,7 @@ class Bot(object):
                                             )
         
         else:
-            # If the ts is not zero AKA the series creation was via slash command.
+            # If the ts is zero AKA the series creation was via slash command.
             post_message = self.client.chat_postMessage(
                                             channel=channel_id,
                                             username=self.name,
