@@ -552,7 +552,7 @@ class Series(object):
         making sure the series menu is complete.
         """
         # Console log for sessions
-        print("\n" + 70*"="  + "\nInside createSessions...currentSeries.state = \n", self.state, "\n"+ 70*"=")
+        # print("\n" + 70*"="  + "\nInside createSessions...currentSeries.state = \n", self.state, "\n"+ 70*"=")
 
         # Extract the frequency and the num_sessions from the series state
         frequency = self.state["frequency"]
@@ -727,8 +727,8 @@ class Series(object):
         sessions will be deleted, and then they will be repopulated with new updated properties.
         """
         # Console log for sessions
-        print("\n" + 70*"="  + "\nInside deleteSessions...currentSeries.state = \n", self.state, "\n"+ 70*"=")
-        print("deleting sessions from series with series_id =", self.series_id, "| type of series_id =", type(series_id))
+        # print("\n" + 70*"="  + "\nInside deleteSessions...currentSeries.state = \n", self.state, "\n"+ 70*"=")
+        # print("deleting sessions from series with series_id =", self.series_id, "| type of series_id =", type(series_id))
         
         
         # TODO Put these in subroutines (make it resuable)

@@ -1529,6 +1529,9 @@ class Bot(object):
             # Execute the insertion
             cur.execute(sql_statement, series_record)
 
+            # Get the id of the series
+            current_series_id = currentSeries.series_id
+
 
             # commit and close the database connection
             con.commit()
@@ -1563,6 +1566,18 @@ class Bot(object):
                                                                 "emoji": True
                                                             },
                                                             "value": "series_creation_ok"
+                                                        },
+                                                        # Add a button to show the schedule of the series that was just edited
+                                                        {
+                                                            "type": "button",
+                                                            "action_id": "confirm_view_series",
+                                                            "text": {
+                                                                "type": "plain_text",
+                                                                "text": "View Schedule",
+                                                                "emoji": True
+                                                            },
+                                                            # The value is in the format: "series-id-{series_id}" example: "series_id-3230"
+                                                            "value": "series_id-" + str(current_series_id)
                                                         }
                                                     ]
                                                 }
