@@ -414,12 +414,8 @@ class Series(object):
         # else:
         #     # Console log series menu completeness
         #     print("\n" + 70*"="  + "\nSeries menu is NOT complete... \n" + 70*"=")
-        
 
-        # Console log series creation menu blocks
-        print("\n" + 70*"="  + "\ncreation menu block=\n", json.dumps(self.new_series_menu_blocks), "\n" + 70*"=")
-
-        # Return it after modifications
+        # Return it after modigfications
         return self.new_series_menu_blocks
 
     def getEditMenuBlocks(self):
@@ -940,8 +936,7 @@ class Series(object):
 
         series_schedule_blocks.extend(appendage_blocks)
 
-        # Console log for schedule blocks
-        print("\n" + 70*"="  + "\nseries_schedule_blocks= \n", json.dumps(series_schedule_blocks), "\n" + 70*"=")
+
         return series_schedule_blocks
 
             
