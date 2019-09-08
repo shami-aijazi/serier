@@ -1,1 +1,1 @@
-{"TANEBAGRX": {"bot_token": "xoxb-362487356881-688022100224-28iajJIKVcCEyw441uz3P99U"}, "test-team-name": {"bot_token": "test-bot-token"}}
+{}
